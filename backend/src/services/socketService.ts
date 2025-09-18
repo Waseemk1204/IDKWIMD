@@ -1,0 +1,110 @@
+import { Server as SocketIOServer, Socket } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import { config } from '../config';
+import User from '../models/User';
+
+interface AuthenticatedSocket extends Socket {
+  userId?: string;
+  user?: any;
+}
+
+export const setupSocketHandlers = (io: SocketIOServer): void => {
+  // Authentication middleware for socket connections
+  io.use(async (socket: AuthenticatedSocket, next) => {
+    try {
+      const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+      
+      if (!token) {
+        return next(new Error('Authentication error: No token provided'));
+      }
+
+      const decoded = jwt.verify(token, config.JWT_SECRET) as { userId: string };
+      const user = await User.findById(decoded.userId).select('-password');
+      
+      if (!user || !user.isActive) {
+        return next(new Error('Authentication error: Invalid user'));
+      }
+
+      socket.userId = user._id.toString();
+      socket.user = user;
+      next();
+    } catch (error) {
+      next(new Error('Authentication error: Invalid token'));
+    }
+  });
+
+  io.on('connection', (socket: AuthenticatedSocket) => {
+    console.log(`User ${socket.userId} connected`);
+
+    // Join user to their personal room
+    socket.join(`user_${socket.userId}`);
+
+    // Handle joining conversation rooms
+    socket.on('join_conversation', (conversationId: string) => {
+      socket.join(`conversation_${conversationId}`);
+      console.log(`User ${socket.userId} joined conversation ${conversationId}`);
+    });
+
+    // Handle leaving conversation rooms
+    socket.on('leave_conversation', (conversationId: string) => {
+      socket.leave(`conversation_${conversationId}`);
+      console.log(`User ${socket.userId} left conversation ${conversationId}`);
+    });
+
+    // Handle new messages
+    socket.on('send_message', (data: {
+      conversationId: string;
+      content: string;
+      messageType?: string;
+    }) => {
+      // Broadcast message to conversation room
+      socket.to(`conversation_${data.conversationId}`).emit('new_message', {
+        ...data,
+        sender: socket.userId,
+        timestamp: new Date()
+      });
+    });
+
+    // Handle typing indicators
+    socket.on('typing_start', (conversationId: string) => {
+      socket.to(`conversation_${conversationId}`).emit('user_typing', {
+        userId: socket.userId,
+        conversationId,
+        isTyping: true
+      });
+    });
+
+    socket.on('typing_stop', (conversationId: string) => {
+      socket.to(`conversation_${conversationId}`).emit('user_typing', {
+        userId: socket.userId,
+        conversationId,
+        isTyping: false
+      });
+    });
+
+    // Handle online status
+    socket.on('set_online', () => {
+      socket.broadcast.emit('user_online', { userId: socket.userId });
+    });
+
+    socket.on('set_offline', () => {
+      socket.broadcast.emit('user_offline', { userId: socket.userId });
+    });
+
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      console.log(`User ${socket.userId} disconnected`);
+      socket.broadcast.emit('user_offline', { userId: socket.userId });
+    });
+  });
+};
+
+// Helper function to send notification to specific user
+export const sendNotificationToUser = (io: SocketIOServer, userId: string, notification: any): void => {
+  io.to(`user_${userId}`).emit('new_notification', notification);
+};
+
+// Helper function to send message to conversation
+export const sendMessageToConversation = (io: SocketIOServer, conversationId: string, message: any): void => {
+  io.to(`conversation_${conversationId}`).emit('new_message', message);
+};
