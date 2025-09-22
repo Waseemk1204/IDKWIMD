@@ -7,6 +7,24 @@ const { body, validationResult } = require('express-validator');
 
 const app = express();
 
+// Check required environment variables
+const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars);
+  console.error('Please set the following environment variables in Vercel:');
+  missingEnvVars.forEach(envVar => {
+    console.error(`- ${envVar}`);
+  });
+}
+
+// Set default JWT_SECRET if not provided (for testing only)
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️ JWT_SECRET not set, using default (NOT SECURE FOR PRODUCTION)');
+  process.env.JWT_SECRET = 'default-jwt-secret-change-in-production';
+}
+
 // Middleware
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -41,19 +59,31 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const connectDB = async () => {
   try {
     if (!process.env.MONGODB_URI) {
-      console.error('MONGODB_URI environment variable is not set');
-      return;
+      console.error('❌ MONGODB_URI environment variable is not set');
+      console.error('Please set MONGODB_URI in your Vercel environment variables');
+      return false;
     }
     
-    console.log('Attempting to connect to MongoDB...');
+    console.log('🔄 Attempting to connect to MongoDB...');
+    console.log('MongoDB URI:', process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
+    
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     });
+    
     console.log('✅ MongoDB Connected successfully');
+    console.log('Database name:', mongoose.connection.db.databaseName);
+    return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    console.error('Full error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error name:', error.name);
+    
+    // Don't throw the error, just log it
+    return false;
   }
 };
 
@@ -148,13 +178,32 @@ const authenticate = async (req, res, next) => {
 
 // Health check
 app.get('/health', (req, res) => {
+  const mongodbStatus = mongoose.connection.readyState;
+  const mongodbStatusText = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  }[mongodbStatus] || 'unknown';
+
   res.json({
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    cors: 'enabled'
+    mongodb: {
+      status: mongodbStatusText,
+      readyState: mongodbStatus,
+      host: mongoose.connection.host || 'not connected',
+      port: mongoose.connection.port || 'not connected',
+      name: mongoose.connection.name || 'not connected'
+    },
+    cors: 'enabled',
+    envVars: {
+      mongodb_uri_set: !!process.env.MONGODB_URI,
+      jwt_secret_set: !!process.env.JWT_SECRET,
+      frontend_url_set: !!process.env.FRONTEND_URL
+    }
   });
 });
 
@@ -458,7 +507,25 @@ app.put('/users/profile', authenticate, [
   }
 });
 
-// Connect to database and start server
-connectDB();
+// Global error handler
+app.use((error, req, res, next) => {
+  console.error('Global error handler:', error);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+  });
+});
+
+// Connect to database
+connectDB().then(connected => {
+  if (connected) {
+    console.log('🚀 Server ready to handle requests');
+  } else {
+    console.log('⚠️ Server started but MongoDB connection failed');
+  }
+}).catch(error => {
+  console.error('Failed to start server:', error);
+});
 
 module.exports = app;
