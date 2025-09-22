@@ -85,12 +85,32 @@ export const corsOptions = {
       'http://localhost:3000',
       'http://localhost:5173',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173'
+      'http://127.0.0.1:5173',
+      // Add common Netlify patterns
+      /^https:\/\/.*\.netlify\.app$/,
+      /^https:\/\/.*\.netlify\.com$/,
+      // Add common Railway patterns
+      /^https:\/\/.*\.railway\.app$/,
+      // Add common Vercel patterns
+      /^https:\/\/.*\.vercel\.app$/,
+      // Add common Heroku patterns
+      /^https:\/\/.*\.herokuapp\.com$/
     ];
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Check if origin matches any allowed pattern
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+
+    if (isAllowed) {
       callback(null, true);
     } else {
+      console.log(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
