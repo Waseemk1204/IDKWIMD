@@ -74,16 +74,19 @@ const connectDB = async () => {
     }
     
     await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 15000, // 15 seconds timeout
+      serverSelectionTimeoutMS: 30000, // 30 seconds timeout
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      connectTimeoutMS: 15000, // 15 seconds connection timeout
-      maxPoolSize: 5, // Reduce pool size for serverless
-      minPoolSize: 1, // Minimum connections
-      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      connectTimeoutMS: 30000, // 30 seconds connection timeout
+      maxPoolSize: 1, // Single connection for serverless
+      minPoolSize: 0, // No minimum connections
+      maxIdleTimeMS: 10000, // Close connections after 10 seconds of inactivity
       bufferMaxEntries: 0, // Disable mongoose buffering
       bufferCommands: false, // Disable mongoose buffering
       retryWrites: true,
-      w: 'majority'
+      w: 'majority',
+      authSource: 'admin', // Try admin as auth source
+      ssl: true, // Force SSL
+      sslValidate: true
     });
     
     console.log('✅ MongoDB Connected successfully');
@@ -569,14 +572,24 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Connect to database
-connectDB().then(connected => {
-  if (connected) {
-    console.log('🚀 Server ready to handle requests');
-  } else {
-    console.log('⚠️ Server started but MongoDB connection failed');
+// Connect to database with retry
+const connectWithRetry = async (retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    console.log(`🔄 Attempting MongoDB connection (attempt ${i + 1}/${retries})`);
+    const connected = await connectDB();
+    if (connected) {
+      console.log('🚀 Server ready to handle requests');
+      return;
+    }
+    if (i < retries - 1) {
+      console.log(`⏳ Waiting 5 seconds before retry...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
   }
-}).catch(error => {
+  console.log('⚠️ Server started but MongoDB connection failed after all retries');
+};
+
+connectWithRetry().catch(error => {
   console.error('Failed to start server:', error);
 });
 
