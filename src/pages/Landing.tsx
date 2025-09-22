@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Shield, CheckCircle, Star, Users, Award, ArrowRight, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Shield, CheckCircle, Star, Users, Award, ArrowRight, X, Menu } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { TrustBadge, VerifiedBadge, SecureBadge } from '../components/ui/TrustBadge';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
@@ -8,51 +8,133 @@ import { FeaturesCycle } from '../components/FeaturesCycle';
 import { JobCard } from '../components/jobs/JobCard';
 import apiService from '../services/api';
 
-// Mock Navbar component since it's imported
-const Navbar = ({ onAboutClick, onHowItWorksClick, onContactClick }: { onAboutClick: () => void; onHowItWorksClick: () => void; onContactClick: () => void }) => (
-  <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/70 dark:bg-neutral-950/80 backdrop-blur-lg border-b border-neutral-200/30 dark:border-neutral-800/50 shadow-lg`}>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between h-16">
-        <div className="flex items-center">
-          <Link to="/" className="text-3xl font-bold text-blue-600 dark:text-blue-500">PART-TIME PAY$</Link>
+// Responsive Navbar component for landing page
+const Navbar = ({ onAboutClick, onHowItWorksClick, onContactClick }: { onAboutClick: () => void; onHowItWorksClick: () => void; onContactClick: () => void }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  return (
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/70 dark:bg-neutral-950/80 backdrop-blur-lg border-b border-neutral-200/30 dark:border-neutral-800/50 shadow-lg`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 dark:text-blue-500">
+              PART-TIME PAY$
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
+            <button 
+              onClick={onAboutClick}
+              className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-sm lg:text-base"
+            >
+              About
+            </button>
+            <button 
+              onClick={onHowItWorksClick}
+              className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-sm lg:text-base"
+            >
+              How it Works
+            </button>
+            <Link 
+              to="/blogs"
+              className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-sm lg:text-base px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            >
+              Blogs
+            </Link>
+            <button 
+              onClick={onContactClick}
+              className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-sm lg:text-base"
+            >
+              Contact
+            </button>
+            <ThemeToggle />
+            <Link 
+              to="/login"
+              className="bg-primary-600 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md hover:bg-primary-700 transition-colors text-sm lg:text-base"
+            >
+              Log In
+            </Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
+            <button
+              onClick={toggleMobileMenu}
+              className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center space-x-6">
-          <button 
-            onClick={onAboutClick}
-            className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            About
-          </button>
-          <button 
-            onClick={onHowItWorksClick}
-            className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            How it Works
-          </button>
-          <Link 
-            to="/blogs"
-            className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-          >
-            Blogs
-          </Link>
-          <button 
-            onClick={onContactClick}
-            className="text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            Contact
-          </button>
-          <ThemeToggle />
-          <Link 
-            to="/login"
-            className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
-          >
-            Log In
-          </Link>
-        </div>
+
+        {/* Mobile Navigation Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700">
+              <button 
+                onClick={() => {
+                  onAboutClick();
+                  closeMobileMenu();
+                }}
+                className="block w-full text-left text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-3 py-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base"
+              >
+                About
+              </button>
+              <button 
+                onClick={() => {
+                  onHowItWorksClick();
+                  closeMobileMenu();
+                }}
+                className="block w-full text-left text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-3 py-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base"
+              >
+                How it Works
+              </button>
+              <Link 
+                to="/blogs"
+                onClick={closeMobileMenu}
+                className="block w-full text-left text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors px-3 py-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base"
+              >
+                Blogs
+              </Link>
+              <button 
+                onClick={() => {
+                  onContactClick();
+                  closeMobileMenu();
+                }}
+                className="block w-full text-left text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors cursor-pointer px-3 py-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-base"
+              >
+                Contact
+              </button>
+              <Link 
+                to="/login"
+                onClick={closeMobileMenu}
+                className="block w-full text-center bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors text-base mt-4"
+              >
+                Log In
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  </nav>
-);
+    </nav>
+  );
+};
 
 
 // Statistics data

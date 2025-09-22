@@ -4,20 +4,27 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useAuth } from '../../hooks/useAuth';
+import apiService from '../../services/api';
 export const CreatePost: React.FC = () => {
-  const {
-    user
-  } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      // Validate tag length (max 30 characters)
+      if (trimmedTag.length > 30) {
+        setError('Tags cannot be longer than 30 characters');
+        return;
+      }
+      setTags([...tags, trimmedTag]);
       setTagInput('');
+      setError(null); // Clear any previous errors
     }
   };
   const handleRemoveTag = (tagToRemove: string) => {
@@ -25,12 +32,42 @@ export const CreatePost: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (title.trim() && content.trim()) {
-      setIsSubmitting(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // Redirect to community hub
-      navigate('/community');
+    
+    if (!isAuthenticated) {
+      setError('Please sign in to create a post');
+      return;
+    }
+
+    if (!title.trim() || !content.trim()) {
+      setError('Title and content are required');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const postData = {
+        title: title.trim(),
+        content: content.trim(),
+        tags: tags.filter(tag => tag.trim().length > 0)
+      };
+
+      const response = await apiService.createCommunityPost(postData);
+
+      if (response.success) {
+        // Redirect to community hub with success message
+        navigate('/community', { 
+          state: { message: 'Post created successfully!' } 
+        });
+      } else {
+        setError(response.message || 'Failed to create post');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+      setError('Failed to create post. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
@@ -39,6 +76,32 @@ export const CreatePost: React.FC = () => {
       handleAddTag();
     }
   };
+  // Redirect if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center mb-4">
+          <Link to="/community" className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Create New Post
+          </h1>
+        </div>
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Please sign in to create a post.
+          </p>
+          <Link to="/login">
+            <Button variant="primary">
+              Sign In
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="space-y-6">
       <div className="flex items-center mb-4">
         <Link to="/community" className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
@@ -49,6 +112,13 @@ export const CreatePost: React.FC = () => {
         </h1>
       </div>
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+            <p className="text-red-600 dark:text-red-400 text-sm">
+              {error}
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -71,11 +141,23 @@ export const CreatePost: React.FC = () => {
               Tags
             </label>
             <div className="flex">
-              <Input id="tags" type="text" value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={handleTagKeyDown} placeholder="Add tags (press Enter)" className="rounded-r-none" />
+              <Input 
+                id="tags" 
+                type="text" 
+                value={tagInput} 
+                onChange={e => setTagInput(e.target.value)} 
+                onKeyDown={handleTagKeyDown} 
+                placeholder="Add tags (press Enter)" 
+                className="rounded-r-none" 
+                maxLength={30}
+              />
               <button type="button" onClick={handleAddTag} className="px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 Add
               </button>
             </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Tags must be 30 characters or less. Press Enter or click Add to add a tag.
+            </p>
             {tags.length > 0 && <div className="flex flex-wrap gap-2 mt-2">
                 {tags.map(tag => <span key={tag} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                     {tag}

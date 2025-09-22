@@ -1,5 +1,5 @@
 // API service for communicating with the backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -70,7 +70,7 @@ class ApiService {
   }
 
   async register(userData: {
-    name: string;
+    fullName: string;
     email: string;
     password: string;
     role?: string;
@@ -383,91 +383,7 @@ class ApiService {
     return this.request(endpoint);
   }
 
-  // Message methods
-  async getConversations(params?: any): Promise<ApiResponse> {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-    }
-    return this.request(`/messages/conversations?${queryParams.toString()}`);
-  }
 
-  async createConversation(conversationData: any): Promise<ApiResponse> {
-    return this.request('/messages/conversations', {
-      method: 'POST',
-      body: JSON.stringify(conversationData),
-    });
-  }
-
-  async getMessages(conversationId: string, params?: any): Promise<ApiResponse> {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-    }
-    return this.request(`/messages/conversations/${conversationId}/messages?${queryParams.toString()}`);
-  }
-
-  async sendMessage(conversationId: string, messageData: any): Promise<ApiResponse> {
-    return this.request(`/messages/conversations/${conversationId}/messages`, {
-      method: 'POST',
-      body: JSON.stringify(messageData),
-    });
-  }
-
-  async markMessagesAsRead(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/messages/conversations/${conversationId}/read`, {
-      method: 'PUT',
-    });
-  }
-
-  async getUnreadCount(): Promise<ApiResponse> {
-    return this.request('/messages/unread-count');
-  }
-
-  // Notification methods
-  async getNotifications(params?: any): Promise<ApiResponse> {
-    const queryParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-    }
-    return this.request(`/notifications?${queryParams.toString()}`);
-  }
-
-  async markNotificationAsRead(id: string): Promise<ApiResponse> {
-    return this.request(`/notifications/${id}/read`, {
-      method: 'PUT',
-    });
-  }
-
-  async markAllNotificationsAsRead(): Promise<ApiResponse> {
-    return this.request('/notifications/read-all', {
-      method: 'PUT',
-    });
-  }
-
-  async deleteNotification(id: string): Promise<ApiResponse> {
-    return this.request(`/notifications/${id}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async clearAllNotifications(): Promise<ApiResponse> {
-    return this.request('/notifications', {
-      method: 'DELETE',
-    });
-  }
 
   // Token management
   setToken(token: string): void {
@@ -513,6 +429,505 @@ class ApiService {
     return this.request('/blogs/interactions', {
       method: 'POST',
       body: JSON.stringify({ blogIds }),
+    });
+  }
+
+  // Community Post methods
+  async getCommunityPosts(params?: any): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return this.request(`/community?${queryParams.toString()}`);
+  }
+
+  async getCommunityPostById(id: string): Promise<ApiResponse> {
+    return this.request(`/community/${id}`);
+  }
+
+  async createCommunityPost(postData: any): Promise<ApiResponse> {
+    return this.request('/community', {
+      method: 'POST',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  async updateCommunityPost(id: string, postData: any): Promise<ApiResponse> {
+    return this.request(`/community/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  async deleteCommunityPost(id: string): Promise<ApiResponse> {
+    return this.request(`/community/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleLikeCommunityPost(id: string): Promise<ApiResponse> {
+    return this.request(`/community/${id}/like`, {
+      method: 'POST',
+    });
+  }
+
+  async addCommunityComment(postId: string, commentData: any): Promise<ApiResponse> {
+    return this.request(`/community/${postId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(commentData),
+    });
+  }
+
+  async getCommunityPostComments(postId: string, params?: any): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return this.request(`/community/${postId}/comments?${queryParams.toString()}`);
+  }
+
+  async getCommunityTags(): Promise<ApiResponse> {
+    return this.request('/community/tags');
+  }
+
+  // Connection methods (Gang Members)
+  async sendConnectionRequest(recipientId: string): Promise<ApiResponse> {
+    return this.request('/connections/request', {
+      method: 'POST',
+      body: JSON.stringify({ recipientId }),
+    });
+  }
+
+  async acceptConnectionRequest(connectionId: string): Promise<ApiResponse> {
+    return this.request(`/connections/accept/${connectionId}`, {
+      method: 'POST',
+    });
+  }
+
+  async rejectConnectionRequest(connectionId: string): Promise<ApiResponse> {
+    return this.request(`/connections/reject/${connectionId}`, {
+      method: 'POST',
+    });
+  }
+
+  async cancelConnectionRequest(connectionId: string): Promise<ApiResponse> {
+    return this.request(`/connections/cancel/${connectionId}`, {
+      method: 'POST',
+    });
+  }
+
+  async removeConnection(connectionId: string): Promise<ApiResponse> {
+    return this.request(`/connections/${connectionId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getUserConnections(status?: string): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (status) {
+      queryParams.append('status', status);
+    }
+    return this.request(`/connections/my-connections?${queryParams.toString()}`);
+  }
+
+  async getPendingRequests(type?: 'sent' | 'received'): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (type) {
+      queryParams.append('type', type);
+    }
+    return this.request(`/connections/pending-requests?${queryParams.toString()}`);
+  }
+
+  // Follow methods (Employee to Employer)
+  async followEmployer(employerId: string): Promise<ApiResponse> {
+    return this.request('/connections/follow', {
+      method: 'POST',
+      body: JSON.stringify({ employerId }),
+    });
+  }
+
+  async unfollowEmployer(followId: string): Promise<ApiResponse> {
+    return this.request(`/connections/follow/${followId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getUserFollows(): Promise<ApiResponse> {
+    return this.request('/connections/my-follows');
+  }
+
+  async getConnectionStatus(userId: string): Promise<ApiResponse> {
+    return this.request(`/connections/status/${userId}`);
+  }
+
+  async getAvailableEmployees(search?: string, page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (search) {
+      queryParams.append('search', search);
+    }
+    if (page) {
+      queryParams.append('page', page.toString());
+    }
+    if (limit) {
+      queryParams.append('limit', limit.toString());
+    }
+    return this.request(`/connections/discover?${queryParams.toString()}`);
+  }
+
+  // Search methods
+  async globalSearch(params: {
+    q: string;
+    type?: 'all' | 'jobs' | 'users' | 'blogs' | 'community';
+    page?: number;
+    limit?: number;
+    location?: string;
+    category?: string;
+    skills?: string[];
+    minRate?: number;
+    maxRate?: number;
+    experienceLevel?: string;
+    isRemote?: boolean;
+    userRole?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach(item => queryParams.append(key, item.toString()));
+        } else {
+          queryParams.append(key, value.toString());
+        }
+      }
+    });
+    return this.request(`/search?${queryParams.toString()}`);
+  }
+
+  async getSearchSuggestions(query: string, type?: string): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('q', query);
+    if (type) {
+      queryParams.append('type', type);
+    }
+    return this.request(`/search/suggestions?${queryParams.toString()}`);
+  }
+
+  async getTrendingSearches(): Promise<ApiResponse> {
+    return this.request('/search/trending');
+  }
+
+  async getSearchFilters(): Promise<ApiResponse> {
+    return this.request('/search/filters');
+  }
+
+  // Messaging methods
+  async getConversations(page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (page) queryParams.append('page', page.toString());
+    if (limit) queryParams.append('limit', limit.toString());
+    return this.request(`/messages/conversations?${queryParams.toString()}`);
+  }
+
+  async createConversation(data: {
+    participants: string[];
+    title?: string;
+    conversationType?: 'direct' | 'group' | 'job_related';
+    job?: string;
+  }): Promise<ApiResponse> {
+    return this.request('/messages/conversations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getMessages(conversationId: string, page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (page) queryParams.append('page', page.toString());
+    if (limit) queryParams.append('limit', limit.toString());
+    return this.request(`/messages/conversations/${conversationId}/messages?${queryParams.toString()}`);
+  }
+
+  async sendMessage(conversationId: string, data: {
+    content: string;
+    messageType?: 'text' | 'image' | 'file' | 'system';
+    attachments?: string[];
+    replyTo?: string;
+  }): Promise<ApiResponse> {
+    return this.request(`/messages/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async markMessagesAsRead(conversationId: string): Promise<ApiResponse> {
+    return this.request(`/messages/conversations/${conversationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  async editMessage(messageId: string, content: string): Promise<ApiResponse> {
+    return this.request(`/messages/messages/${messageId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  async deleteMessage(messageId: string): Promise<ApiResponse> {
+    return this.request(`/messages/messages/${messageId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getConversationParticipants(conversationId: string): Promise<ApiResponse> {
+    return this.request(`/messages/conversations/${conversationId}/participants`);
+  }
+
+  async deleteConversation(conversationId: string): Promise<ApiResponse> {
+    return this.request(`/messages/conversations/${conversationId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getUnreadCount(): Promise<ApiResponse> {
+    return this.request('/messages/unread-count');
+  }
+
+  // Wallet methods
+  async getWallet(): Promise<ApiResponse> {
+    return this.request('/wallet');
+  }
+
+  async getWalletTransactions(params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    status?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.status) queryParams.append('status', params.status);
+    return this.request(`/wallet/transactions?${queryParams.toString()}`);
+  }
+
+  async getWalletStats(period?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (period) queryParams.append('period', period.toString());
+    return this.request(`/wallet/stats?${queryParams.toString()}`);
+  }
+
+  async createTopUpOrder(amount: number): Promise<ApiResponse> {
+    return this.request('/wallet/topup', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    });
+  }
+
+  async verifyPayment(data: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }): Promise<ApiResponse> {
+    return this.request('/wallet/verify-payment', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async withdrawFunds(data: {
+    amount: number;
+    bankDetails: {
+      accountNumber: string;
+      ifscCode: string;
+      accountHolderName: string;
+    };
+  }): Promise<ApiResponse> {
+    return this.request('/wallet/withdraw', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async transferFunds(data: {
+    recipientId: string;
+    amount: number;
+    description?: string;
+    relatedJobId?: string;
+    relatedApplicationId?: string;
+  }): Promise<ApiResponse> {
+    return this.request('/wallet/transfer', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Admin methods
+  async getDashboardAnalytics(period?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (period) queryParams.append('period', period.toString());
+    return this.request(`/admin/analytics/dashboard?${queryParams.toString()}`);
+  }
+
+  async getUserAnalytics(period?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (period) queryParams.append('period', period.toString());
+    return this.request(`/admin/analytics/users?${queryParams.toString()}`);
+  }
+
+  async getJobAnalytics(period?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (period) queryParams.append('period', period.toString());
+    return this.request(`/admin/analytics/jobs?${queryParams.toString()}`);
+  }
+
+  async getFinancialAnalytics(period?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (period) queryParams.append('period', period.toString());
+    return this.request(`/admin/analytics/financial?${queryParams.toString()}`);
+  }
+
+  async getModerationData(): Promise<ApiResponse> {
+    return this.request('/admin/moderation');
+  }
+
+  async approveUserVerification(userId: string, status: 'approved' | 'rejected', reason?: string): Promise<ApiResponse> {
+    return this.request(`/admin/verification/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, reason }),
+    });
+  }
+
+  async approveJob(jobId: string, status: 'approved' | 'rejected', reason?: string): Promise<ApiResponse> {
+    return this.request(`/admin/jobs/${jobId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, reason }),
+    });
+  }
+
+  async moderateCommunityContent(contentType: 'post' | 'comment', contentId: string, action: 'approve' | 'reject' | 'delete', reason?: string): Promise<ApiResponse> {
+    return this.request(`/admin/moderate/${contentType}/${contentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, reason }),
+    });
+  }
+
+  // Verification methods
+  async getMyVerifications(): Promise<ApiResponse> {
+    return this.request('/verification/my-verifications');
+  }
+
+  async submitVerification(data: {
+    type: 'identity' | 'employment' | 'education' | 'company';
+    documents: Array<{
+      type: string;
+      url: string;
+      filename: string;
+    }>;
+    additionalData?: any;
+  }): Promise<ApiResponse> {
+    return this.request('/verification/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getVerificationById(id: string): Promise<ApiResponse> {
+    return this.request(`/verification/${id}`);
+  }
+
+  async deleteVerification(id: string): Promise<ApiResponse> {
+    return this.request(`/verification/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Admin verification methods
+  async getAllVerifications(params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    type?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.type) queryParams.append('type', params.type);
+    return this.request(`/verification/admin/all?${queryParams.toString()}`);
+  }
+
+  async updateVerification(id: string, data: {
+    status: 'pending' | 'approved' | 'rejected';
+    rejectionReason?: string;
+    notes?: string;
+  }): Promise<ApiResponse> {
+    return this.request(`/verification/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getVerificationStats(): Promise<ApiResponse> {
+    return this.request('/verification/admin/stats');
+  }
+
+  // Notification methods
+  async getNotifications(params?: {
+    page?: number;
+    limit?: number;
+    unreadOnly?: boolean;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.unreadOnly) queryParams.append('unreadOnly', params.unreadOnly.toString());
+    return this.request(`/notifications?${queryParams.toString()}`);
+  }
+
+  async getNotificationStats(): Promise<ApiResponse> {
+    return this.request('/notifications/stats');
+  }
+
+  async markNotificationAsRead(id: string): Promise<ApiResponse> {
+    return this.request(`/notifications/${id}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  async markAllNotificationsAsRead(): Promise<ApiResponse> {
+    return this.request('/notifications/read-all', {
+      method: 'PUT',
+    });
+  }
+
+  async deleteNotification(id: string): Promise<ApiResponse> {
+    return this.request(`/notifications/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async clearAllNotifications(): Promise<ApiResponse> {
+    return this.request('/notifications', {
+      method: 'DELETE',
+    });
+  }
+
+  async getNotificationSettings(): Promise<ApiResponse> {
+    return this.request('/notifications/settings');
+  }
+
+  async updateNotificationSettings(settings: any): Promise<ApiResponse> {
+    return this.request('/notifications/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ settings }),
     });
   }
 }

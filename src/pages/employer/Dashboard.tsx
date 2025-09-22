@@ -29,82 +29,45 @@ import {
 export const EmployerDashboard: React.FC = () => {
   const { user } = useAuth();
   
-  // Mock data for the dashboard
-  const stats = {
-    activeJobs: 3,
-    totalApplications: 27,
-    pendingTimesheets: 5,
-    walletBalance: 25000,
-    totalSpent: 45000,
-    averageRating: 4.7,
-    activeWorkers: 8
-  };
+  // Real data will be loaded from API
+  const [stats, setStats] = useState({
+    activeJobs: 0,
+    totalApplications: 0,
+    pendingTimesheets: 0,
+    walletBalance: 0,
+    totalSpent: 0,
+    averageRating: 0,
+    activeWorkers: 0
+  });
 
-  const recentApplications = [
-    {
-      id: 1,
-      name: 'Aditya Sharma',
-      position: 'Content Writer',
-      date: '2 days ago',
-      status: 'pending',
-      rating: 4.8,
-      experience: '2 years',
-      skills: ['Blog Writing', 'SEO', 'Copywriting'],
-      avatar: 'AS'
-    },
-    {
-      id: 2,
-      name: 'Janu Patel',
-      position: 'Web Developer',
-      date: '3 days ago',
-      status: 'approved',
-      rating: 4.9,
-      experience: '3 years',
-      skills: ['React', 'Node.js', 'TypeScript'],
-      avatar: 'JP'
-    },
-    {
-      id: 3,
-      name: 'Rahul Singh',
-      position: 'Digital Marketer',
-      date: '1 week ago',
-      status: 'rejected',
-      rating: 4.2,
-      experience: '1 year',
-      skills: ['Social Media', 'PPC', 'Analytics'],
-      avatar: 'RS'
-    }
-  ];
-
-  const pendingTimesheets = [
-    {
-      id: 1,
-      name: 'Janu Patel',
-      date: 'Today',
-      hours: 4,
-      status: 'pending',
-      job: 'Web Development',
-      rate: 800
-    },
-    {
-      id: 2,
-      name: 'Vikram Mehta',
-      date: 'Yesterday',
-      hours: 5,
-      status: 'pending',
-      job: 'Content Writing',
-      rate: 500
-    },
-    {
-      id: 3,
-      name: 'Sneha Gupta',
-      date: 'Yesterday',
-      hours: 3.5,
-      status: 'pending',
-      job: 'Data Entry',
-      rate: 300
-    }
-  ];
+  const [recentApplications, setRecentApplications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load dashboard data from API
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        // TODO: Implement API calls to load dashboard data
+        // const [statsResponse, applicationsResponse] = await Promise.all([
+        //   apiService.getEmployerStats(),
+        //   apiService.getRecentApplications()
+        // ]);
+        // setStats(statsResponse.data.stats);
+        // setRecentApplications(applicationsResponse.data.applications);
+        
+        // For now, set empty data
+        setRecentApplications([]);
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadDashboardData();
+  }, []);
+  
+  const [pendingTimesheets, setPendingTimesheets] = useState<any[]>([]);
 
   const quickActions = [
     {

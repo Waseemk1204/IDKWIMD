@@ -30,21 +30,16 @@ export const OAuthCallback: React.FC = () => {
         if (provider && role) {
           setUserRole(role);
           
-          // Simulate successful authentication
-          // In a real app, you would verify the OAuth tokens here
-          const mockUser = {
-            id: 'oauth-user-' + Date.now(),
-            name: `OAuth User (${provider})`,
-            email: `user@${provider}.com`,
-            role: role as 'employer' | 'employee' | 'admin',
-            verified: true
-          };
-
-          // Update auth context
-          await login(mockUser.email, 'oauth-password'); // This would be handled differently in real implementation
+          // TODO: Implement real OAuth verification
+          // In a real app, you would:
+          // 1. Verify the OAuth tokens with the provider
+          // 2. Check if user exists in database
+          // 3. Create user if they don't exist
+          // 4. Generate JWT tokens
+          // 5. Update auth context
           
-          setStatus('success');
-          setMessage(`Successfully signed in with ${provider}!`);
+          setStatus('error');
+          setMessage('OAuth authentication not yet implemented. Please use email/password login.');
           
           // Redirect to appropriate dashboard after a short delay
           setTimeout(() => {

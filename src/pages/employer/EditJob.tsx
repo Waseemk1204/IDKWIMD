@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../../components/ui/Button';
+import { 
+  ArrowLeft,
+  Save,
+  AlertCircle,
+  CheckCircle,
+  X
+} from 'lucide-react';
 
 export const EditJob: React.FC = () => {
-  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [job, setJob] = useState<any>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -17,7 +27,7 @@ export const EditJob: React.FC = () => {
     location: '',
     minHourlyRate: '',
     maxHourlyRate: '',
-    hoursPerWeek: '20',
+    hoursPerWeek: '',
     duration: '',
     skills: '',
     requirements: '',
@@ -25,53 +35,64 @@ export const EditJob: React.FC = () => {
     category: '',
     experienceLevel: 'entry',
     isRemote: false,
-    urgency: 'medium'
+    urgency: 'medium',
+    status: 'active'
   });
 
   // Load job data
   useEffect(() => {
     const loadJob = async () => {
       if (!id) {
-        navigate('/employer/jobs');
+        setError('Job ID is required');
+        setIsLoading(false);
         return;
       }
 
       try {
         const response = await apiService.getJobById(id);
         if (response.success && response.data?.job) {
-          const job = response.data.job;
+          const jobData = response.data.job;
+          setJob(jobData);
+          
+          // Check if user owns this job
+          if (jobData.employer._id !== user?._id) {
+            setError('You can only edit your own jobs');
+            setIsLoading(false);
+            return;
+          }
+
+          // Populate form with existing data
           setFormData({
-            title: job.title || '',
-            description: job.description || '',
-            company: job.company || '',
-            location: job.location || '',
-            minHourlyRate: job.minHourlyRate?.toString() || '',
-            maxHourlyRate: job.maxHourlyRate?.toString() || '',
-            hoursPerWeek: job.hoursPerWeek || '20',
-            duration: job.duration || '',
-            skills: job.skills?.join(', ') || '',
-            requirements: job.requirements?.join(', ') || '',
-            responsibilities: job.responsibilities?.join(', ') || '',
-            category: job.category || '',
-            experienceLevel: job.experienceLevel || 'entry',
-            isRemote: job.isRemote || false,
-            urgency: job.urgency || 'medium'
+            title: jobData.title || '',
+            description: jobData.description || '',
+            company: jobData.company || '',
+            location: jobData.location || '',
+            minHourlyRate: jobData.minHourlyRate?.toString() || '',
+            maxHourlyRate: jobData.maxHourlyRate?.toString() || '',
+            hoursPerWeek: jobData.hoursPerWeek || '',
+            duration: jobData.duration || '',
+            skills: jobData.skills?.join(', ') || '',
+            requirements: jobData.requirements?.join('\n') || '',
+            responsibilities: jobData.responsibilities?.join('\n') || '',
+            category: jobData.category || '',
+            experienceLevel: jobData.experienceLevel || 'entry',
+            isRemote: jobData.isRemote || false,
+            urgency: jobData.urgency || 'medium',
+            status: jobData.status || 'active'
           });
         } else {
-          alert('Job not found');
-          navigate('/employer/jobs');
+          setError('Job not found');
         }
       } catch (error) {
         console.error('Failed to load job:', error);
-        alert('Failed to load job details');
-        navigate('/employer/jobs');
+        setError('Failed to load job details');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadJob();
-  }, [id, navigate]);
+  }, [id, user]);
 
   const clearFieldError = (fieldName: string) => {
     setFieldErrors(prev => {
@@ -88,178 +109,88 @@ export const EditJob: React.FC = () => {
     }));
   };
 
-  const FieldError = ({ fieldName }: { fieldName: string }) => {
-    const error = fieldErrors[fieldName];
-    if (!error) return null;
-    
-    return (
-      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-        {error}
-      </p>
-    );
-  };
+  const validateField = (fieldName: string, value: any) => {
+    clearFieldError(fieldName);
 
-  const getFieldClassName = (fieldName: string, baseClassName: string) => {
-    const hasError = fieldErrors[fieldName];
-    if (hasError) {
-      return baseClassName.replace(
-        'border-gray-300 dark:border-gray-700',
-        'border-red-500 dark:border-red-500'
-      ).replace(
-        'focus:ring-blue-500 focus:border-blue-500',
-        'focus:ring-red-500 focus:border-red-500'
-      );
+    switch (fieldName) {
+      case 'title':
+        if (!value || value.trim().length < 5) {
+          setFieldError(fieldName, 'Job title must be at least 5 characters');
+        } else if (value.trim().length > 100) {
+          setFieldError(fieldName, 'Job title cannot exceed 100 characters');
+        }
+        break;
+      case 'description':
+        if (!value || value.trim().length < 50) {
+          setFieldError(fieldName, 'Description must be at least 50 characters');
+        } else if (value.trim().length > 2000) {
+          setFieldError(fieldName, 'Description cannot exceed 2000 characters');
+        }
+        break;
+      case 'company':
+        if (!value || value.trim().length < 2) {
+          setFieldError(fieldName, 'Company name must be at least 2 characters');
+        }
+        break;
+      case 'minHourlyRate':
+      case 'maxHourlyRate':
+        if (value && (isNaN(Number(value)) || Number(value) < 0)) {
+          setFieldError(fieldName, 'Rate must be a positive number');
+        }
+        break;
+      case 'skills':
+        if (!value || value.trim().length === 0) {
+          setFieldError(fieldName, 'At least one skill is required');
+        }
+        break;
+      case 'category':
+        if (!value || value.trim().length === 0) {
+          setFieldError(fieldName, 'Category is required');
+        }
+        break;
     }
-    return baseClassName;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const isChecked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : false;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? isChecked : value,
-      // Clear location if remote position is checked
-      ...(name === 'isRemote' && isChecked ? { location: '' } : {})
-    }));
-    
-    // Clear field error when user starts typing
-    clearFieldError(name);
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    validateField(field, value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Validate all fields
+    const fieldsToValidate = ['title', 'description', 'company', 'skills', 'category'];
+    fieldsToValidate.forEach(field => {
+      validateField(field, formData[field as keyof typeof formData]);
+    });
+
+    // Check for any errors
+    if (Object.keys(fieldErrors).length > 0) {
+      return;
+    }
+
     setIsSubmitting(true);
-    
-    // Clear all previous errors
-    setFieldErrors({});
-
     try {
-      // Check if user is authenticated and is an employer
-      if (!user) {
-        setFieldError('general', 'Please log in to edit a job.');
-        navigate('/login');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (user.role !== 'employer' && user.role !== 'admin') {
-        setFieldError('general', 'Only employers can edit jobs.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Client-side validation
-      let hasErrors = false;
-
-      if (!formData.title.trim()) {
-        setFieldError('title', 'Job title is required');
-        hasErrors = true;
-      }
-
-      if (!formData.description.trim()) {
-        setFieldError('description', 'Job description is required');
-        hasErrors = true;
-      } else if (formData.description.trim().length < 50) {
-        setFieldError('description', 'Job description must be at least 50 characters');
-        hasErrors = true;
-      }
-
-      if (!formData.company.trim()) {
-        setFieldError('company', 'Company name is required');
-        hasErrors = true;
-      }
-
-      if (!formData.category) {
-        setFieldError('category', 'Please select a job category');
-        hasErrors = true;
-      }
-
-      if (!formData.minHourlyRate) {
-        setFieldError('minHourlyRate', 'Minimum hourly rate is required');
-        hasErrors = true;
-      } else if (isNaN(parseFloat(formData.minHourlyRate)) || parseFloat(formData.minHourlyRate) <= 0) {
-        setFieldError('minHourlyRate', 'Minimum hourly rate must be a positive number');
-        hasErrors = true;
-      }
-
-      if (!formData.maxHourlyRate) {
-        setFieldError('maxHourlyRate', 'Maximum hourly rate is required');
-        hasErrors = true;
-      } else if (isNaN(parseFloat(formData.maxHourlyRate)) || parseFloat(formData.maxHourlyRate) <= 0) {
-        setFieldError('maxHourlyRate', 'Maximum hourly rate must be a positive number');
-        hasErrors = true;
-      }
-
-      if (formData.minHourlyRate && formData.maxHourlyRate && parseFloat(formData.minHourlyRate) > parseFloat(formData.maxHourlyRate)) {
-        setFieldError('maxHourlyRate', 'Maximum hourly rate must be greater than or equal to minimum hourly rate');
-        hasErrors = true;
-      }
-
-      if (!formData.isRemote && !formData.location.trim()) {
-        setFieldError('location', 'Please provide a location or check "Remote Position"');
-        hasErrors = true;
-      }
-
-      const skillsArray = formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill);
-      if (skillsArray.length === 0) {
-        setFieldError('skills', 'Please provide at least one skill');
-        hasErrors = true;
-      }
-
-      if (hasErrors) {
-        setIsSubmitting(false);
-        return;
-      }
-
-      const requirementsArray = formData.requirements ? formData.requirements.split(',').map(req => req.trim()).filter(req => req) : [];
-      const responsibilitiesArray = formData.responsibilities ? formData.responsibilities.split(',').map(resp => resp.trim()).filter(resp => resp) : [];
-
-      const jobData = {
-        title: formData.title,
-        description: formData.description,
-        company: formData.company,
-        location: formData.isRemote ? 'Remote' : formData.location,
-        hourlyRate: formData.minHourlyRate ? parseFloat(formData.minHourlyRate) : 0,
-        minHourlyRate: parseFloat(formData.minHourlyRate),
-        maxHourlyRate: parseFloat(formData.maxHourlyRate),
-        hoursPerWeek: formData.hoursPerWeek,
-        duration: formData.duration,
-        skills: skillsArray,
-        requirements: requirementsArray,
-        responsibilities: responsibilitiesArray,
-        benefits: [],
-        category: formData.category,
-        experienceLevel: formData.experienceLevel,
-        isRemote: formData.isRemote,
-        urgency: formData.urgency,
-        status: 'active',
-        isFeatured: true
+      const updateData = {
+        ...formData,
+        minHourlyRate: formData.minHourlyRate ? Number(formData.minHourlyRate) : undefined,
+        maxHourlyRate: formData.maxHourlyRate ? Number(formData.maxHourlyRate) : undefined,
+        skills: formData.skills.split(',').map(s => s.trim()).filter(s => s.length > 0),
+        requirements: formData.requirements.split('\n').map(r => r.trim()).filter(r => r.length > 0),
+        responsibilities: formData.responsibilities.split('\n').map(r => r.trim()).filter(r => r.length > 0)
       };
 
-      const response = await apiService.updateJob(id!, jobData);
-      
+      const response = await apiService.updateJob(id!, updateData);
       if (response.success) {
-        alert('Job updated successfully!');
         navigate('/employer/jobs');
       } else {
-        console.error('Failed to update job:', response);
-        
-        // Handle server validation errors
-        if (response.errors && response.errors.length > 0) {
-          response.errors.forEach((error: any) => {
-            const fieldName = error.param || error.path || 'general';
-            const message = error.msg || error.message || 'Invalid value';
-            setFieldError(fieldName, message);
-          });
-        } else {
-          setFieldError('general', response.message || 'Failed to update job. Please try again.');
-        }
+        setError(response.message || 'Failed to update job');
       }
     } catch (error: any) {
       console.error('Error updating job:', error);
-      setFieldError('general', error.message || 'Error updating job. Please try again.');
+      setError(error.message || 'Failed to update job. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -268,12 +199,35 @@ export const EditJob: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-48 animate-pulse"></div>
+        <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/3 animate-pulse"></div>
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-12 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
-            ))}
+            <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-1/2 animate-pulse"></div>
+            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4 animate-pulse"></div>
+            <div className="h-32 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !job) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="secondary"
+            onClick={() => navigate('/employer/jobs')}
+            className="flex items-center"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Jobs
+          </Button>
+        </div>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <div className="flex items-center">
+            <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+            <p className="text-red-600 dark:text-red-400">{error}</p>
           </div>
         </div>
       </div>
@@ -282,96 +236,226 @@ export const EditJob: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Edit Job
-      </h1>
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-        {fieldErrors.general && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-            <p className="text-sm text-red-600 dark:text-red-400">
-              {fieldErrors.general}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="secondary"
+            onClick={() => navigate('/employer/jobs')}
+            className="flex items-center"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Jobs
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Edit Job
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Update your job posting details
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+        {error && (
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Job Title *
-            </label>
-            <input 
-              type="text" 
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required 
-              className={getFieldClassName('title', "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm")}
-              placeholder="e.g. Web Developer, Content Writer" 
-            />
-            <FieldError fieldName="title" />
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Company Name *
-            </label>
-            <input 
-              type="text" 
-              name="company"
-              value={formData.company}
-              readOnly
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 sm:text-sm cursor-not-allowed" 
-              placeholder="Your company name" 
-            />
-            <FieldError fieldName="company" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Job Description *
-            </label>
-            <textarea 
-              rows={4} 
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required 
-              className={getFieldClassName('description', "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm")}
-              placeholder="Describe the job responsibilities and requirements"
-            />
-            <FieldError fieldName="description" />
-          </div>
-
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Location *
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Job Title *
               </label>
-              <input 
-                type="text" 
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                required={!formData.isRemote}
-                disabled={formData.isRemote}
-                className={`mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                  formData.isRemote 
-                    ? 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed' 
-                    : 'dark:bg-gray-700 dark:text-white'
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                  fieldErrors.title ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                 }`}
-                placeholder={formData.isRemote ? "Remote position" : "e.g. Mumbai, Delhi"} 
+                placeholder="e.g. Web Developer, Content Writer"
               />
-              <FieldError fieldName="location" />
+              {fieldErrors.title && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.title}</p>
+              )}
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Job Category *
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Company *
               </label>
-              <select 
-                name="category"
+              <input
+                type="text"
+                value={formData.company}
+                onChange={(e) => handleInputChange('company', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                  fieldErrors.company ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="Your company name"
+              />
+              {fieldErrors.company && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.company}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Job Description *
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              rows={6}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                fieldErrors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+              }`}
+              placeholder="Describe the role, responsibilities, and what you're looking for..."
+            />
+            {fieldErrors.description && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.description}</p>
+            )}
+          </div>
+
+          {/* Location and Remote */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => handleInputChange('location', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                placeholder="e.g. Mumbai, Remote, Hybrid"
+              />
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="isRemote"
+                checked={formData.isRemote}
+                onChange={(e) => handleInputChange('isRemote', e.target.checked)}
+                className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label htmlFor="isRemote" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Remote work allowed
+              </label>
+            </div>
+          </div>
+
+          {/* Pay Rate */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Minimum Hourly Rate (₹)
+              </label>
+              <input
+                type="number"
+                value={formData.minHourlyRate}
+                onChange={(e) => handleInputChange('minHourlyRate', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                  fieldErrors.minHourlyRate ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="e.g., 300"
+                min="0"
+                step="50"
+              />
+              {fieldErrors.minHourlyRate && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.minHourlyRate}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Maximum Hourly Rate (₹)
+              </label>
+              <input
+                type="number"
+                value={formData.maxHourlyRate}
+                onChange={(e) => handleInputChange('maxHourlyRate', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                  fieldErrors.maxHourlyRate ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="e.g., 800"
+                min="0"
+                step="50"
+              />
+              {fieldErrors.maxHourlyRate && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.maxHourlyRate}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Job Details */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Hours Per Week
+              </label>
+              <input
+                type="text"
+                value={formData.hoursPerWeek}
+                onChange={(e) => handleInputChange('hoursPerWeek', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                placeholder="e.g., 20-30 hours"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Duration
+              </label>
+              <input
+                type="text"
+                value={formData.duration}
+                onChange={(e) => handleInputChange('duration', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                placeholder="e.g., 3 months, Ongoing"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Experience Level
+              </label>
+              <select
+                value={formData.experienceLevel}
+                onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="entry">Entry Level</option>
+                <option value="mid">Mid Level</option>
+                <option value="senior">Senior Level</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Category and Urgency */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Category *
+              </label>
+              <select
                 value={formData.category}
-                onChange={handleInputChange}
-                required 
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                  fieldErrors.category ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
               >
                 <option value="">Select Category</option>
                 <option value="development">Development</option>
@@ -379,152 +463,23 @@ export const EditJob: React.FC = () => {
                 <option value="marketing">Marketing</option>
                 <option value="writing">Content Writing</option>
                 <option value="data">Data Analysis</option>
-                <option value="customer-service">Customer Service</option>
                 <option value="sales">Sales</option>
+                <option value="customer-service">Customer Service</option>
                 <option value="other">Other</option>
               </select>
-              <FieldError fieldName="category" />
+              {fieldErrors.category && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.category}</p>
+              )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Min Hourly Rate (₹) *
-              </label>
-              <input 
-                type="number" 
-                name="minHourlyRate"
-                value={formData.minHourlyRate}
-                onChange={handleInputChange}
-                min="0" 
-                required
-                className={getFieldClassName('minHourlyRate', "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm")}
-                placeholder="400" 
-              />
-              <FieldError fieldName="minHourlyRate" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Max Hourly Rate (₹) *
-              </label>
-              <input 
-                type="number" 
-                name="maxHourlyRate"
-                value={formData.maxHourlyRate}
-                onChange={handleInputChange}
-                min="0" 
-                required
-                className={getFieldClassName('maxHourlyRate', "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm")}
-                placeholder="600" 
-              />
-              <FieldError fieldName="maxHourlyRate" />
-            </div>
-          </div>
-
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p>• Provide a pay range for hourly compensation</p>
-            <p>• Max rate should be higher than or equal to min rate</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Hours per Week
-              </label>
-              <input 
-                type="text" 
-                name="hoursPerWeek"
-                value={formData.hoursPerWeek}
-                readOnly
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 sm:text-sm cursor-not-allowed" 
-                placeholder="20" 
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Duration
-              </label>
-              <input 
-                type="text" 
-                name="duration"
-                value={formData.duration}
-                onChange={handleInputChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" 
-                placeholder="e.g. 3-6 months" 
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Required Skills *
-            </label>
-            <input 
-              type="text" 
-              name="skills"
-              value={formData.skills}
-              onChange={handleInputChange}
-              required 
-              className={getFieldClassName('skills', "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm")}
-              placeholder="e.g. React, JavaScript, Content Writing (comma separated)" 
-            />
-            <FieldError fieldName="skills" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Requirements
-            </label>
-            <input 
-              type="text" 
-              name="requirements"
-              value={formData.requirements}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" 
-              placeholder="e.g. 2+ years experience, Bachelor's degree (comma separated)" 
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Responsibilities
-            </label>
-            <input 
-              type="text" 
-              name="responsibilities"
-              value={formData.responsibilities}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" 
-              placeholder="e.g. Write content, Manage social media (comma separated)" 
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Experience Level
-              </label>
-              <select 
-                name="experienceLevel"
-                value={formData.experienceLevel}
-                onChange={handleInputChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              >
-                <option value="entry">Entry Level</option>
-                <option value="mid">Mid Level</option>
-                <option value="senior">Senior Level</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Urgency
               </label>
-              <select 
-                name="urgency"
+              <select
                 value={formData.urgency}
-                onChange={handleInputChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                onChange={(e) => handleInputChange('urgency', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -533,34 +488,98 @@ export const EditJob: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center">
-            <input 
-              type="checkbox" 
-              name="isRemote"
-              checked={formData.isRemote}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
-            />
-            <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-              Remote Position
+          {/* Skills */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Required Skills * (comma-separated)
             </label>
+            <input
+              type="text"
+              value={formData.skills}
+              onChange={(e) => handleInputChange('skills', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                fieldErrors.skills ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+              }`}
+              placeholder="e.g., React, JavaScript, Node.js, Python"
+            />
+            {fieldErrors.skills && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.skills}</p>
+            )}
           </div>
 
-          <div className="flex justify-end space-x-3">
-            <button 
+          {/* Requirements */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Requirements (one per line)
+            </label>
+            <textarea
+              value={formData.requirements}
+              onChange={(e) => handleInputChange('requirements', e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              placeholder="e.g., Bachelor's degree in Computer Science&#10;2+ years of experience&#10;Portfolio of previous work"
+            />
+          </div>
+
+          {/* Responsibilities */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Responsibilities (one per line)
+            </label>
+            <textarea
+              value={formData.responsibilities}
+              onChange={(e) => handleInputChange('responsibilities', e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              placeholder="e.g., Develop and maintain web applications&#10;Collaborate with design team&#10;Write clean, maintainable code"
+            />
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Job Status
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) => handleInputChange('status', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="closed">Closed</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+
+          {/* Actions */}
+          <div className="flex space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => navigate('/employer/jobs')}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isSubmitting}
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center"
             >
-              {isSubmitting ? 'Updating...' : 'Update Job'}
-            </button>
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Update Job
+                </>
+              )}
+            </Button>
           </div>
         </form>
       </div>

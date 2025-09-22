@@ -10,6 +10,9 @@ import connectDB from './config/database';
 import { config } from './config';
 import { corsOptions, helmetConfig, mongoSanitizeConfig, xssProtection, requestLogger, errorHandler } from './middlewares/security';
 import { generalLimiter } from './middlewares/rateLimiter';
+import { injectSocketIO } from './middlewares/socket';
+import { swaggerSpec } from './config/swagger';
+import swaggerUi from 'swagger-ui-express';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -19,6 +22,12 @@ import applicationRoutes from './routes/applications';
 import blogRoutes from './routes/blogs';
 import messageRoutes from './routes/messages';
 import notificationRoutes from './routes/notifications';
+import communityRoutes from './routes/community';
+import connectionRoutes from './routes/connections';
+import searchRoutes from './routes/search';
+import walletRoutes from './routes/wallet';
+import adminRoutes from './routes/admin';
+import verificationRoutes from './routes/verification';
 
 // Import socket handlers
 import { setupSocketHandlers } from './services/socketService';
@@ -67,6 +76,9 @@ class Server {
     }
     this.app.use(requestLogger);
 
+    // Inject Socket.IO instance into requests
+    this.app.use(injectSocketIO(this.io));
+
     // Static files
     this.app.use('/uploads', express.static('uploads'));
   }
@@ -82,6 +94,13 @@ class Server {
       });
     });
 
+    // API Documentation
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Part-Time Pay$ API Documentation'
+    }));
+
     // API routes
     this.app.use('/api/v1/auth', authRoutes);
     this.app.use('/api/v1/users', userRoutes);
@@ -90,6 +109,12 @@ class Server {
     this.app.use('/api/v1/blogs', blogRoutes);
     this.app.use('/api/v1/messages', messageRoutes);
     this.app.use('/api/v1/notifications', notificationRoutes);
+    this.app.use('/api/v1/community', communityRoutes);
+    this.app.use('/api/v1/connections', connectionRoutes);
+    this.app.use('/api/v1/search', searchRoutes);
+    this.app.use('/api/v1/wallet', walletRoutes);
+    this.app.use('/api/v1/admin', adminRoutes);
+    this.app.use('/api/v1/verification', verificationRoutes);
 
     // 404 handler
     this.app.use('*', (req, res) => {

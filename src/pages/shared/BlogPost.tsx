@@ -129,8 +129,8 @@ export const BlogPostPage: React.FC = () => {
       }
       return;
     }
-    
-    if (!currentPost) {
+
+  if (!currentPost) {
       showError('Error', 'Article not found');
       return;
     }
@@ -273,7 +273,7 @@ export const BlogPostPage: React.FC = () => {
               <div className="flex items-center space-x-1">
                 <Eye className="h-4 w-4" />
               <span>{blogService.formatBlogViews(currentPost.views)}</span>
-            </div>
+              </div>
             </div>
           </div>
 

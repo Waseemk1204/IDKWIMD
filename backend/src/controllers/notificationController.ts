@@ -1,41 +1,31 @@
 import { Request, Response } from 'express';
-import Notification, { INotification } from '../models/Notification';
-import User from '../models/User';
+import { validationResult } from 'express-validator';
+import { Notification } from '../models/Notification';
+import { getNotificationService } from '../services/notificationService';
 import { AuthRequest } from '../middlewares/auth';
 
 // Get user's notifications
 export const getNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { page = 1, limit = 20, isRead } = req.query;
-
-    const filter: any = { user: req.user._id };
-    if (isRead !== undefined) filter.isRead = isRead === 'true';
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const notifications = await Notification.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit))
-      .lean();
-
-    const total = await Notification.countDocuments(filter);
-    const unreadCount = await Notification.countDocuments({ 
-      user: req.user._id, 
-      isRead: false 
-    });
+    const { page = 1, limit = 20, unreadOnly } = req.query;
+    
+    const notificationService = getNotificationService();
+    const result = await notificationService.getUserNotifications(
+      req.user._id,
+      Number(page),
+      Number(limit),
+      unreadOnly === 'true'
+    );
 
     res.json({
       success: true,
       data: {
-        notifications,
-        unreadCount,
+        notifications: result.notifications,
+        unreadCount: result.unreadCount,
         pagination: {
-          currentPage: Number(page),
-          totalPages: Math.ceil(total / Number(limit)),
-          totalNotifications: total,
-          hasNext: Number(page) < Math.ceil(total / Number(limit)),
-          hasPrev: Number(page) > 1
+          current: Number(page),
+          pages: Math.ceil(result.total / Number(limit)),
+          total: result.total
         }
       }
     });
@@ -52,14 +42,11 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
 export const markNotificationAsRead = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    const notificationService = getNotificationService();
+    const success = await notificationService.markAsRead(id, req.user._id);
 
-    const notification = await Notification.findOneAndUpdate(
-      { _id: id, user: req.user._id },
-      { isRead: true, readAt: new Date() },
-      { new: true }
-    );
-
-    if (!notification) {
+    if (!success) {
       res.status(404).json({
         success: false,
         message: 'Notification not found'
@@ -69,8 +56,7 @@ export const markNotificationAsRead = async (req: AuthRequest, res: Response): P
 
     res.json({
       success: true,
-      message: 'Notification marked as read',
-      data: { notification }
+      message: 'Notification marked as read'
     });
   } catch (error) {
     console.error('Mark notification as read error:', error);
@@ -84,14 +70,12 @@ export const markNotificationAsRead = async (req: AuthRequest, res: Response): P
 // Mark all notifications as read
 export const markAllNotificationsAsRead = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await Notification.updateMany(
-      { user: req.user._id, isRead: false },
-      { isRead: true, readAt: new Date() }
-    );
+    const notificationService = getNotificationService();
+    const count = await notificationService.markAllAsRead(req.user._id);
 
     res.json({
       success: true,
-      message: 'All notifications marked as read'
+      message: `${count} notifications marked as read`
     });
   } catch (error) {
     console.error('Mark all notifications as read error:', error);
@@ -106,13 +90,11 @@ export const markAllNotificationsAsRead = async (req: AuthRequest, res: Response
 export const deleteNotification = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
+    
+    const notificationService = getNotificationService();
+    const success = await notificationService.deleteNotification(id, req.user._id);
 
-    const notification = await Notification.findOneAndDelete({
-      _id: id,
-      user: req.user._id
-    });
-
-    if (!notification) {
+    if (!success) {
       res.status(404).json({
         success: false,
         message: 'Notification not found'
@@ -136,14 +118,34 @@ export const deleteNotification = async (req: AuthRequest, res: Response): Promi
 // Clear all notifications
 export const clearAllNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await Notification.deleteMany({ user: req.user._id });
+    const notificationService = getNotificationService();
+    const count = await notificationService.deleteAllNotifications(req.user._id);
 
     res.json({
       success: true,
-      message: 'All notifications cleared'
+      message: `${count} notifications cleared`
     });
   } catch (error) {
     console.error('Clear all notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Get notification statistics
+export const getNotificationStats = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const notificationService = getNotificationService();
+    const stats = await notificationService.getNotificationStats(req.user._id);
+
+    res.json({
+      success: true,
+      data: { stats }
+    });
+  } catch (error) {
+    console.error('Get notification stats error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -161,7 +163,11 @@ export const getNotificationSettings = async (req: AuthRequest, res: Response): 
       jobAlerts: true,
       messageNotifications: true,
       applicationUpdates: true,
-      blogNotifications: false
+      blogNotifications: false,
+      connectionRequests: true,
+      verificationUpdates: true,
+      paymentNotifications: true,
+      communityInteractions: true
     };
 
     res.json({

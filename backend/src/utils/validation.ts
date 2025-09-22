@@ -348,3 +348,155 @@ export const validateSearch = [
     .isLength({ min: 1, max: 100 })
     .withMessage('Search query must be between 1 and 100 characters')
 ];
+
+// Community Post validation rules
+export const validateCreateCommunityPost = [
+  body('title')
+    .trim()
+    .isLength({ min: 5, max: 200 })
+    .withMessage('Post title must be between 5 and 200 characters'),
+  body('content')
+    .trim()
+    .isLength({ min: 10, max: 5000 })
+    .withMessage('Post content must be between 10 and 5000 characters'),
+  body('tags')
+    .optional()
+    .isArray()
+    .withMessage('Tags must be an array'),
+  body('tags.*')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Each tag must be between 1 and 30 characters')
+];
+
+export const validateUpdateCommunityPost = [
+  body('title')
+    .optional()
+    .trim()
+    .isLength({ min: 5, max: 200 })
+    .withMessage('Post title must be between 5 and 200 characters'),
+  body('content')
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 5000 })
+    .withMessage('Post content must be between 10 and 5000 characters'),
+  body('tags')
+    .optional()
+    .isArray()
+    .withMessage('Tags must be an array'),
+  body('tags.*')
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 30 })
+    .withMessage('Each tag must be between 1 and 30 characters')
+];
+
+export const validateCreateCommunityComment = [
+  body('content')
+    .trim()
+    .isLength({ min: 1, max: 1000 })
+    .withMessage('Comment must be between 1 and 1000 characters'),
+  body('parentComment')
+    .optional()
+    .isMongoId()
+    .withMessage('Parent comment must be a valid ID')
+];
+
+// Message validation rules
+export const validateEditMessage = [
+  body('content')
+    .trim()
+    .isLength({ min: 1, max: 2000 })
+    .withMessage('Message content must be between 1 and 2000 characters')
+];
+
+// Wallet validation rules
+export const validateWalletTopUp = [
+  body('amount')
+    .isNumeric()
+    .isFloat({ min: 100, max: 100000 })
+    .withMessage('Amount must be between ₹100 and ₹1,00,000')
+];
+
+export const validateWithdrawal = [
+  body('amount')
+    .isNumeric()
+    .isFloat({ min: 100 })
+    .withMessage('Minimum withdrawal amount is ₹100'),
+  body('bankDetails')
+    .isObject()
+    .withMessage('Bank details are required'),
+  body('bankDetails.accountNumber')
+    .isLength({ min: 9, max: 18 })
+    .withMessage('Account number must be between 9 and 18 digits'),
+  body('bankDetails.ifscCode')
+    .matches(/^[A-Z]{4}0[A-Z0-9]{6}$/)
+    .withMessage('Invalid IFSC code format'),
+  body('bankDetails.accountHolderName')
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Account holder name must be between 2 and 100 characters')
+];
+
+export const validateTransfer = [
+  body('recipientId')
+    .isMongoId()
+    .withMessage('Invalid recipient ID'),
+  body('amount')
+    .isNumeric()
+    .isFloat({ min: 1 })
+    .withMessage('Amount must be greater than 0'),
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Description cannot be more than 200 characters'),
+  body('relatedJobId')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid job ID'),
+  body('relatedApplicationId')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid application ID')
+];
+
+// Verification validation rules
+export const validateCreateVerification = [
+  body('type')
+    .isIn(['identity', 'employment', 'education', 'company'])
+    .withMessage('Verification type must be identity, employment, education, or company'),
+  body('documents')
+    .isArray({ min: 1 })
+    .withMessage('At least one document is required'),
+  body('documents.*.type')
+    .notEmpty()
+    .withMessage('Document type is required'),
+  body('documents.*.url')
+    .isURL()
+    .withMessage('Document URL must be valid'),
+  body('documents.*.filename')
+    .notEmpty()
+    .withMessage('Document filename is required'),
+  body('additionalData')
+    .optional()
+    .isObject()
+    .withMessage('Additional data must be an object')
+];
+
+export const validateUpdateVerification = [
+  body('status')
+    .isIn(['pending', 'approved', 'rejected'])
+    .withMessage('Status must be pending, approved, or rejected'),
+  body('rejectionReason')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Rejection reason cannot be more than 500 characters'),
+  body('notes')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Notes cannot be more than 1000 characters')
+];

@@ -4,6 +4,7 @@ import Message, { IMessage } from '../models/Message';
 import Conversation, { IConversation } from '../models/Conversation';
 import User from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
+import { sendMessageToConversation } from '../services/socketService';
 
 // Get user's conversations
 export const getConversations = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -216,6 +217,19 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
       { path: 'replyTo' }
     ]);
 
+    // Emit real-time message to conversation participants
+    const populatedMessage = message.toObject();
+    if (req.io) {
+      sendMessageToConversation(
+        req.io,
+        conversationId,
+        {
+          ...populatedMessage,
+          conversationId
+        }
+      );
+    }
+
     res.status(201).json({
       success: true,
       message: 'Message sent successfully',
@@ -334,6 +348,169 @@ export const getUnreadCount = async (req: AuthRequest, res: Response): Promise<v
     });
   } catch (error) {
     console.error('Get unread count error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Edit message
+export const editMessage = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { messageId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      res.status(400).json({
+        success: false,
+        message: 'Message content is required'
+      });
+      return;
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+      return;
+    }
+
+    // Check if user is the sender
+    if (message.sender.toString() !== req.user._id.toString()) {
+      res.status(403).json({
+        success: false,
+        message: 'You can only edit your own messages'
+      });
+      return;
+    }
+
+    // Update message
+    message.content = content.trim();
+    message.isEdited = true;
+    message.editedAt = new Date();
+    await message.save();
+
+    // Populate sender data
+    await message.populate('sender', 'name email profileImage');
+
+    // Emit real-time update
+    if (req.io) {
+      sendMessageToConversation(
+        req.io,
+        message.conversation.toString(),
+        {
+          type: 'message_edited',
+          messageId: message._id,
+          content: message.content,
+          editedAt: message.editedAt,
+          conversationId: message.conversation.toString()
+        }
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'Message updated successfully',
+      data: { message }
+    });
+  } catch (error) {
+    console.error('Edit message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Delete message
+export const deleteMessage = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { messageId } = req.params;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+      return;
+    }
+
+    // Check if user is the sender
+    if (message.sender.toString() !== req.user._id.toString()) {
+      res.status(403).json({
+        success: false,
+        message: 'You can only delete your own messages'
+      });
+      return;
+    }
+
+    // Soft delete by marking as deleted
+    message.content = '[Message deleted]';
+    message.isEdited = true;
+    message.editedAt = new Date();
+    await message.save();
+
+    // Emit real-time update
+    if (req.io) {
+      sendMessageToConversation(
+        req.io,
+        message.conversation.toString(),
+        {
+          type: 'message_deleted',
+          messageId: message._id,
+          conversationId: message.conversation.toString()
+        }
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'Message deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Get conversation participants
+export const getConversationParticipants = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { conversationId } = req.params;
+
+    const conversation = await Conversation.findById(conversationId)
+      .populate('participants', 'name email profileImage role isOnline lastSeen');
+
+    if (!conversation) {
+      res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+      return;
+    }
+
+    // Check if user is participant
+    if (!conversation.participants.some(p => p._id.toString() === req.user._id.toString())) {
+      res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: { participants: conversation.participants }
+    });
+  } catch (error) {
+    console.error('Get conversation participants error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

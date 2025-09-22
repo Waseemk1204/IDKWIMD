@@ -1,24 +1,60 @@
-import React, { useEffect, useState, createContext } from 'react';
+import React, { useEffect, useState, createContext, useContext } from 'react';
 import apiService from '../services/api';
 
 type UserRole = 'employer' | 'employee' | 'admin' | null;
 
 type User = {
   _id: string;
-  name: string;
+  fullName: string;
+  displayName?: string;
+  username: string;
   email: string;
   role: UserRole;
   isVerified: boolean;
-  profileImage?: string;
+  verificationStatus: 'pending' | 'verified' | 'rejected';
+  profilePhoto?: string;
   phone?: string;
   location?: string;
-  bio?: string;
-  skills?: string[];
-  experience?: string;
-  education?: string;
+  headline?: string;
+  about?: string;
+  website?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+    portfolio?: string;
+  };
+  skills: string[];
+  experiences: Array<{
+    company: string;
+    title: string;
+    from: Date;
+    to?: Date;
+    description?: string;
+    current: boolean;
+  }>;
+  education: Array<{
+    institution: string;
+    degree: string;
+    field: string;
+    from: Date;
+    to?: Date;
+    gpa?: string;
+    description?: string;
+  }>;
+  companyInfo?: {
+    companyName: string;
+    companySize: string;
+    industry: string;
+    website: string;
+    description: string;
+    foundedYear?: number;
+    headquarters?: string;
+  };
   isActive: boolean;
   lastLogin?: string;
   createdAt: string;
+  updatedAt: string;
 } | null;
 
 type AuthContextType = {
@@ -116,7 +152,7 @@ export const AuthProvider: React.FC<{
     setIsLoading(true);
     try {
       const response = await apiService.register({
-        name: email.split('@')[0], // Default name from email
+        fullName: email.split('@')[0], // Default name from email
         email,
         password,
         role: role || 'employee'
@@ -209,4 +245,13 @@ export const AuthProvider: React.FC<{
       {children}
     </AuthContext.Provider>
   );
+};
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -15,7 +15,8 @@ import {
   ClockIcon, 
   HomeIcon, 
   MessageSquareIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  SearchIcon
 } from 'lucide-react';
 
 /**
@@ -34,6 +35,7 @@ export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   
   // UI state management
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,9 +45,34 @@ export const Navbar: React.FC = () => {
   // Refs for click outside detection
   const profileMenuRef = useRef<HTMLDivElement>(null);
   
-  // Mock data - in production, these would come from backend/context
-  const unreadMessageCount = 3;
-  const hasNotifications = true;
+  // Real data will be loaded from API
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [hasNotifications, setHasNotifications] = useState(false);
+  
+  // Load notification data from API
+  useEffect(() => {
+    const loadNotificationData = async () => {
+      try {
+        // TODO: Implement API calls to load notification data
+        // const [messagesResponse, notificationsResponse] = await Promise.all([
+        //   apiService.getUnreadMessageCount(),
+        //   apiService.getUnreadNotificationCount()
+        // ]);
+        // setUnreadMessageCount(messagesResponse.data.count);
+        // setHasNotifications(notificationsResponse.data.count > 0);
+        
+        // For now, set to 0
+        setUnreadMessageCount(0);
+        setHasNotifications(false);
+      } catch (error) {
+        console.error('Failed to load notification data:', error);
+      }
+    };
+    
+    if (user) {
+      loadNotificationData();
+    }
+  }, [user]);
 
   // ===== NAVIGATION CONFIGURATION =====
   
@@ -328,6 +355,15 @@ export const Navbar: React.FC = () => {
 
           {/* ===== RIGHT SECTION: ACTIONS + PROFILE ===== */}
           <div className="hidden md:flex md:items-center md:space-x-3">
+            {/* Search Button */}
+            <button
+              onClick={() => navigate('/search')}
+              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              title="Search"
+            >
+              <SearchIcon className="h-5 w-5" />
+            </button>
+
             {/* Theme Toggle */}
             <div className="p-1">
               <ThemeToggle />

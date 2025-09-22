@@ -5,68 +5,7 @@ import { Avatar } from '../../components/ui/Avatar';
 import { MessageItem } from '../../components/messaging/MessageItem';
 import { ChatBox } from '../../components/messaging/ChatBox';
 import { useAuth } from '../../hooks/useAuth';
-// Mock data for the conversation
-const mockConversation = {
-  id: '1',
-  name: 'Janu Patel',
-  isGroup: false,
-  profileImage: '',
-  participants: [{
-    id: '1',
-    name: 'Janu Patel',
-    profileImage: ''
-  }, {
-    id: '2',
-    name: 'Current User',
-    profileImage: ''
-  }],
-  messages: [{
-    id: '1',
-    content: 'Hi, I have a question about the design project.',
-    sender: {
-      id: '1',
-      name: 'Janu Patel',
-      profileImage: ''
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2) // 2 hours ago
-  }, {
-    id: '2',
-    content: 'Sure, what would you like to know?',
-    sender: {
-      id: '2',
-      name: 'Current User',
-      profileImage: ''
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1.9) // 1.9 hours ago
-  }, {
-    id: '3',
-    content: 'I was wondering if we could extend the deadline by a few days. I need some additional time to refine the animations.',
-    sender: {
-      id: '1',
-      name: 'Janu Patel',
-      profileImage: ''
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1.8) // 1.8 hours ago
-  }, {
-    id: '4',
-    content: 'I think that should be fine. How much additional time do you need?',
-    sender: {
-      id: '2',
-      name: 'Current User',
-      profileImage: ''
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1.7) // 1.7 hours ago
-  }, {
-    id: '5',
-    content: 'Thank you! I think 3 additional days would be enough.',
-    sender: {
-      id: '1',
-      name: 'Janu Patel',
-      profileImage: ''
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 5) // 5 minutes ago
-  }]
-};
+// Real data will be loaded from API
 export const Conversation: React.FC = () => {
   const {
     id
@@ -76,9 +15,39 @@ export const Conversation: React.FC = () => {
   const {
     user
   } = useAuth();
-  const [messages, setMessages] = useState(mockConversation.messages);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [conversation, setConversation] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Load conversation and messages from API
+  useEffect(() => {
+    const loadConversation = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      try {
+        // TODO: Implement API calls to load conversation and messages
+        // const [conversationResponse, messagesResponse] = await Promise.all([
+        //   apiService.getConversation(id),
+        //   apiService.getMessages(id)
+        // ]);
+        // setConversation(conversationResponse.data.conversation);
+        // setMessages(messagesResponse.data.messages);
+        
+        // For now, set empty data
+        setConversation(null);
+        setMessages([]);
+      } catch (error) {
+        console.error('Failed to load conversation:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadConversation();
+  }, [id]);
+
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -106,13 +75,13 @@ export const Conversation: React.FC = () => {
             <Link to="/messaging" className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
               <ArrowLeftIcon className="h-5 w-5" />
             </Link>
-            <Avatar name={mockConversation.name} src={mockConversation.profileImage} size="sm" />
+            <Avatar name={conversation?.name || 'Unknown'} src={conversation?.profileImage} size="sm" />
             <div className="ml-3">
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                {mockConversation.name}
+                {conversation?.name || 'Loading...'}
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {mockConversation.isGroup ? 'Group Chat' : 'Online'}
+                {conversation?.isGroup ? 'Group Chat' : 'Online'}
               </p>
             </div>
           </div>
@@ -131,7 +100,17 @@ export const Conversation: React.FC = () => {
         {/* Messages */}
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4">
-            {messages.map(message => <MessageItem key={message.id} content={message.content} sender={message.sender} timestamp={message.timestamp} isCurrentUser={message.sender.id === (user?._id || '2')} />)}
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                <p>No messages yet. Start the conversation!</p>
+              </div>
+            ) : (
+              messages.map(message => <MessageItem key={message.id} content={message.content} sender={message.sender} timestamp={message.timestamp} isCurrentUser={message.sender.id === (user?._id || '2')} />)
+            )}
             <div ref={messagesEndRef} />
           </div>
           {/* Info Panel */}
@@ -145,13 +124,15 @@ export const Conversation: React.FC = () => {
                     Participants
                   </h4>
                   <div className="space-y-2">
-                    {mockConversation.participants.map(participant => <div key={participant.id} className="flex items-center">
+                    {conversation?.participants?.map((participant: any) => <div key={participant.id} className="flex items-center">
                         <Avatar name={participant.name} src={participant.profileImage} size="xs" />
                         <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
                           {participant.name}
                           {participant.id === (user?._id || '2') && ' (You)'}
                         </span>
-                      </div>)}
+                      </div>) || (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">No participants found</p>
+                    )}
                   </div>
                 </div>
                 <div>

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 /**
- * Live Chat Component - Mock implementation
+ * Live Chat Component - TODO: Implement real chat integration
  */
 const LiveChatWidget: React.FC<{ 
   isOpen: boolean; 

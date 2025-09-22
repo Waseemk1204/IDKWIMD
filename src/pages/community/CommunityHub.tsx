@@ -4,94 +4,133 @@ import { SearchIcon, PlusIcon, TrendingUpIcon, ClockIcon, StarIcon, ChevronLeft,
 import { PostCard } from '../../components/community/PostCard';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { useAuth } from '../../hooks/useAuth';
+import apiService from '../../services/api';
 
-// Mock data for posts
-const mockPosts = [{
-  id: '1',
-  title: 'Tips for freelancers working remotely',
-  content: 'Working remotely as a freelancer can be challenging. Here are some tips that have helped me stay productive and maintain a work-life balance...',
+// Interface for community post
+interface CommunityPost {
+  _id: string;
+  title: string;
+  content: string;
   author: {
-    id: '1',
-    name: 'Janu Patel',
-    profileImage: '',
-    role: 'employee'
-  },
-  timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-  // 2 hours ago
-  likes: 24,
-  comments: 7,
-  tags: ['Remote Work', 'Freelancing', 'Productivity']
-}, {
-  id: '2',
-  title: 'How to find reliable part-time talent',
-  content: 'As an employer, I have learned a lot about finding and retaining quality part‑time talent. The key is to establish clear expectations and communication channels.',
-  author: {
-    id: '2',
-    name: 'TechSolutions Pvt Ltd',
-    profileImage: '',
-    role: 'employer'
-  },
-  timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
-  // 5 hours ago
-  likes: 18,
-  comments: 5,
-  tags: ['Hiring', 'Management', 'Best Practices']
-}, {
-  id: '3',
-  title: 'Payment dispute resolution - My experience',
-  content: "I recently had a payment dispute with a client that was resolved through the platform's mediation. Here's how the process worked and what I learned...",
-  author: {
-    id: '3',
-    name: 'Aditya Sharma',
-    profileImage: '',
-    role: 'employee'
-  },
-  timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-  // 1 day ago
-  likes: 32,
-  comments: 12,
-  tags: ['Disputes', 'Payments', 'Advice']
-}, {
-  id: '4',
-  title: 'Announcing our company flexible work policy',
-  content: 'We are excited to share that our company is now offering more flexible work arrangements for all employees. This includes part‑time options and remote work possibilities.',
-  author: {
-    id: '4',
-    name: 'Creative Agency',
-    profileImage: '',
-    role: 'employer'
-  },
-  timestamp: new Date(Date.now() - 1000 * 60 * 60 * 36),
-  // 1.5 days ago
-  likes: 45,
-  comments: 8,
-  tags: ['Company News', 'Flexible Work', 'Remote Work']
-}];
+    _id: string;
+    name: string;
+    email: string;
+    profileImage?: string;
+    role: string;
+  };
+  createdAt: string;
+  likes: number;
+  comments: any[];
+  views: number;
+  tags: string[];
+  timeAgo?: string;
+  commentCount?: number;
+}
 export const CommunityHub: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'trending' | 'newest' | 'top'>('trending');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [allTags, setAllTags] = useState<{name: string, count: number}[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   
   const topicsRef = useRef<HTMLDivElement>(null);
 
-  // Extract all unique tags from posts
-  const allTags = Array.from(new Set(mockPosts.flatMap(post => post.tags || [])));
+  // Load community posts
+  const loadPosts = async (page = 1, reset = false) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  // Filter and sort posts
-  const filteredPosts = mockPosts.filter(post => post.title.toLowerCase().includes(searchTerm.toLowerCase()) || post.content.toLowerCase().includes(searchTerm.toLowerCase())).filter(post => !selectedTag || post.tags?.includes(selectedTag)).sort((a, b) => {
-    if (sortBy === 'newest') {
-      return b.timestamp.getTime() - a.timestamp.getTime();
-    } else if (sortBy === 'top') {
-      return b.likes - a.likes;
-    } else {
-      // Trending - combination of recency and popularity
-      const recencyScore = b.timestamp.getTime() - a.timestamp.getTime();
-      const popularityScore = b.likes + b.comments * 2 - (a.likes + a.comments * 2);
-      return popularityScore + recencyScore / (1000 * 60 * 60 * 24); // Normalize recency to days
+      const params: any = {
+        page,
+        limit: 10,
+        sortBy
+      };
+
+      if (searchTerm) {
+        params.search = searchTerm;
+      }
+
+      if (selectedTag) {
+        params.tag = selectedTag;
+      }
+
+      const response = await apiService.getCommunityPosts(params);
+
+      if (response.success && response.data?.posts) {
+        const newPosts = response.data.posts.map((post: any) => ({
+          ...post,
+          timeAgo: getTimeAgo(new Date(post.createdAt)),
+          commentCount: post.comments?.length || 0
+        }));
+
+        if (reset) {
+          setPosts(newPosts);
+        } else {
+          setPosts(prev => [...prev, ...newPosts]);
+        }
+
+        setHasMore(response.data.pagination?.hasNext || false);
+        setCurrentPage(page);
+      } else {
+        setError('Failed to load posts');
+      }
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      setError('Failed to load posts');
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
+
+  // Load community tags
+  const loadTags = async () => {
+    try {
+      const response = await apiService.getCommunityTags();
+      if (response.success && response.data?.tags) {
+        setAllTags(response.data.tags);
+      }
+    } catch (error) {
+      console.error('Error loading tags:', error);
+    }
+  };
+
+  // Helper function to calculate time ago
+  const getTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Load posts on component mount and when filters change
+  useEffect(() => {
+    loadPosts(1, true);
+  }, [sortBy, searchTerm, selectedTag]);
+
+  // Load tags on component mount
+  useEffect(() => {
+    loadTags();
+  }, []);
+
+  // Load more posts
+  const loadMorePosts = () => {
+    if (!isLoading && hasMore) {
+      loadPosts(currentPage + 1, false);
+    }
+  };
 
   // Handle scroll for topics
   const handleScroll = (direction: 'left' | 'right') => {
@@ -204,11 +243,11 @@ export const CommunityHub: React.FC = () => {
                   </button>
                   {allTags.map(tag => (
                     <button 
-                      key={tag} 
-                      onClick={() => setSelectedTag(tag === selectedTag ? null : tag)} 
-                      className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all duration-200 ${tag === selectedTag ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300' : 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}
+                      key={tag.name} 
+                      onClick={() => setSelectedTag(tag.name === selectedTag ? null : tag.name)} 
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-all duration-200 ${tag.name === selectedTag ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300' : 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}
                     >
-                      {tag}
+                      {tag.name} ({tag.count})
                     </button>
                   ))}
                 </div>
@@ -224,14 +263,76 @@ export const CommunityHub: React.FC = () => {
             </div>
           </div>
           <div className="space-y-6">
-            {filteredPosts.length > 0 ? filteredPosts.map(post => <PostCard key={post.id} id={post.id} title={post.title} content={post.content} author={post.author} timestamp={post.timestamp} likes={post.likes} comments={post.comments} tags={post.tags} />) : <div className="text-center py-10">
+            {error ? (
+              <div className="text-center py-10">
+                <p className="text-red-500 dark:text-red-400 mb-2">
+                  {error}
+                </p>
+                <Button 
+                  onClick={() => loadPosts(1, true)} 
+                  variant="outline"
+                  className="mt-2"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : isLoading && posts.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                <p className="text-neutral-500 dark:text-neutral-400">
+                  Loading posts...
+                </p>
+              </div>
+            ) : posts.length > 0 ? (
+              <>
+                {posts.map(post => (
+                  <PostCard 
+                    key={post._id} 
+                    id={post._id} 
+                    title={post.title} 
+                    content={post.content} 
+                    author={{
+                      id: post.author._id,
+                      name: post.author.name,
+                      profileImage: post.author.profileImage || '',
+                      role: post.author.role
+                    }}
+                    timestamp={new Date(post.createdAt)} 
+                    likes={post.likes} 
+                    comments={post.commentCount || 0} 
+                    tags={post.tags} 
+                  />
+                ))}
+                
+                {hasMore && (
+                  <div className="text-center py-6">
+                    <Button 
+                      onClick={loadMorePosts}
+                      variant="outline"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Loading...' : 'Load More Posts'}
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-10">
                 <p className="text-neutral-500 dark:text-neutral-400">
                   No posts found
                 </p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
                   Try adjusting your search or filters
                 </p>
-              </div>}
+                {!isAuthenticated && (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
+                    <Link to="/login" className="text-primary-600 dark:text-primary-400 hover:underline">
+                      Sign in
+                    </Link> to create the first post!
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

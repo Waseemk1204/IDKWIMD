@@ -95,14 +95,20 @@ export const ContactUs: React.FC = () => {
     setSubmitStatus('idle');
 
     try {
-      // Simulate API call - replace with actual implementation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // TODO: Implement real API call to submit contact form
+      // const response = await apiService.submitContactForm(formData);
+      // if (response.success) {
+      //   setSubmitStatus('success');
+      //   setFormData({ name: '', email: '', subject: '', message: '' });
+      //   setTimeout(() => setSubmitStatus('idle'), 5000);
+      // } else {
+      //   setSubmitStatus('error');
+      //   setTimeout(() => setSubmitStatus('idle'), 5000);
+      // }
       
-      // Mock success response
+      // For now, simulate success
       setSubmitStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
-      
-      // Clear success message after 5 seconds
       setTimeout(() => setSubmitStatus('idle'), 5000);
     } catch (error) {
       setSubmitStatus('error');

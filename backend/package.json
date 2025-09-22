@@ -10,7 +10,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "populate:blogs": "ts-node src/scripts/populateBlogs.ts"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "populate:blogs": "ts-node src/scripts/populateBlogs.ts",
+    "populate:community": "ts-node src/scripts/populateCommunityPosts.ts",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [
     "job",
@@ -45,6 +50,7 @@
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
+    "razorpay": "^2.9.6",
     "socket.io": "^4.7.4",
     "uuid": "^9.0.1",
     "xss": "^1.0.14"

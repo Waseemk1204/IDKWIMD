@@ -4,44 +4,34 @@ import { SearchIcon, PlusIcon, UsersIcon } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-// Mock data for conversations
-const mockConversations = [{
-  id: '1',
-  name: 'Janu Patel',
-  lastMessage: "I'll submit the updated design by tomorrow.",
-  timestamp: new Date(Date.now() - 1000 * 60 * 30),
-  unread: true,
-  isGroup: false,
-  profileImage: ''
-}, {
-  id: '2',
-  name: 'Vikram Mehta',
-  lastMessage: 'The payment has been processed.',
-  timestamp: new Date(Date.now() - 1000 * 60 * 60),
-  unread: false,
-  isGroup: false,
-  profileImage: ''
-}, {
-  id: '3',
-  name: 'Web Development Team',
-  lastMessage: "Aditya: Let's discuss the project timeline.",
-  timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-  unread: true,
-  isGroup: true,
-  profileImage: ''
-}, {
-  id: '4',
-  name: 'TechSolutions Pvt Ltd',
-  lastMessage: 'Thank you for your work on the project.',
-  timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-  unread: false,
-  isGroup: false,
-  profileImage: ''
-}];
+// Real data will be loaded from API
 export const Inbox: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
-  const filteredConversations = mockConversations.filter(conversation => conversation.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load conversations from API
+  useEffect(() => {
+    const loadConversations = async () => {
+      try {
+        // TODO: Implement API call to load conversations
+        // const response = await apiService.getConversations();
+        // setConversations(response.data.conversations);
+        setConversations([]); // Empty for now
+      } catch (error) {
+        console.error('Failed to load conversations:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadConversations();
+  }, []);
+  
+  const filteredConversations = conversations.filter(conversation => 
+    conversation.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return <div className="h-full flex flex-col">
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden flex flex-col h-full">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -56,8 +46,14 @@ export const Inbox: React.FC = () => {
           <Input type="text" placeholder="Search conversations..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} leftIcon={<SearchIcon className="h-4 w-4 text-gray-400" />} />
         </div>
         <div className="overflow-y-auto flex-1">
-          {filteredConversations.length > 0 ? <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredConversations.map(conversation => <Link key={conversation.id} to={`/messaging/${conversation.id}`} className="block hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="mt-2">Loading conversations...</p>
+              </div>
+            ) : filteredConversations.length > 0 ? (
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredConversations.map(conversation => <Link key={conversation.id} to={`/messaging/${conversation.id}`} className="block hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
                   <div className="p-4 flex">
                     <div className="relative">
                       {conversation.isGroup ? <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
@@ -80,11 +76,14 @@ export const Inbox: React.FC = () => {
                     </div>
                   </div>
                 </Link>)}
-            </div> : <div className="p-4 text-center">
-              <p className="text-gray-500 dark:text-gray-400">
-                No conversations found
-              </p>
-            </div>}
+              </div>
+            ) : (
+              <div className="p-4 text-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No conversations found
+                </p>
+              </div>
+            )}
         </div>
       </div>
       {showNewMessageModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

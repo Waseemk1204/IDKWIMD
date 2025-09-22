@@ -111,8 +111,8 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
 
     const userId = req.user._id;
     const allowedUpdates = [
-      'name', 'phone', 'location', 'bio', 'skills', 
-      'experience', 'education', 'profileImage'
+      'fullName', 'displayName', 'username', 'phone', 'location', 'about', 'headline', 'website', 'skills', 
+      'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo'
     ];
 
     const updates = Object.keys(req.body).filter(key => allowedUpdates.includes(key));
@@ -147,16 +147,22 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
       data: { 
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,
@@ -199,8 +205,8 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
     }
 
     const allowedUpdates = [
-      'name', 'phone', 'location', 'bio', 'skills', 
-      'experience', 'education', 'profileImage'
+      'fullName', 'displayName', 'username', 'phone', 'location', 'about', 'headline', 'website', 'skills', 
+      'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo'
     ];
 
     // Admin can update more fields
@@ -235,16 +241,22 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
       data: { 
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,
@@ -531,16 +543,22 @@ export const verifyUser = async (req: AuthRequest, res: Response): Promise<void>
       data: { 
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,

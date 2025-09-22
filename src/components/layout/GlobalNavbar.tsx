@@ -26,12 +26,16 @@ import {
  */
 interface GlobalNavbarProps {
   onToggleSidebar?: () => void;
+  onToggleMobileSidebar?: () => void;
   sidebarCollapsed?: boolean;
+  mobileSidebarOpen?: boolean;
 }
 
 export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({ 
   onToggleSidebar, 
-  sidebarCollapsed = false 
+  onToggleMobileSidebar,
+  sidebarCollapsed = false,
+  mobileSidebarOpen = false
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme } = useTheme();
@@ -40,9 +44,34 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Mock data - in production, these would come from backend/context
-  const unreadMessageCount = 3;
-  const hasNotifications = true;
+  // Real data will be loaded from API
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const [hasNotifications, setHasNotifications] = useState(false);
+  
+  // Load notification data from API
+  useEffect(() => {
+    const loadNotificationData = async () => {
+      try {
+        // TODO: Implement API calls to load notification data
+        // const [messagesResponse, notificationsResponse] = await Promise.all([
+        //   apiService.getUnreadMessageCount(),
+        //   apiService.getUnreadNotificationCount()
+        // ]);
+        // setUnreadMessageCount(messagesResponse.data.count);
+        // setHasNotifications(notificationsResponse.data.count > 0);
+        
+        // For now, set to 0
+        setUnreadMessageCount(0);
+        setHasNotifications(false);
+      } catch (error) {
+        console.error('Failed to load notification data:', error);
+      }
+    };
+    
+    if (user) {
+      loadNotificationData();
+    }
+  }, [user]);
 
   // Global navigation links
   const globalNavLinks = [
@@ -101,11 +130,26 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
           
           {/* Left Section: Menu Button + Logo + Global Nav */}
           <div className="flex items-center">
-            {/* Sidebar Toggle Button */}
+            {/* Mobile Sidebar Toggle Button */}
+            {isAuthenticated && onToggleMobileSidebar && (
+              <button
+                onClick={onToggleMobileSidebar}
+                className="lg:hidden mr-3 p-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                aria-label={mobileSidebarOpen ? "Close sidebar" : "Open sidebar"}
+              >
+                {mobileSidebarOpen ? (
+                  <XIcon className="h-5 w-5" />
+                ) : (
+                  <MenuIcon className="h-5 w-5" />
+                )}
+              </button>
+            )}
+
+            {/* Desktop Sidebar Toggle Button */}
             {isAuthenticated && onToggleSidebar && (
               <button
                 onClick={onToggleSidebar}
-                className="mr-3 p-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="hidden lg:block mr-3 p-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
                 {sidebarCollapsed ? (

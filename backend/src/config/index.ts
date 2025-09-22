@@ -54,6 +54,10 @@ export const config = {
   // Security
   BCRYPT_ROUNDS: parseInt(process.env.BCRYPT_ROUNDS || '12', 10),
   XSS_PROTECTION: process.env.XSS_PROTECTION === 'true',
+
+  // Razorpay Configuration
+  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || '',
+  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '',
 };
 
 // Validate required environment variables

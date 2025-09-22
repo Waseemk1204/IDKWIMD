@@ -7,10 +7,14 @@ import {
   sendMessage,
   markMessagesAsRead,
   deleteConversation,
-  getUnreadCount
+  getUnreadCount,
+  editMessage,
+  deleteMessage,
+  getConversationParticipants
 } from '../controllers/messageController';
 import {
   validateCreateMessage,
+  validateEditMessage,
   validatePagination
 } from '../utils/validation';
 
@@ -28,6 +32,11 @@ router.delete('/conversations/:conversationId', deleteConversation as any);
 router.get('/conversations/:conversationId/messages', validatePagination, getMessages as any);
 router.post('/conversations/:conversationId/messages', validateCreateMessage, sendMessage as any);
 router.put('/conversations/:conversationId/read', markMessagesAsRead as any);
+router.put('/messages/:messageId', validateEditMessage, editMessage as any);
+router.delete('/messages/:messageId', deleteMessage as any);
+
+// Conversation routes
+router.get('/conversations/:conversationId/participants', getConversationParticipants as any);
 
 // Utility routes
 router.get('/unread-count', getUnreadCount as any);

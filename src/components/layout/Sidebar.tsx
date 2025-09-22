@@ -14,7 +14,10 @@ import {
   NewspaperIcon,
   ChevronRightIcon,
   StarIcon,
-  TrendingUpIcon
+  TrendingUpIcon,
+  UserPlusIcon,
+  FileTextIcon,
+  XIcon
 } from 'lucide-react';
 
 /**
@@ -31,9 +34,16 @@ import {
 interface SidebarProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  isMobile?: boolean;
+  isOpen?: boolean;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ 
+  collapsed = false, 
+  onToggle,
+  isMobile = false,
+  isOpen = false
+}) => {
   // ===== HOOKS AND STATE =====
   const { user } = useAuth();
   const location = useLocation();
@@ -41,9 +51,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   // Animation state for enhanced user experience
   const [isLoaded, setIsLoaded] = useState(false);
   
-  // Mock data for notifications - in production, these would come from backend/context
-  const unreadMessages = 3;
-  const unreadNotifications = 2;
+  // Real notification data will be loaded from API
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  
+  // Load notification counts from API
+  useEffect(() => {
+    const loadNotificationCounts = async () => {
+      try {
+        // TODO: Implement API calls to load notification counts
+        // const [messagesResponse, notificationsResponse] = await Promise.all([
+        //   apiService.getUnreadMessageCount(),
+        //   apiService.getUnreadNotificationCount()
+        // ]);
+        // setUnreadMessages(messagesResponse.data.count);
+        // setUnreadNotifications(notificationsResponse.data.count);
+        
+        // For now, set to 0
+        setUnreadMessages(0);
+        setUnreadNotifications(0);
+      } catch (error) {
+        console.error('Failed to load notification counts:', error);
+      }
+    };
+    
+    if (user) {
+      loadNotificationCounts();
+    }
+  }, [user]);
 
   // ===== EFFECTS =====
   
@@ -147,6 +182,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
           name: 'Browse Jobs',
           href: '/employee/jobs',
           icon: <BriefcaseIcon className="w-5 h-5" />
+        },
+        {
+          name: 'My Applications',
+          href: '/employee/applications',
+          icon: <FileTextIcon className="w-5 h-5" />
+        },
+        {
+          name: 'Gang Members',
+          href: '/employee/gang-members',
+          icon: <UserPlusIcon className="w-5 h-5" />,
+          isNew: true
         },
         {
           name: 'My Timesheet',
@@ -361,6 +407,52 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
   // ===== MAIN RENDER =====
   
+  // Mobile sidebar
+  if (isMobile) {
+    return (
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-r border-gray-200/20 dark:border-gray-700/20 transform transition-transform duration-300 ease-in-out lg:hidden ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Mobile Header with Close Button */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                {user.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                  {user.name || 'Company Name'}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">
+                  {user.role}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onToggle}
+              className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Close sidebar"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            {sidebarLinks.map((item, index) => renderSidebarLink(item, index))}
+          </nav>
+
+          {/* Footer */}
+          <div className="flex-shrink-0 p-4 border-t border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-gray-50/50 to-blue-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
+            {renderVerificationStatus()}
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  // Desktop sidebar
   return (
     <aside className={`hidden lg:flex flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-r border-gray-200/20 dark:border-gray-700/20 transition-all duration-300 ${
       collapsed ? 'w-16' : 'w-72'

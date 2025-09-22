@@ -27,32 +27,40 @@ export const EmployeeDashboard: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Mock data - in production, this would come from API/context
-  const stats = {
-    activeApplications: 5,
-    totalEarnings: 12500,
-    hoursThisMonth: 32,
-    completedJobs: 12,
-    rating: 4.8,
-    profileCompletion: 85
-  };
+  // Real data will be loaded from API
+  const [stats, setStats] = useState({
+    activeApplications: 0,
+    totalEarnings: 0,
+    hoursThisMonth: 0,
+    completedJobs: 0,
+    rating: 0,
+    profileCompletion: 0
+  });
 
-  // Load jobs from API
+  // Load jobs and stats from API
   useEffect(() => {
-    const loadJobs = async () => {
+    const loadData = async () => {
       try {
-        const response = await apiService.getJobs({ limit: 20 });
-        if (response.success && response.data?.jobs) {
-          setJobs(response.data.jobs);
+        // Load jobs
+        const jobsResponse = await apiService.getJobs({ limit: 20 });
+        if (jobsResponse.success && jobsResponse.data?.jobs) {
+          setJobs(jobsResponse.data.jobs);
         }
+        
+        // TODO: Load user stats from API
+        // const statsResponse = await apiService.getUserStats();
+        // if (statsResponse.success) {
+        //   setStats(statsResponse.data.stats);
+        // }
+        
       } catch (error) {
-        console.error('Failed to load jobs:', error);
+        console.error('Failed to load data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadJobs();
+    loadData();
   }, []);
 
   // Get recent jobs (first 3)
@@ -69,7 +77,7 @@ export const EmployeeDashboard: React.FC = () => {
     type: job.type || 'Part-time',
     verified: true,
     urgent: job.urgency === 'high',
-    match: Math.floor(Math.random() * 20) + 80 // Mock match score
+    match: 85 // TODO: Calculate real match score based on skills
   }));
 
   // Get all active jobs for expanded view
@@ -86,7 +94,7 @@ export const EmployeeDashboard: React.FC = () => {
     type: job.type || 'Part-time',
     verified: true,
     urgent: job.urgency === 'high',
-    match: Math.floor(Math.random() * 20) + 80 // Mock match score
+    match: 85 // TODO: Calculate real match score based on skills
   }));
 
   // Get additional jobs (excluding the first 3 that are already shown)
@@ -324,32 +332,32 @@ export const EmployeeDashboard: React.FC = () => {
                   URGENT
                 </div>
               )}
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                         {job.title}
                       </h3>
                       {job.verified && <VerifiedBadge size="sm" />}
                     </div>
                     
-                    <div className="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                       <div className="flex items-center">
-                        <Briefcase className="h-4 w-4 mr-1" />
-                        {job.company}
+                        <Briefcase className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{job.company}</span>
                       </div>
                       <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {job.location}
+                        <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{job.location}</span>
                       </div>
                       <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {job.posted}
+                        <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{job.posted}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {job.skills.map((skill, index) => (
                         <span 
                           key={index}
@@ -360,26 +368,26 @@ export const EmployeeDashboard: React.FC = () => {
                       ))}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="text-2xl font-bold text-primary-600">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <div className="text-xl sm:text-2xl font-bold text-primary-600">
                           {job.minRate && job.maxRate ? `₹${job.minRate}-${job.maxRate}/hr` : `₹${job.rate}/hr`}
                         </div>
-                        <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                          {job.type}
-                        </div>
-                        <div className="text-sm text-trust-600 dark:text-trust-400 font-medium">
-                          {job.match}% match
+                        <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+                          <span>{job.type}</span>
+                          <span className="text-trust-600 dark:text-trust-400 font-medium">
+                            {job.match}% match
+                          </span>
                         </div>
                       </div>
                       
-                      <div className="flex items-center space-x-2">
-                        <Link to={`/employee/jobs/${job.id}`}>
-                          <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />}>
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+                        <Link to={`/employee/jobs/${job.id}`} className="flex-1 sm:flex-none">
+                          <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />} className="w-full sm:w-auto">
                             View
                           </Button>
                         </Link>
-                        <Button variant="primary" size="sm">
+                        <Button variant="primary" size="sm" className="w-full sm:w-auto">
                           Apply Now
                         </Button>
                       </div>
@@ -406,32 +414,32 @@ export const EmployeeDashboard: React.FC = () => {
                     URGENT
                   </div>
                 )}
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                           {job.title}
                         </h3>
                         {job.verified && <VerifiedBadge size="sm" />}
                       </div>
                       
-                      <div className="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                         <div className="flex items-center">
-                          <Briefcase className="h-4 w-4 mr-1" />
-                          {job.company}
+                          <Briefcase className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="truncate">{job.company}</span>
                         </div>
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {job.location}
+                          <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="truncate">{job.location}</span>
                         </div>
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {job.posted}
+                          <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="truncate">{job.posted}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2 mb-4">
+                      <div className="flex flex-wrap gap-2 mb-4">
                         {job.skills.map((skill, index) => (
                           <span 
                             key={index}
@@ -442,26 +450,26 @@ export const EmployeeDashboard: React.FC = () => {
                         ))}
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-2xl font-bold text-primary-600">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                          <div className="text-xl sm:text-2xl font-bold text-primary-600">
                             ₹{job.rate}/hr
                           </div>
-                          <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {job.type}
-                          </div>
-                          <div className="text-sm text-trust-600 dark:text-trust-400 font-medium">
-                            {job.match}% match
+                          <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+                            <span>{job.type}</span>
+                            <span className="text-trust-600 dark:text-trust-400 font-medium">
+                              {job.match}% match
+                            </span>
                           </div>
                         </div>
                         
-                        <div className="flex items-center space-x-2">
-                          <Link to={`/employee/jobs/${job.id}`}>
-                            <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />}>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+                          <Link to={`/employee/jobs/${job.id}`} className="flex-1 sm:flex-none">
+                            <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />} className="w-full sm:w-auto">
                               View
                             </Button>
                           </Link>
-                          <Button variant="primary" size="sm">
+                          <Button variant="primary" size="sm" className="w-full sm:w-auto">
                             Apply Now
                           </Button>
                         </div>

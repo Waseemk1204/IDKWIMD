@@ -6,6 +6,7 @@ import {
   markAllNotificationsAsRead,
   deleteNotification,
   clearAllNotifications,
+  getNotificationStats,
   getNotificationSettings,
   updateNotificationSettings
 } from '../controllers/notificationController';
@@ -18,6 +19,7 @@ router.use(authenticate);
 
 // Notification routes
 router.get('/', validatePagination, getNotifications as any);
+router.get('/stats', getNotificationStats as any);
 router.put('/:id/read', markNotificationAsRead as any);
 router.put('/read-all', markAllNotificationsAsRead as any);
 router.delete('/:id', deleteNotification as any);

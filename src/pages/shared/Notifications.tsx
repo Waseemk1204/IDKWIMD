@@ -237,7 +237,7 @@ export const Notifications: React.FC = () => {
     isRead: boolean
   ) => {
     const base =
-      "p-4 rounded-xl border-l-4";
+      "p-3 sm:p-4 rounded-lg sm:rounded-xl border-l-4";
 
     if (isRead) {
       return `${base} bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600`;
@@ -257,7 +257,7 @@ export const Notifications: React.FC = () => {
 
   const getIconStyles = (type: Notification["type"], isRead: boolean) => {
     const base =
-      "h-10 w-10 rounded-full flex items-center justify-center transition-colors";
+      "h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center transition-colors";
 
     if (isRead) {
       return `${base} bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300`;
@@ -276,14 +276,14 @@ export const Notifications: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-neutral-100">
             Notifications
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 mt-1">
             Stay updated with your latest activities and important updates
           </p>
         </div>
@@ -293,6 +293,7 @@ export const Notifications: React.FC = () => {
             variant="outline"
             size="sm"
             leftIcon={<Check className="h-4 w-4" />}
+            className="w-full sm:w-auto"
           >
             Mark All Read
           </Button>
@@ -300,68 +301,74 @@ export const Notifications: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex space-x-2">
+      <div className="flex flex-wrap gap-2 sm:gap-2">
         <Button
           onClick={() => setFilter("all")}
           variant={filter === "all" ? "primary" : "outline"}
           size="sm"
           leftIcon={<Bell className="h-4 w-4" />}
+          className="flex-1 sm:flex-none"
         >
-          All ({notifications.length})
+          <span className="hidden sm:inline">All ({notifications.length})</span>
+          <span className="sm:hidden">All</span>
         </Button>
         <Button
           onClick={() => setFilter("unread")}
           variant={filter === "unread" ? "primary" : "outline"}
           size="sm"
           leftIcon={<AlertCircle className="h-4 w-4" />}
+          className="flex-1 sm:flex-none"
         >
-          Unread ({unreadCount})
+          <span className="hidden sm:inline">Unread ({unreadCount})</span>
+          <span className="sm:hidden">Unread</span>
         </Button>
       </div>
 
       {/* Notifications List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredNotifications.length > 0 ? (
           filteredNotifications.map((n) => (
             <div key={n.id} className={getNotificationStyles(n.type, n.isRead)}>
-              <div className="flex items-start">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <div className="flex-shrink-0">
                   <div className={getIconStyles(n.type, n.isRead)}>
                     {n.icon}
                   </div>
                 </div>
-                <div className="ml-4 flex-1">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                           {n.title}
                         </p>
                         {!n.isRead && (
-                          <div className="h-2 w-2 bg-primary-500 rounded-full" />
+                          <div className="h-2 w-2 bg-primary-500 rounded-full flex-shrink-0" />
                         )}
                       </div>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 break-words">
                         {n.message}
                       </p>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
                         {n.timestamp}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-2 ml-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 sm:ml-4">
                       {!n.isRead && (
                         <Button
                           onClick={() => markAsRead(n.id)}
                           variant="ghost"
                           size="sm"
                           leftIcon={<CheckCircle className="h-4 w-4" />}
+                          className="w-full sm:w-auto"
                         >
-                          Mark Read
+                          <span className="hidden sm:inline">Mark Read</span>
+                          <span className="sm:hidden">Read</span>
                         </Button>
                       )}
                       {n.action && (
-                        <Link to={n.action.href}>
-                          <Button variant="outline" size="sm">
+                        <Link to={n.action.href} className="w-full sm:w-auto">
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto">
                             {n.action.label}
                           </Button>
                         </Link>
@@ -374,12 +381,12 @@ export const Notifications: React.FC = () => {
           ))
         ) : (
           <ElevatedCard>
-            <CardContent className="text-center py-12">
-              <Bell className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+            <CardContent className="text-center py-8 sm:py-12 px-4 sm:px-6">
+              <Bell className="h-10 w-10 sm:h-12 sm:w-12 text-neutral-400 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
                 No notifications
               </h3>
-              <p className="text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400">
                 {filter === "unread"
                   ? "You're all caught up! No unread notifications."
                   : "You don't have any notifications yet."}

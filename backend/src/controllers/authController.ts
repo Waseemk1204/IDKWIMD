@@ -20,7 +20,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { name, email, password, role } = req.body;
+    const { fullName, email, password, role } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -34,7 +34,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // Create user
     const user = new User({
-      name,
+      fullName,
       email,
       password,
       role: role || 'employee'
@@ -60,16 +60,22 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       data: {
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,
@@ -133,9 +139,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Update last login without triggering full validation
+    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() }, { runValidators: false });
 
     // Generate tokens
     const token = generateToken(user._id);
@@ -155,16 +160,22 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       data: {
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,
@@ -217,16 +228,22 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
       data: {
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,
@@ -258,8 +275,8 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     const allowedUpdates = [
-      'name', 'phone', 'location', 'bio', 'skills', 
-      'experience', 'education', 'profileImage'
+      'fullName', 'displayName', 'username', 'phone', 'location', 'about', 'headline', 'website', 'skills', 
+      'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo'
     ];
     
     const updates = Object.keys(req.body).filter(key => allowedUpdates.includes(key));
@@ -289,16 +306,22 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
       data: {
         user: {
           id: user._id,
-          name: user.name,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
           email: user.email,
           role: user.role,
-          profileImage: user.profileImage,
+          profilePhoto: user.profilePhoto,
           phone: user.phone,
           location: user.location,
-          bio: user.bio,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
           skills: user.skills,
-          experience: user.experience,
+          experiences: user.experiences,
           education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
           isVerified: user.isVerified,
           isActive: user.isActive,
           lastLogin: user.lastLogin,

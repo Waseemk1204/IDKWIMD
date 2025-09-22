@@ -16,12 +16,15 @@ import { EditJob } from './pages/employer/EditJob';
 import { EmployerWallet } from './pages/employer/Wallet';
 import { TimesheetApproval } from './pages/employer/TimesheetApproval';
 import { JobManagement } from './pages/employer/JobManagement';
+import { JobApplicants } from './pages/employer/JobApplicants';
 // Employee pages
 import { EmployeeDashboard } from './pages/employee/Dashboard';
 import { BrowseJobs } from './pages/employee/BrowseJobs';
 import { JobDetails } from './pages/employee/JobDetails';
+import { MyApplications } from './pages/employee/MyApplications';
 import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
 import { EmployeeWallet } from './pages/employee/Wallet';
+import { GangMembers } from './pages/employee/GangMembers';
 // Admin pages
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { VerificationRequests } from './pages/admin/VerificationRequests';
@@ -29,18 +32,18 @@ import { JobApproval } from './pages/admin/JobApproval';
 import { DisputeManagement } from './pages/admin/DisputeManagement';
 // Shared pages
 import { Notifications } from './pages/shared/Notifications';
-import { Profile } from './pages/shared/Profile';
+import { EnhancedProfile } from './pages/shared/EnhancedProfile';
 import { AboutUs } from './pages/shared/AboutUs';
 import { Blogs } from './pages/shared/Blogs';
 import { BlogPostPage } from './pages/shared/BlogPost';
 import { ContactUs } from './pages/shared/ContactUs';
 import { CustomerSupport } from './pages/shared/CustomerSupport';
+import { SearchPage } from './pages/shared/SearchPage';
 import { NotFound } from './pages/NotFound';
 // Auth pages
 import { OAuthCallback } from './pages/auth/OAuthCallback';
 // Messaging pages
-import { Inbox } from './pages/messaging/Inbox';
-import { Conversation } from './pages/messaging/Conversation';
+import { Messaging } from './pages/Messaging';
 // Community pages
 import { CommunityHub } from './pages/community/CommunityHub';
 import { PostDetail } from './pages/community/PostDetail';
@@ -113,6 +116,7 @@ export function AppRouter() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/help" element={<CustomerSupport />} />
+        <Route path="/search" element={<SearchPage />} />
 
         {/* Employer Routes */}
         <Route path="/employer" element={<ProtectedRoute requiredRole="employer">
@@ -121,6 +125,7 @@ export function AppRouter() {
           <Route index element={<EmployerDashboard />} />
           <Route path="post-job" element={<PostJob />} />
           <Route path="jobs/:id/edit" element={<EditJob />} />
+          <Route path="jobs/:id/applicants" element={<JobApplicants />} />
           <Route path="wallet" element={<EmployerWallet />} />
           <Route path="timesheets" element={<TimesheetApproval />} />
           <Route path="jobs" element={<JobManagement />} />
@@ -133,8 +138,10 @@ export function AppRouter() {
           <Route index element={<EmployeeDashboard />} />
           <Route path="jobs" element={<BrowseJobs />} />
           <Route path="jobs/:id" element={<JobDetails />} />
+          <Route path="applications" element={<MyApplications />} />
           <Route path="timesheet" element={<TimesheetSubmission />} />
           <Route path="wallet" element={<EmployeeWallet />} />
+          <Route path="gang-members" element={<GangMembers />} />
         </Route>
 
         {/* Admin Routes */}
@@ -149,11 +156,8 @@ export function AppRouter() {
 
         {/* Messaging Routes - Available to all authenticated users */}
         <Route path="/messaging" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<Inbox />} />
-          <Route path=":id" element={<Conversation />} />
-        </Route>
+              <Messaging />
+            </ProtectedRoute>} />
 
         {/* Community Routes - Available to all authenticated users */}
         <Route path="/community" element={<ProtectedRoute>
@@ -173,7 +177,7 @@ export function AppRouter() {
         <Route path="/profile" element={<ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>}>
-          <Route index element={<Profile />} />
+          <Route index element={<EnhancedProfile />} />
         </Route>
 
         {/* 404 Route */}

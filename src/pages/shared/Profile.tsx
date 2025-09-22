@@ -29,19 +29,63 @@ import {
 } from 'lucide-react';
 
 interface ProfileFormData {
-  name: string;
+  fullName: string;
+  displayName: string;
+  username: string;
   email: string;
   phone: string;
-  bio: string;
+  headline: string;
+  about: string;
+  location: string;
+  website: string;
   skills: string;
+  experiences: Array<{
+    company: string;
+    title: string;
+    from: string;
+    to: string;
+    description: string;
+    current: boolean;
+  }>;
+  education: Array<{
+    institution: string;
+    degree: string;
+    field: string;
+    from: string;
+    to: string;
+    current: boolean;
+  }>;
+  socialLinks: {
+    linkedin: string;
+    twitter: string;
+    github: string;
+    portfolio: string;
+  };
+  companyInfo?: {
+    companyName: string;
+    companyWebsite: string;
+    companySize: string;
+    industry: string;
+    headquarters: string;
+    description: string;
+  };
 }
 
 interface FormErrors {
-  name?: string;
+  fullName?: string;
+  displayName?: string;
+  username?: string;
   email?: string;
   phone?: string;
-  bio?: string;
+  headline?: string;
+  about?: string;
+  location?: string;
+  website?: string;
   skills?: string;
+  experiences?: string;
+  education?: string;
+  socialLinks?: string;
+  companyInfo?: string;
 }
 
 export const Profile: React.FC = () => {
@@ -53,22 +97,64 @@ export const Profile: React.FC = () => {
 
   
   const [formData, setFormData] = useState<ProfileFormData>({
-    name: '',
+    fullName: '',
+    displayName: '',
+    username: '',
     email: '',
     phone: '',
-    bio: '',
-    skills: ''
+    headline: '',
+    about: '',
+    location: '',
+    website: '',
+    skills: '',
+    experiences: [],
+    education: [],
+    socialLinks: {
+      linkedin: '',
+      twitter: '',
+      github: '',
+      portfolio: ''
+    },
+    companyInfo: user?.role === 'employer' ? {
+      companyName: '',
+      companyWebsite: '',
+      companySize: '',
+      industry: '',
+      headquarters: '',
+      description: ''
+    } : undefined
   });
 
   // Initialize form data when user data is available
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || '',
+        fullName: user.fullName || '',
+        displayName: user.displayName || '',
+        username: user.username || '',
         email: user.email || '',
         phone: user.phone || '',
-        bio: user.bio || '',
-        skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || '')
+        headline: user.headline || '',
+        about: user.about || '',
+        location: user.location || '',
+        website: user.website || '',
+        skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
+        experiences: user.experiences || [],
+        education: user.education || [],
+        socialLinks: user.socialLinks || {
+          linkedin: '',
+          twitter: '',
+          github: '',
+          portfolio: ''
+        },
+        companyInfo: user?.role === 'employer' ? user.companyInfo || {
+          companyName: '',
+          companyWebsite: '',
+          companySize: '',
+          industry: '',
+          headquarters: '',
+          description: ''
+        } : undefined
       });
     }
   }, [user]);
@@ -76,10 +162,10 @@ export const Profile: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters';
     }
 
     if (!formData.email.trim()) {
@@ -92,8 +178,8 @@ export const Profile: React.FC = () => {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
-    if (formData.bio && formData.bio.length > 500) {
-      newErrors.bio = 'Bio must be less than 500 characters';
+    if (formData.about && formData.about.length > 500) {
+      newErrors.about = 'About section must be less than 500 characters';
     }
 
     if (user?.role === 'employee' && formData.skills && formData.skills.length > 200) {
@@ -133,11 +219,20 @@ export const Profile: React.FC = () => {
     try {
       // Prepare the data for the API call
       const updateData = {
-        name: formData.name,
+        fullName: formData.fullName,
+        displayName: formData.displayName,
+        username: formData.username,
         phone: formData.phone,
-        bio: formData.bio,
-        ...(user?.role === 'employee' && formData.skills && {
-          skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean)
+        headline: formData.headline,
+        about: formData.about,
+        location: formData.location,
+        website: formData.website,
+        skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
+        experiences: formData.experiences,
+        education: formData.education,
+        socialLinks: formData.socialLinks,
+        ...(user?.role === 'employer' && formData.companyInfo && {
+          companyInfo: formData.companyInfo
         })
       };
 
@@ -162,11 +257,32 @@ export const Profile: React.FC = () => {
     // Reset form data to original user data
     if (user) {
       setFormData({
-        name: user.name || '',
+        fullName: user.fullName || '',
+        displayName: user.displayName || '',
+        username: user.username || '',
         email: user.email || '',
         phone: user.phone || '',
-        bio: user.bio || '',
-        skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || '')
+        headline: user.headline || '',
+        about: user.about || '',
+        location: user.location || '',
+        website: user.website || '',
+        skills: Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || ''),
+        experiences: user.experiences || [],
+        education: user.education || [],
+        socialLinks: user.socialLinks || {
+          linkedin: '',
+          twitter: '',
+          github: '',
+          portfolio: ''
+        },
+        companyInfo: user?.role === 'employer' ? user.companyInfo || {
+          companyName: '',
+          companyWebsite: '',
+          companySize: '',
+          industry: '',
+          headquarters: '',
+          description: ''
+        } : undefined
       });
     }
     setErrors({});

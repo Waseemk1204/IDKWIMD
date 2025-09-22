@@ -90,7 +90,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    req.user = user;
+    req.user = user as IUser;
     next();
   } catch (error) {
     res.status(401).json({
