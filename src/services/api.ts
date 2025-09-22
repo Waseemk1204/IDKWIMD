@@ -1,9 +1,20 @@
 // API service for communicating with the backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const getApiBaseUrl = () => {
+  // In production (Vercel), use relative URLs
+  if (import.meta.env.PROD) {
+    return '/api/v1';
+  }
+  // In development, use the environment variable or default
+  return import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Debug: Log the API URL being used
 console.log('API_BASE_URL:', API_BASE_URL);
 console.log('VITE_API_URL env var:', import.meta.env.VITE_API_URL);
+console.log('Environment:', import.meta.env.MODE);
+console.log('Is production:', import.meta.env.PROD);
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -37,10 +48,26 @@ class ApiService {
     };
 
     try {
+      console.log(`Making API request to: ${url}`);
+      console.log('Request config:', { method: config.method || 'GET', headers: config.headers });
+      
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      console.log(`Response status: ${response.status} ${response.statusText}`);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        const textResponse = await response.text();
+        console.error('Raw response:', textResponse);
+        throw new Error(`Invalid JSON response: ${textResponse.substring(0, 100)}`);
+      }
 
       if (!response.ok) {
+        console.error('API Error Response:', data);
         // For validation errors, return the error response instead of throwing
         if (response.status === 400 && data.errors) {
           return {
@@ -49,14 +76,26 @@ class ApiService {
             errors: data.errors
           };
         }
-        throw new Error(data.message || 'Request failed');
+        throw new Error(data.message || `Request failed with status ${response.status}`);
       }
 
+      console.log('API Success Response:', data);
       return data;
     } catch (error) {
       console.error('API request failed:', error);
+      console.error('Request URL:', url);
+      console.error('Request config:', config);
       throw error;
     }
+  }
+
+  // Test connectivity
+  async testConnection(): Promise<ApiResponse> {
+    return this.request('/test');
+  }
+
+  async getHealth(): Promise<ApiResponse> {
+    return this.request('/health');
   }
 
   // Authentication methods

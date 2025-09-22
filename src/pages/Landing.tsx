@@ -8,6 +8,45 @@ import { FeaturesCycle } from '../components/FeaturesCycle';
 import { JobCard } from '../components/jobs/JobCard';
 import apiService from '../services/api';
 
+// API Test Component for debugging
+const ApiTestComponent = () => {
+  const [testResult, setTestResult] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const testApi = async () => {
+    setIsLoading(true);
+    setTestResult('Testing API...');
+    
+    try {
+      const response = await apiService.testConnection();
+      setTestResult(`✅ API Test Success: ${response.message}`);
+    } catch (error: any) {
+      setTestResult(`❌ API Test Failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Only show in development or if there's an issue
+  if (import.meta.env.PROD) return null;
+
+  return (
+    <div className="fixed top-4 right-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border z-50 max-w-xs">
+      <h3 className="font-bold text-sm mb-2">API Test</h3>
+      <button 
+        onClick={testApi} 
+        disabled={isLoading}
+        className="bg-blue-500 text-white px-3 py-1 rounded text-xs mb-2 disabled:opacity-50"
+      >
+        {isLoading ? 'Testing...' : 'Test API'}
+      </button>
+      <div className="text-xs text-gray-600 dark:text-gray-300 break-words">
+        {testResult}
+      </div>
+    </div>
+  );
+};
+
 // Responsive Navbar component for landing page
 const Navbar = ({ onAboutClick, onHowItWorksClick, onContactClick }: { onAboutClick: () => void; onHowItWorksClick: () => void; onContactClick: () => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -359,6 +398,7 @@ export const Landing = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 overflow-x-hidden pt-16 scrollbar-hide" style={{ overflowX: 'hidden' }}>
+      <ApiTestComponent />
       <Navbar onAboutClick={handleAboutClick} onHowItWorksClick={handleHowItWorksClick} onContactClick={handleContactClick} />
       
       <main role="main">
