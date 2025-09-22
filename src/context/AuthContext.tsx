@@ -1,5 +1,5 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import apiService from '../services/api';
+import { apiService } from '../services/api';
 
 type UserRole = 'employer' | 'employee' | 'admin' | null;
 
