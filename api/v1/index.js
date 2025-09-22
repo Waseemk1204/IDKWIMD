@@ -212,8 +212,15 @@ app.get('/test', (req, res) => {
   res.json({
     success: true,
     message: 'API is working!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    vercel: true
   });
+});
+
+// Even simpler test endpoint
+app.get('/ping', (req, res) => {
+  res.json({ pong: true, timestamp: Date.now() });
 });
 
 // Auth routes

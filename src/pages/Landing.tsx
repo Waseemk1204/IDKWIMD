@@ -42,6 +42,20 @@ const ApiTestComponent = () => {
     }
   };
 
+  const testPing = async () => {
+    setIsLoading(true);
+    setTestResult('Testing Ping...');
+    
+    try {
+      const response = await apiService.ping();
+      setTestResult(`✅ Ping Success: ${JSON.stringify(response, null, 2)}`);
+    } catch (error: any) {
+      setTestResult(`❌ Ping Failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Show on mobile or in development
   const shouldShow = !import.meta.env.PROD || window.innerWidth < 768;
 
@@ -68,6 +82,13 @@ const ApiTestComponent = () => {
           </div>
           
           <div className="flex space-x-1">
+            <button 
+              onClick={testPing} 
+              disabled={isLoading}
+              className="bg-purple-500 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+            >
+              Ping
+            </button>
             <button 
               onClick={testApi} 
               disabled={isLoading}

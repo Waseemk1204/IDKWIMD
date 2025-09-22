@@ -57,13 +57,20 @@ class ApiService {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Failed to parse JSON response:', jsonError);
+          throw new Error('Invalid JSON response from server');
+        }
+      } else {
+        // If it's not JSON, read as text
         const textResponse = await response.text();
-        console.error('Raw response:', textResponse);
-        throw new Error(`Invalid JSON response: ${textResponse.substring(0, 100)}`);
+        console.error('Non-JSON response received:', textResponse.substring(0, 200));
+        throw new Error(`Server returned non-JSON response: ${textResponse.substring(0, 100)}`);
       }
 
       if (!response.ok) {
@@ -96,6 +103,10 @@ class ApiService {
 
   async getHealth(): Promise<ApiResponse> {
     return this.request('/health');
+  }
+
+  async ping(): Promise<ApiResponse> {
+    return this.request('/ping');
   }
 
   // Authentication methods
