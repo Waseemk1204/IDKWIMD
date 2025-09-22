@@ -177,7 +177,7 @@ const authenticate = async (req, res, next) => {
 };
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   const mongodbStatus = mongoose.connection.readyState;
   const mongodbStatusText = {
     0: 'disconnected',
@@ -208,7 +208,7 @@ app.get('/health', (req, res) => {
 });
 
 // Simple test endpoint
-app.get('/test', (req, res) => {
+app.get('/api/test', (req, res) => {
   res.json({
     success: true,
     message: 'API is working!',
@@ -219,21 +219,21 @@ app.get('/test', (req, res) => {
 });
 
 // Even simpler test endpoint
-app.get('/ping', (req, res) => {
+app.get('/api/ping', (req, res) => {
   res.json({ pong: true, timestamp: Date.now() });
 });
 
 // Root endpoint test
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.json({ 
     message: 'API is running!', 
     timestamp: Date.now(),
-    endpoints: ['/ping', '/test', '/health', '/auth/login', '/auth/register', '/jobs', '/blogs']
+    endpoints: ['/api/ping', '/api/test', '/api/health', '/api/auth/login', '/api/auth/register', '/api/jobs', '/api/blogs']
   });
 });
 
 // Auth routes
-app.post('/auth/register', [
+app.post('/api/auth/register', [
   body('fullName').trim().isLength({ min: 2, max: 50 }),
   body('username').trim().isLength({ min: 3, max: 30 }),
   body('email').isEmail().normalizeEmail(),
@@ -295,7 +295,7 @@ app.post('/auth/register', [
   }
 });
 
-app.post('/auth/login', [
+app.post('/api/auth/login', [
   body('email').isEmail().normalizeEmail(),
   body('password').exists()
 ], async (req, res) => {
@@ -344,7 +344,7 @@ app.post('/auth/login', [
 });
 
 // Logout
-app.post('/auth/logout', authenticate, async (req, res) => {
+app.post('/api/auth/logout', authenticate, async (req, res) => {
   try {
     // In a real app, you might want to blacklist the token
     // For now, we'll just return success
@@ -356,7 +356,7 @@ app.post('/auth/logout', authenticate, async (req, res) => {
 });
 
 // Get current user
-app.get('/auth/me', authenticate, async (req, res) => {
+app.get('/api/auth/me', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
     res.json({ success: true, data: { user } });
@@ -367,7 +367,7 @@ app.get('/auth/me', authenticate, async (req, res) => {
 });
 
 // Jobs routes
-app.get('/jobs', async (req, res) => {
+app.get('/api/jobs', async (req, res) => {
   try {
     const { limit = 20, page = 1, search, location, skills } = req.query;
     const query = { isActive: true };
@@ -401,7 +401,7 @@ app.get('/jobs', async (req, res) => {
   }
 });
 
-app.get('/jobs/featured', async (req, res) => {
+app.get('/api/jobs/featured', async (req, res) => {
   try {
     const { limit = 8 } = req.query;
     const jobs = await Job.find({ isActive: true, isFeatured: true })
@@ -417,7 +417,7 @@ app.get('/jobs/featured', async (req, res) => {
 });
 
 // Blogs routes
-app.get('/blogs', async (req, res) => {
+app.get('/api/blogs', async (req, res) => {
   try {
     const { limit = 20, page = 1, category, sortBy = 'publishedDate', sortOrder = 'desc' } = req.query;
     const query = { isPublished: true };
@@ -442,7 +442,7 @@ app.get('/blogs', async (req, res) => {
   }
 });
 
-app.get('/blogs/featured', async (req, res) => {
+app.get('/api/blogs/featured', async (req, res) => {
   try {
     const { limit = 3 } = req.query;
     const blogs = await Blog.find({ isPublished: true })
@@ -457,7 +457,7 @@ app.get('/blogs/featured', async (req, res) => {
   }
 });
 
-app.get('/blogs/categories', async (req, res) => {
+app.get('/api/blogs/categories', async (req, res) => {
   try {
     const categories = await Blog.distinct('category', { isPublished: true });
     res.json({ success: true, data: { categories } });
@@ -468,7 +468,7 @@ app.get('/blogs/categories', async (req, res) => {
 });
 
 // User profile routes
-app.get('/users/profile', authenticate, async (req, res) => {
+app.get('/api/users/profile', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
     res.json({ success: true, data: { user } });
@@ -478,7 +478,7 @@ app.get('/users/profile', authenticate, async (req, res) => {
   }
 });
 
-app.put('/users/profile', authenticate, [
+app.put('/api/users/profile', authenticate, [
   body('fullName').optional().trim().isLength({ min: 2, max: 50 }),
   body('username').optional().trim().isLength({ min: 3, max: 30 }),
   body('phone').optional().trim().isLength({ max: 20 }),

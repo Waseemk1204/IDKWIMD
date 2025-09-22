@@ -2,10 +2,10 @@
 const getApiBaseUrl = () => {
   // In production (Vercel), use relative URLs
   if (import.meta.env.PROD) {
-    return '/api/v1';
+    return '/api';
   }
   // In development, use the environment variable or default
-  return import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+  return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
