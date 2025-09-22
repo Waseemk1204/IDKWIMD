@@ -2,22 +2,30 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/**/*.js",
+      "src": "api/v1/index.js",
       "use": "@vercel/node"
     },
     {
-      "src": "dist/**/*",
-      "use": "@vercel/static"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/api/v1/index.js"
     },
     {
       "src": "/(.*)",
       "dest": "/dist/$1"
     }
-  ]
+  ],
+  "functions": {
+    "api/v1/index.js": {
+      "maxDuration": 30
+    }
+  }
 }
