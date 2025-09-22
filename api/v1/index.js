@@ -1,9 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { body, validationResult } from 'express-validator';
 
 const app = express();
 
@@ -535,4 +535,4 @@ connectDB().then(connected => {
   console.error('Failed to start server:', error);
 });
 
-module.exports = app;
+export default app;
