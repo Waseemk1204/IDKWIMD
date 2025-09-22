@@ -20,14 +20,18 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { fullName, email, password, role } = req.body;
+    const { fullName, username, email, password, role } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { username }] 
+    });
     if (existingUser) {
       res.status(400).json({
         success: false,
-        message: 'User already exists with this email'
+        message: existingUser.email === email 
+          ? 'User already exists with this email'
+          : 'Username is already taken'
       });
       return;
     }
@@ -35,6 +39,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Create user
     const user = new User({
       fullName,
+      username,
       email,
       password,
       role: role || 'employee'

@@ -153,6 +153,7 @@ export const AuthProvider: React.FC<{
     try {
       const response = await apiService.register({
         fullName: email.split('@')[0], // Default name from email
+        username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, ''), // Generate username from email
         email,
         password,
         role: role || 'employee'
