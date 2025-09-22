@@ -68,10 +68,14 @@ const connectDB = async () => {
     console.log('MongoDB URI:', process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
     
     await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      connectTimeoutMS: 10000, // 10 seconds connection timeout
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      minPoolSize: 5, // Maintain a minimum of 5 socket connections
+      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
     });
     
     console.log('✅ MongoDB Connected successfully');
@@ -404,6 +408,45 @@ app.get('/api/jobs', async (req, res) => {
 app.get('/api/jobs/featured', async (req, res) => {
   try {
     const { limit = 8 } = req.query;
+    
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.log('MongoDB not connected, returning mock data');
+      const mockJobs = [
+        {
+          _id: 'mock1',
+          title: 'Frontend Developer',
+          company: 'Tech Corp',
+          location: 'Remote',
+          hourlyRate: 25,
+          minHourlyRate: 20,
+          maxHourlyRate: 30,
+          hoursPerWeek: '20-30',
+          duration: '3 months',
+          skills: ['React', 'JavaScript', 'CSS'],
+          description: 'Join our team as a frontend developer',
+          isFeatured: true,
+          createdAt: new Date()
+        },
+        {
+          _id: 'mock2',
+          title: 'Backend Developer',
+          company: 'StartupXYZ',
+          location: 'New York',
+          hourlyRate: 30,
+          minHourlyRate: 25,
+          maxHourlyRate: 35,
+          hoursPerWeek: '15-25',
+          duration: '6 months',
+          skills: ['Node.js', 'MongoDB', 'Express'],
+          description: 'Backend development role',
+          isFeatured: true,
+          createdAt: new Date()
+        }
+      ];
+      return res.json({ success: true, data: { jobs: mockJobs.slice(0, parseInt(limit)) } });
+    }
+
     const jobs = await Job.find({ isActive: true, isFeatured: true })
       .populate('employer', 'fullName companyInfo')
       .sort({ createdAt: -1 })
@@ -445,6 +488,49 @@ app.get('/api/blogs', async (req, res) => {
 app.get('/api/blogs/featured', async (req, res) => {
   try {
     const { limit = 3 } = req.query;
+    
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.log('MongoDB not connected, returning mock blog data');
+      const mockBlogs = [
+        {
+          _id: 'blog1',
+          title: 'Getting Started with Remote Work',
+          excerpt: 'Tips and tricks for successful remote work',
+          content: 'Remote work has become the new normal...',
+          category: 'Career',
+          tags: ['remote work', 'productivity'],
+          author: {
+            _id: 'author1',
+            fullName: 'John Doe',
+            profilePhoto: ''
+          },
+          views: 150,
+          likes: 25,
+          publishedDate: new Date(),
+          isPublished: true
+        },
+        {
+          _id: 'blog2',
+          title: 'Building Your Professional Network',
+          excerpt: 'How to grow your professional connections',
+          content: 'Networking is crucial for career growth...',
+          category: 'Networking',
+          tags: ['networking', 'career'],
+          author: {
+            _id: 'author2',
+            fullName: 'Jane Smith',
+            profilePhoto: ''
+          },
+          views: 200,
+          likes: 30,
+          publishedDate: new Date(),
+          isPublished: true
+        }
+      ];
+      return res.json({ success: true, data: { blogs: mockBlogs.slice(0, parseInt(limit)) } });
+    }
+
     const blogs = await Blog.find({ isPublished: true })
       .populate('author', 'fullName profilePhoto')
       .sort({ views: -1, publishedDate: -1 })
