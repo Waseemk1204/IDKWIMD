@@ -65,26 +65,36 @@ const connectDB = async () => {
     }
     
     console.log('🔄 Attempting to connect to MongoDB...');
-    console.log('MongoDB URI:', process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
+    console.log('MongoDB URI format:', process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
+    
+    // Validate MongoDB URI format
+    if (!process.env.MONGODB_URI.startsWith('mongodb://') && !process.env.MONGODB_URI.startsWith('mongodb+srv://')) {
+      console.error('❌ Invalid MongoDB URI format. Must start with mongodb:// or mongodb+srv://');
+      return false;
+    }
     
     await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+      serverSelectionTimeoutMS: 15000, // 15 seconds timeout
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      connectTimeoutMS: 10000, // 10 seconds connection timeout
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      minPoolSize: 5, // Maintain a minimum of 5 socket connections
+      connectTimeoutMS: 15000, // 15 seconds connection timeout
+      maxPoolSize: 5, // Reduce pool size for serverless
+      minPoolSize: 1, // Minimum connections
       maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
       bufferMaxEntries: 0, // Disable mongoose buffering
       bufferCommands: false, // Disable mongoose buffering
+      retryWrites: true,
+      w: 'majority'
     });
     
     console.log('✅ MongoDB Connected successfully');
     console.log('Database name:', mongoose.connection.db.databaseName);
+    console.log('Connection state:', mongoose.connection.readyState);
     return true;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     console.error('Error code:', error.code);
     console.error('Error name:', error.name);
+    console.error('Full error:', error);
     
     // Don't throw the error, just log it
     return false;
@@ -411,40 +421,11 @@ app.get('/api/jobs/featured', async (req, res) => {
     
     // Check if MongoDB is connected
     if (mongoose.connection.readyState !== 1) {
-      console.log('MongoDB not connected, returning mock data');
-      const mockJobs = [
-        {
-          _id: 'mock1',
-          title: 'Frontend Developer',
-          company: 'Tech Corp',
-          location: 'Remote',
-          hourlyRate: 25,
-          minHourlyRate: 20,
-          maxHourlyRate: 30,
-          hoursPerWeek: '20-30',
-          duration: '3 months',
-          skills: ['React', 'JavaScript', 'CSS'],
-          description: 'Join our team as a frontend developer',
-          isFeatured: true,
-          createdAt: new Date()
-        },
-        {
-          _id: 'mock2',
-          title: 'Backend Developer',
-          company: 'StartupXYZ',
-          location: 'New York',
-          hourlyRate: 30,
-          minHourlyRate: 25,
-          maxHourlyRate: 35,
-          hoursPerWeek: '15-25',
-          duration: '6 months',
-          skills: ['Node.js', 'MongoDB', 'Express'],
-          description: 'Backend development role',
-          isFeatured: true,
-          createdAt: new Date()
-        }
-      ];
-      return res.json({ success: true, data: { jobs: mockJobs.slice(0, parseInt(limit)) } });
+      console.log('MongoDB not connected, cannot fetch jobs');
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
     }
 
     const jobs = await Job.find({ isActive: true, isFeatured: true })
@@ -491,44 +472,11 @@ app.get('/api/blogs/featured', async (req, res) => {
     
     // Check if MongoDB is connected
     if (mongoose.connection.readyState !== 1) {
-      console.log('MongoDB not connected, returning mock blog data');
-      const mockBlogs = [
-        {
-          _id: 'blog1',
-          title: 'Getting Started with Remote Work',
-          excerpt: 'Tips and tricks for successful remote work',
-          content: 'Remote work has become the new normal...',
-          category: 'Career',
-          tags: ['remote work', 'productivity'],
-          author: {
-            _id: 'author1',
-            fullName: 'John Doe',
-            profilePhoto: ''
-          },
-          views: 150,
-          likes: 25,
-          publishedDate: new Date(),
-          isPublished: true
-        },
-        {
-          _id: 'blog2',
-          title: 'Building Your Professional Network',
-          excerpt: 'How to grow your professional connections',
-          content: 'Networking is crucial for career growth...',
-          category: 'Networking',
-          tags: ['networking', 'career'],
-          author: {
-            _id: 'author2',
-            fullName: 'Jane Smith',
-            profilePhoto: ''
-          },
-          views: 200,
-          likes: 30,
-          publishedDate: new Date(),
-          isPublished: true
-        }
-      ];
-      return res.json({ success: true, data: { blogs: mockBlogs.slice(0, parseInt(limit)) } });
+      console.log('MongoDB not connected, cannot fetch blogs');
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
     }
 
     const blogs = await Blog.find({ isPublished: true })
