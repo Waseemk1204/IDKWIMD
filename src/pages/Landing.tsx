@@ -12,6 +12,7 @@ import apiService from '../services/api';
 const ApiTestComponent = () => {
   const [testResult, setTestResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
 
   const testApi = async () => {
     setIsLoading(true);
@@ -27,20 +28,65 @@ const ApiTestComponent = () => {
     }
   };
 
-  // Only show in development or if there's an issue
-  if (import.meta.env.PROD) return null;
+  const testHealth = async () => {
+    setIsLoading(true);
+    setTestResult('Testing Health...');
+    
+    try {
+      const response = await apiService.getHealth();
+      setTestResult(`✅ Health Check: ${JSON.stringify(response, null, 2)}`);
+    } catch (error: any) {
+      setTestResult(`❌ Health Check Failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Show on mobile or in development
+  const shouldShow = !import.meta.env.PROD || window.innerWidth < 768;
+
+  if (!shouldShow) return null;
 
   return (
     <div className="fixed top-4 right-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border z-50 max-w-xs">
-      <h3 className="font-bold text-sm mb-2">API Test</h3>
-      <button 
-        onClick={testApi} 
-        disabled={isLoading}
-        className="bg-blue-500 text-white px-3 py-1 rounded text-xs mb-2 disabled:opacity-50"
-      >
-        {isLoading ? 'Testing...' : 'Test API'}
-      </button>
-      <div className="text-xs text-gray-600 dark:text-gray-300 break-words">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-bold text-sm">Mobile Debug</h3>
+        <button 
+          onClick={() => setShowDebug(!showDebug)}
+          className="text-xs bg-gray-500 text-white px-2 py-1 rounded"
+        >
+          {showDebug ? 'Hide' : 'Show'}
+        </button>
+      </div>
+      
+      {showDebug && (
+        <div className="space-y-2">
+          <div className="text-xs text-gray-600 dark:text-gray-300">
+            <div>URL: {window.location.href}</div>
+            <div>User Agent: {navigator.userAgent.substring(0, 50)}...</div>
+            <div>Online: {navigator.onLine ? 'Yes' : 'No'}</div>
+          </div>
+          
+          <div className="flex space-x-1">
+            <button 
+              onClick={testApi} 
+              disabled={isLoading}
+              className="bg-blue-500 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+            >
+              Test API
+            </button>
+            <button 
+              onClick={testHealth} 
+              disabled={isLoading}
+              className="bg-green-500 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+            >
+              Health
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <div className="text-xs text-gray-600 dark:text-gray-300 break-words mt-2 max-h-32 overflow-y-auto">
         {testResult}
       </div>
     </div>
