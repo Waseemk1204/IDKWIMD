@@ -2,6 +2,7 @@ import { AppRouter } from './AppRouter';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'sonner';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useEffect } from 'react';
 
 export function App() {
@@ -154,6 +155,7 @@ export function App() {
         <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
           <AppRouter />
           <Toaster position="top-right" />
+          <SpeedInsights />
         </div>
       </AuthProvider>
     </ThemeProvider>;
