@@ -105,14 +105,16 @@ export const OnboardingEmployer: React.FC = () => {
     
     try {
       await completeOnboarding({
-        name: formData.companyName,
-        email: formData.email,
+        fullName: formData.companyName,
         phone: formData.phone,
-        bio: formData.description,
-        // companyType: formData.businessType, // TODO: Add to user interface
-        industry: formData.industry,
-        companySize: formData.companySize,
+        about: formData.description,
         location: formData.location,
+        companyInfo: {
+          companyName: formData.companyName,
+          industry: formData.industry,
+          companySize: formData.companySize,
+          description: formData.description
+        },
         isVerified: false
       });
       navigate('/employer');

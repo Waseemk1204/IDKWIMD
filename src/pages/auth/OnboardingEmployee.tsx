@@ -91,12 +91,11 @@ export const OnboardingEmployee: React.FC = () => {
     
     try {
       await completeOnboarding({
-        name: formData.name,
-        email: formData.email,
+        fullName: formData.name,
         phone: formData.phone,
-        bio: formData.bio,
+        about: formData.bio,
         skills: [formData.primarySkill],
-        experience: formData.experienceLevel,
+        headline: formData.experienceLevel,
         isVerified: false
       });
       navigate('/employee');
