@@ -215,6 +215,8 @@ app.get('/api/health', (req, res) => {
     cors: 'enabled',
     envVars: {
       mongodb_uri_set: !!process.env.MONGODB_URI,
+      mongodb_uri_format: process.env.MONGODB_URI ? 
+        (process.env.MONGODB_URI.startsWith('mongodb://') || process.env.MONGODB_URI.startsWith('mongodb+srv://') ? 'valid' : 'invalid') : 'not set',
       jwt_secret_set: !!process.env.JWT_SECRET,
       frontend_url_set: !!process.env.FRONTEND_URL
     }
