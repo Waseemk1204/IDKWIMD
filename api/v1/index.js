@@ -238,6 +238,29 @@ app.post('/auth/login', [
   }
 });
 
+// Logout
+app.post('/auth/logout', authenticate, async (req, res) => {
+  try {
+    // In a real app, you might want to blacklist the token
+    // For now, we'll just return success
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get current user
+app.get('/auth/me', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ success: true, data: { user } });
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Jobs routes
 app.get('/jobs', async (req, res) => {
   try {
@@ -335,6 +358,62 @@ app.get('/blogs/categories', async (req, res) => {
     res.json({ success: true, data: { categories } });
   } catch (error) {
     console.error('Get blog categories error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// User profile routes
+app.get('/users/profile', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ success: true, data: { user } });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.put('/users/profile', authenticate, [
+  body('fullName').optional().trim().isLength({ min: 2, max: 50 }),
+  body('username').optional().trim().isLength({ min: 3, max: 30 }),
+  body('phone').optional().trim().isLength({ max: 20 }),
+  body('headline').optional().trim().isLength({ max: 100 }),
+  body('about').optional().trim().isLength({ max: 1000 }),
+  body('location').optional().trim().isLength({ max: 100 }),
+  body('website').optional().isURL(),
+  body('skills').optional().isArray(),
+  body('companyInfo').optional().isObject()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const updateData = { ...req.body };
+    
+    // Remove sensitive fields
+    delete updateData.password;
+    delete updateData.email; // Email should not be changeable via profile update
+    delete updateData.role; // Role should not be changeable via profile update
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: { user }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
