@@ -266,6 +266,30 @@ app.get('/api', (req, res) => {
   });
 });
 
+// Debug endpoint to check users (remove in production)
+app.get('/api/debug/users', async (req, res) => {
+  try {
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+
+    const userCount = await User.countDocuments();
+    const users = await User.find({}, 'email fullName username role').limit(5);
+    
+    res.json({
+      success: true,
+      data: {
+        totalUsers: userCount,
+        sampleUsers: users
+      }
+    });
+  } catch (error) {
+    console.error('Debug users error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Auth routes
 app.post('/api/auth/register', [
   body('fullName').trim().isLength({ min: 2, max: 50 }),
@@ -359,17 +383,25 @@ app.post('/api/auth/login', [
 
     const { email, password } = req.body;
 
+    console.log(`Login attempt for email: ${email}`);
+
     // Find user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log(`User not found for email: ${email}`);
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
+
+    console.log(`User found: ${user.fullName} (${user.email})`);
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log(`Password mismatch for user: ${user.email}`);
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
+
+    console.log(`Login successful for user: ${user.email}`);
 
     // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
