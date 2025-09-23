@@ -72,28 +72,28 @@ export const AboutUs: React.FC = () => {
 
   const teamMembers = [
     {
-      name: 'Rajesh Kumar',
-      role: 'Co-Founder & CEO',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      description: 'Former tech executive with 10+ years in HR tech and marketplace platforms.'
+      name: 'Mohammad Waseem Khan',
+      role: 'Co-Founder & Team Lead',
+      image: '/team/mohammad-waseem-khan.jpg',
+      description: 'Engineer with a background in Robotics, leading vision, product, and strategy for PART-TIME PAY$.'
     },
     {
-      name: 'Priya Sharma',
-      role: 'Co-Founder & CTO',
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      description: 'Engineering leader specializing in scalable platforms and secure payment systems.'
+      name: 'Shubham Gohil',
+      role: 'Co-Founder & Strategy Lead',
+      image: '/team/shubham-gohil.jpg',
+      description: 'Business graduate driving market research, revenue strategy, and scalable onboarding models.'
     },
     {
-      name: 'Arjun Patel',
-      role: 'Head of Operations',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      description: 'Operations expert focused on building trust and safety in digital marketplaces.'
+      name: 'Anmol Reddy',
+      role: 'Co-Founder & Technical Lead',
+      image: '/team/anmol-reddy.jpg',
+      description: 'Computer Science engineer specializing in backend architecture and future-ready platform design.'
     },
     {
-      name: 'Sneha Gupta',
-      role: 'Head of Community',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      description: 'Community building specialist passionate about connecting students with opportunities.'
+      name: 'Samruddha Bhalerao',
+      role: 'Co-Founder & Technical Lead',
+      image: '/team/samruddha-bhalerao.jpg',
+      description: 'Computer Science engineer focused on full-stack development, APIs, and platform scalability.'
     }
   ];
 
@@ -299,8 +299,7 @@ export const AboutUs: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-            Our founding team brings together decades of experience in technology, operations, and community building 
-            to create India's most trusted part-time work platform.
+            Our founding team combines technical expertise, business strategy, and vision to build India's most trusted structured part-time work platform.
           </p>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
