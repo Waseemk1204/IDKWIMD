@@ -645,6 +645,53 @@ app.get('/api/jobs/featured', async (req, res) => {
   }
 });
 
+// Get jobs by employer
+app.get('/api/jobs/employer', authenticate, async (req, res) => {
+  try {
+    const { limit = 20, page = 1, status } = req.query;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const query = { employer: req.user._id };
+
+    // Filter by status if provided
+    if (status) {
+      query.status = status;
+    }
+
+    const jobs = await Job.find(query)
+      .populate('employer', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    const totalJobs = await Job.countDocuments(query);
+
+    res.json({ 
+      success: true, 
+      data: { 
+        jobs,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalJobs / parseInt(limit)),
+          totalJobs,
+          hasNext: parseInt(page) * parseInt(limit) < totalJobs
+        }
+      } 
+    });
+  } catch (error) {
+    console.error('Get employer jobs error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Blogs routes
 app.get('/api/blogs', async (req, res) => {
   try {
