@@ -190,6 +190,22 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema);
 
+// Community Post Schema
+const communityPostSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  tags: [{ type: String }],
+  likes: { type: Number, default: 0 },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+  views: { type: Number, default: 0 },
+  isPinned: { type: Boolean, default: false },
+  status: { type: String, enum: ['active', 'inactive', 'deleted'], default: 'active' },
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+}, { timestamps: true });
+
+const CommunityPost = mongoose.model('CommunityPost', communityPostSchema);
+
 // Auth middleware
 const authenticate = async (req, res, next) => {
   try {
@@ -654,10 +670,68 @@ app.get('/api/blogs/featured', async (req, res) => {
 
 app.get('/api/blogs/categories', async (req, res) => {
   try {
-    const categories = await Blog.distinct('category', { isPublished: true });
+    const categories = await Blog.distinct('category', { status: 'published' });
     res.json({ success: true, data: { categories } });
   } catch (error) {
     console.error('Get blog categories error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Community routes
+app.get('/api/community', async (req, res) => {
+  try {
+    const { limit = 20, page = 1, tags, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const query = { status: 'active' };
+
+    if (tags) {
+      query.tags = { $in: tags.split(',') };
+    }
+
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    const posts = await CommunityPost.find(query)
+      .populate('author', 'name email profileImage')
+      .sort(sort)
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    res.json({ success: true, data: { posts } });
+  } catch (error) {
+    console.error('Get community posts error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.get('/api/community/tags', async (req, res) => {
+  try {
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const tags = await CommunityPost.distinct('tags', { status: 'active' });
+    const flattenedTags = tags.flat().filter(tag => tag && tag.trim());
+    const uniqueTags = [...new Set(flattenedTags)];
+    
+    res.json({ success: true, data: { tags: uniqueTags } });
+  } catch (error) {
+    console.error('Get community tags error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
