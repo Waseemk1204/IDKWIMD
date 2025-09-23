@@ -93,8 +93,6 @@ const connectDB = async () => {
       maxPoolSize: 1,
       minPoolSize: 0,
       maxIdleTimeMS: 10000,
-      bufferMaxEntries: 0,
-      bufferCommands: false,
       retryWrites: true,
       w: 'majority'
     });
