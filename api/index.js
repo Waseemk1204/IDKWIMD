@@ -290,6 +290,35 @@ app.get('/api/debug/users', async (req, res) => {
   }
 });
 
+// Debug endpoint to check database info
+app.get('/api/debug/database', async (req, res) => {
+  try {
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+
+    const db = mongoose.connection.db;
+    const dbName = db.databaseName;
+    const collections = await db.listCollections().toArray();
+    
+    res.json({
+      success: true,
+      data: {
+        databaseName: dbName,
+        connectionState: mongoose.connection.readyState,
+        collections: collections.map(col => ({
+          name: col.name,
+          type: col.type
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Debug database error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Auth routes
 app.post('/api/auth/register', [
   body('fullName').trim().isLength({ min: 2, max: 50 }),
