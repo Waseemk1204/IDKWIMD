@@ -737,7 +737,21 @@ app.get('/api/blogs', async (req, res) => {
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
 
-    res.json({ success: true, data: { blogs } });
+    const totalBlogs = await Blog.countDocuments(query);
+
+    res.json({ 
+      success: true, 
+      data: { 
+        blogs,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalBlogs / parseInt(limit)),
+          totalBlogs,
+          hasNext: parseInt(page) * parseInt(limit) < totalBlogs,
+          hasPrev: parseInt(page) > 1
+        }
+      } 
+    });
   } catch (error) {
     console.error('Get blogs error:', error);
     console.error('Error details:', {
