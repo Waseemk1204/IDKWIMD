@@ -37,7 +37,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               {author.name}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {author.role.charAt(0).toUpperCase() + author.role.slice(1)} •{' '}
+              {author.role ? author.role.charAt(0).toUpperCase() + author.role.slice(1) : 'User'} •{' '}
               {formatDistanceToNow(timestamp, {
               addSuffix: true
             })}

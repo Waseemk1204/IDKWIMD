@@ -763,7 +763,7 @@ app.get('/api/community', async (req, res) => {
     }
 
     const posts = await CommunityPost.find(query)
-      .populate('author', 'name email profileImage')
+      .populate('author', 'name email profileImage role')
       .sort(sort)
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -825,7 +825,7 @@ app.get('/api/community/:id', async (req, res) => {
     }
 
     const post = await CommunityPost.findById(id)
-      .populate('author', 'name email profileImage');
+      .populate('author', 'name email profileImage role');
 
     if (!post) {
       return res.status(404).json({ success: false, message: 'Post not found' });
@@ -860,7 +860,7 @@ app.post('/api/community', authenticate, async (req, res) => {
     });
 
     await post.save();
-    await post.populate('author', 'name email profileImage');
+    await post.populate('author', 'name email profileImage role');
 
     res.status(201).json({ success: true, data: { post } });
   } catch (error) {
