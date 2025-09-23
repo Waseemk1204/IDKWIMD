@@ -103,10 +103,15 @@ export const Blogs: React.FC = () => {
   const featuredPost = blogPosts.find(post => post.isFeatured);
   const recentPosts = blogPosts.filter(post => !post.isFeatured);
   
+  // If all posts are featured or no recent posts, show all posts in the grid
+  const postsToShow = recentPosts.length > 0 ? recentPosts : blogPosts;
+  
   console.log('🔍 Blog filtering results:', {
     totalBlogs: blogPosts.length,
     featuredPost: featuredPost ? { id: featuredPost._id, title: featuredPost.title } : null,
     recentPostsCount: recentPosts.length,
+    postsToShowCount: postsToShow.length,
+    allPostsFeatured: recentPosts.length === 0 && blogPosts.length > 0,
     recentPosts: recentPosts.map(post => ({ id: post._id, title: post.title, isFeatured: post.isFeatured }))
   });
 
@@ -272,15 +277,15 @@ export const Blogs: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              {featuredPost ? 'Recent Articles' : 'All Articles'}
+              {recentPosts.length > 0 ? 'Recent Articles' : 'All Articles'}
             </h2>
             <div className="text-sm text-neutral-600 dark:text-neutral-400">
-              {featuredPost ? recentPosts.length : blogPosts.length} articles found
+              {postsToShow.length} articles found
             </div>
           </div>
         
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(featuredPost ? recentPosts : blogPosts).map((post) => (
+            {postsToShow.map((post) => (
               <ElevatedCard key={post._id} className="overflow-hidden">
                 <div className="relative h-48">
                   <img
