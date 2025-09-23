@@ -102,6 +102,13 @@ export const Blogs: React.FC = () => {
 
   const featuredPost = blogPosts.find(post => post.isFeatured);
   const recentPosts = blogPosts.filter(post => !post.isFeatured);
+  
+  console.log('🔍 Blog filtering results:', {
+    totalBlogs: blogPosts.length,
+    featuredPost: featuredPost ? { id: featuredPost._id, title: featuredPost.title } : null,
+    recentPostsCount: recentPosts.length,
+    recentPosts: recentPosts.map(post => ({ id: post._id, title: post.title, isFeatured: post.isFeatured }))
+  });
 
   // formatDate and formatViews are now imported from unified data source
 
@@ -265,15 +272,15 @@ export const Blogs: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Recent Articles
+              {featuredPost ? 'Recent Articles' : 'All Articles'}
             </h2>
             <div className="text-sm text-neutral-600 dark:text-neutral-400">
-              {recentPosts.length} articles found
+              {featuredPost ? recentPosts.length : blogPosts.length} articles found
             </div>
           </div>
         
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentPosts.map((post) => (
+            {(featuredPost ? recentPosts : blogPosts).map((post) => (
               <ElevatedCard key={post._id} className="overflow-hidden">
                 <div className="relative h-48">
                   <img
