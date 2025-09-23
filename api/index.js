@@ -710,7 +710,7 @@ app.get('/api/blogs/categories', async (req, res) => {
 // Community routes
 app.get('/api/community', async (req, res) => {
   try {
-    const { limit = 20, page = 1, tags, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+    const { limit = 20, page = 1, tags, tag, search, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
     
     // Ensure MongoDB connection
     const connected = await ensureConnection();
@@ -730,12 +730,37 @@ app.get('/api/community', async (req, res) => {
       ]
     };
 
-    if (tags) {
-      query.tags = { $in: tags.split(',') };
+    // Handle both 'tags' and 'tag' parameters for compatibility
+    const tagParam = tags || tag;
+    if (tagParam) {
+      query.tags = { $in: tagParam.split(',') };
     }
 
-    const sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    // Handle search functionality
+    if (search) {
+      query.$and = [
+        query.$or,
+        {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { content: { $regex: search, $options: 'i' } }
+          ]
+        }
+      ];
+      delete query.$or; // Remove the original $or since we're using $and
+    }
+
+    // Handle different sort options
+    let sort = {};
+    if (sortBy === 'trending') {
+      sort = { likes: -1, views: -1, createdAt: -1 };
+    } else if (sortBy === 'newest') {
+      sort = { createdAt: -1 };
+    } else if (sortBy === 'top') {
+      sort = { likes: -1, createdAt: -1 };
+    } else {
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
 
     const posts = await CommunityPost.find(query)
       .populate('author', 'name email profileImage')
@@ -743,7 +768,7 @@ app.get('/api/community', async (req, res) => {
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
 
-    console.log(`Found ${posts.length} community posts`);
+    console.log(`Found ${posts.length} community posts with query:`, JSON.stringify(query));
 
     res.json({ success: true, data: { posts } });
   } catch (error) {
@@ -781,6 +806,65 @@ app.get('/api/community/tags', async (req, res) => {
     res.json({ success: true, data: { tags: uniqueTags } });
   } catch (error) {
     console.error('Get community tags error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get single community post by ID
+app.get('/api/community/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const post = await CommunityPost.findById(id)
+      .populate('author', 'name email profileImage');
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    res.json({ success: true, data: { post } });
+  } catch (error) {
+    console.error('Get community post error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Create community post
+app.post('/api/community', authenticate, async (req, res) => {
+  try {
+    const { title, content, tags } = req.body;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const post = new CommunityPost({
+      title,
+      content,
+      tags: tags || [],
+      author: req.user._id
+    });
+
+    await post.save();
+    await post.populate('author', 'name email profileImage');
+
+    res.status(201).json({ success: true, data: { post } });
+  } catch (error) {
+    console.error('Create community post error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
