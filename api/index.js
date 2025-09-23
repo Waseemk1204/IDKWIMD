@@ -119,20 +119,23 @@ const ensureConnection = async () => {
   return true;
 };
 
-// User Schema
+// User Schema - Updated to match existing data structure
 const userSchema = new mongoose.Schema({
-  fullName: { type: String, required: true, trim: true },
-  username: { type: String, required: true, unique: true, lowercase: true },
+  name: { type: String, required: true, trim: true }, // Changed from fullName to name
+  fullName: { type: String, trim: true }, // Keep both for compatibility
+  username: { type: String, unique: true, lowercase: true }, // Made optional
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['employee', 'employer', 'admin'], default: 'employee' },
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
-  profilePhoto: { type: String, default: '' },
+  profileImage: { type: String, default: '' }, // Changed from profilePhoto to profileImage
+  profilePhoto: { type: String, default: '' }, // Keep both for compatibility
   phone: { type: String, default: '' },
   location: { type: String, default: '' },
   headline: { type: String, default: '' },
-  about: { type: String, default: '' },
+  bio: { type: String, default: '' }, // Changed from about to bio
+  about: { type: String, default: '' }, // Keep both for compatibility
   skills: [{ type: String }],
   companyInfo: {
     companyName: { type: String },
@@ -420,7 +423,8 @@ app.post('/api/auth/register', [
       data: {
         user: {
           _id: user._id,
-          fullName: user.fullName,
+          fullName: user.fullName || user.name,
+          name: user.name,
           username: user.username,
           email: user.email,
           role: user.role,
@@ -485,11 +489,13 @@ app.post('/api/auth/login', [
       data: {
         user: {
           _id: user._id,
-          fullName: user.fullName,
+          fullName: user.fullName || user.name, // Use fullName if available, otherwise name
+          name: user.name,
           username: user.username,
           email: user.email,
           role: user.role,
-          isVerified: user.isVerified
+          isVerified: user.isVerified,
+          profilePhoto: user.profilePhoto || user.profileImage
         },
         token
       }
