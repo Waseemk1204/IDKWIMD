@@ -533,7 +533,17 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
 app.get('/api/jobs', async (req, res) => {
   try {
     const { limit = 20, page = 1, search, location, skills } = req.query;
-    const query = { isActive: true };
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const query = { status: 'active' }; // Use status instead of isActive
 
     if (search) {
       query.$or = [
@@ -552,7 +562,7 @@ app.get('/api/jobs', async (req, res) => {
     }
 
     const jobs = await Job.find(query)
-      .populate('employer', 'fullName companyInfo')
+      .populate('employer', 'name email') // Use name instead of fullName
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -578,8 +588,8 @@ app.get('/api/jobs/featured', async (req, res) => {
       });
     }
 
-    const jobs = await Job.find({ isActive: true, isFeatured: true })
-      .populate('employer', 'fullName companyInfo')
+    const jobs = await Job.find({ status: 'active', isFeatured: true })
+      .populate('employer', 'name email')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit));
 
@@ -630,8 +640,8 @@ app.get('/api/blogs/featured', async (req, res) => {
       });
     }
 
-    const blogs = await Blog.find({ isPublished: true })
-      .populate('author', 'fullName profilePhoto')
+    const blogs = await Blog.find({ status: 'published' })
+      .populate('author', 'name email')
       .sort({ views: -1, publishedDate: -1 })
       .limit(parseInt(limit));
 
