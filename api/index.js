@@ -302,11 +302,16 @@ app.get('/api/debug/database', async (req, res) => {
     const dbName = db.databaseName;
     const collections = await db.listCollections().toArray();
     
+    // Show connection string format (without password)
+    const connectionString = process.env.MONGODB_URI ? 
+      process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@') : 'Not set';
+    
     res.json({
       success: true,
       data: {
         databaseName: dbName,
         connectionState: mongoose.connection.readyState,
+        connectionString: connectionString,
         collections: collections.map(col => ({
           name: col.name,
           type: col.type
