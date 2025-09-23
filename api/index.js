@@ -290,6 +290,45 @@ app.get('/api/debug/users', async (req, res) => {
   }
 });
 
+// Debug endpoint to check all collections data
+app.get('/api/debug/collections', async (req, res) => {
+  try {
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+    
+    const collectionData = {};
+    
+    for (const collection of collections) {
+      try {
+        const count = await db.collection(collection.name).countDocuments();
+        const sample = await db.collection(collection.name).find({}).limit(2).toArray();
+        collectionData[collection.name] = {
+          count: count,
+          sample: sample
+        };
+      } catch (error) {
+        collectionData[collection.name] = {
+          count: 'error',
+          error: error.message
+        };
+      }
+    }
+    
+    res.json({
+      success: true,
+      data: collectionData
+    });
+  } catch (error) {
+    console.error('Debug collections error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // Debug endpoint to check database info
 app.get('/api/debug/database', async (req, res) => {
   try {
