@@ -55,53 +55,70 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Connect to MongoDB
+// Connection state
+let isConnected = false;
+let connectionPromise = null;
+
+// Connect to MongoDB with connection-per-request approach
 const connectDB = async () => {
   try {
     if (!process.env.MONGODB_URI) {
       console.error('❌ MONGODB_URI environment variable is not set');
-      console.error('Please set MONGODB_URI in your Vercel environment variables');
       return false;
+    }
+    
+    // If already connected, return true
+    if (mongoose.connection.readyState === 1) {
+      return true;
+    }
+    
+    // If connection is in progress, wait for it
+    if (connectionPromise) {
+      return await connectionPromise;
     }
     
     console.log('🔄 Attempting to connect to MongoDB...');
-    console.log('MongoDB URI format:', process.env.MONGODB_URI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
     
     // Validate MongoDB URI format
     if (!process.env.MONGODB_URI.startsWith('mongodb://') && !process.env.MONGODB_URI.startsWith('mongodb+srv://')) {
-      console.error('❌ Invalid MongoDB URI format. Must start with mongodb:// or mongodb+srv://');
+      console.error('❌ Invalid MongoDB URI format');
       return false;
     }
     
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000, // 30 seconds timeout
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      connectTimeoutMS: 30000, // 30 seconds connection timeout
-      maxPoolSize: 1, // Single connection for serverless
-      minPoolSize: 0, // No minimum connections
-      maxIdleTimeMS: 10000, // Close connections after 10 seconds of inactivity
-      bufferMaxEntries: 0, // Disable mongoose buffering
-      bufferCommands: false, // Disable mongoose buffering
+    // Create connection promise
+    connectionPromise = mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      maxPoolSize: 1,
+      minPoolSize: 0,
+      maxIdleTimeMS: 10000,
+      bufferMaxEntries: 0,
+      bufferCommands: false,
       retryWrites: true,
-      w: 'majority',
-      authSource: 'admin', // Try admin as auth source
-      ssl: true, // Force SSL
-      sslValidate: true
+      w: 'majority'
     });
     
+    await connectionPromise;
+    
     console.log('✅ MongoDB Connected successfully');
-    console.log('Database name:', mongoose.connection.db.databaseName);
-    console.log('Connection state:', mongoose.connection.readyState);
+    isConnected = true;
+    connectionPromise = null;
     return true;
+    
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    console.error('Error code:', error.code);
-    console.error('Error name:', error.name);
-    console.error('Full error:', error);
-    
-    // Don't throw the error, just log it
+    connectionPromise = null;
     return false;
   }
+};
+
+// Ensure connection for each request
+const ensureConnection = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    return await connectDB();
+  }
+  return true;
 };
 
 // User Schema
@@ -264,6 +281,15 @@ app.post('/api/auth/register', [
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
     const { fullName, username, email, password, role } = req.body;
 
     // Check if user exists
@@ -322,6 +348,15 @@ app.post('/api/auth/login', [
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
     }
 
     const { email, password } = req.body;
@@ -424,8 +459,9 @@ app.get('/api/jobs/featured', async (req, res) => {
   try {
     const { limit = 8 } = req.query;
     
-    // Check if MongoDB is connected
-    if (mongoose.connection.readyState !== 1) {
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
       console.log('MongoDB not connected, cannot fetch jobs');
       return res.status(503).json({ 
         success: false, 
@@ -475,8 +511,9 @@ app.get('/api/blogs/featured', async (req, res) => {
   try {
     const { limit = 3 } = req.query;
     
-    // Check if MongoDB is connected
-    if (mongoose.connection.readyState !== 1) {
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
       console.log('MongoDB not connected, cannot fetch blogs');
       return res.status(503).json({ 
         success: false, 
@@ -572,25 +609,9 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Connect to database with retry
-const connectWithRetry = async (retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    console.log(`🔄 Attempting MongoDB connection (attempt ${i + 1}/${retries})`);
-    const connected = await connectDB();
-    if (connected) {
-      console.log('🚀 Server ready to handle requests');
-      return;
-    }
-    if (i < retries - 1) {
-      console.log(`⏳ Waiting 5 seconds before retry...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-  }
-  console.log('⚠️ Server started but MongoDB connection failed after all retries');
-};
-
-connectWithRetry().catch(error => {
-  console.error('Failed to start server:', error);
-});
+// Server startup - connection will be established per request
+console.log('🚀 Server ready to handle requests');
+console.log('📡 MongoDB connection will be established per request');
 
 export default app;
+
