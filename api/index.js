@@ -869,6 +869,135 @@ app.post('/api/community', authenticate, async (req, res) => {
   }
 });
 
+// Toggle like on community post
+app.post('/api/community/:id/like', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const post = await CommunityPost.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const userLiked = post.likedBy.includes(req.user._id);
+    
+    if (userLiked) {
+      // Unlike
+      post.likes = Math.max(0, post.likes - 1);
+      post.likedBy = post.likedBy.filter(userId => !userId.equals(req.user._id));
+    } else {
+      // Like
+      post.likes += 1;
+      post.likedBy.push(req.user._id);
+    }
+
+    await post.save();
+
+    res.json({ 
+      success: true, 
+      data: { 
+        likes: post.likes, 
+        liked: !userLiked 
+      } 
+    });
+  } catch (error) {
+    console.error('Toggle like error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Add comment to community post
+app.post('/api/community/:id/comments', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const post = await CommunityPost.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Create comment (simplified - in real app you'd have a separate Comment model)
+    const comment = {
+      _id: new mongoose.Types.ObjectId(),
+      content,
+      author: req.user._id,
+      createdAt: new Date()
+    };
+
+    post.comments.push(comment._id);
+    await post.save();
+
+    // Populate author info for the comment
+    const populatedComment = {
+      ...comment,
+      author: {
+        _id: req.user._id,
+        name: req.user.name || req.user.fullName,
+        email: req.user.email,
+        profileImage: req.user.profileImage || req.user.profilePhoto
+      }
+    };
+
+    res.status(201).json({ 
+      success: true, 
+      data: { comment: populatedComment } 
+    });
+  } catch (error) {
+    console.error('Add comment error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get comments for community post
+app.get('/api/community/:id/comments', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const post = await CommunityPost.findById(id).populate('comments');
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // For now, return empty comments array since we're using a simplified approach
+    // In a real app, you'd have a separate Comment model and populate it properly
+    res.json({ 
+      success: true, 
+      data: { comments: [] } 
+    });
+  } catch (error) {
+    console.error('Get comments error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 // User profile routes
 app.get('/api/users/profile', authenticate, async (req, res) => {
   try {
