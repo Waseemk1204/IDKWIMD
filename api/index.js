@@ -121,21 +121,21 @@ const ensureConnection = async () => {
 
 // User Schema - Updated to match existing data structure
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true }, // Changed from fullName to name
-  fullName: { type: String, trim: true }, // Keep both for compatibility
-  username: { type: String, unique: true, lowercase: true }, // Made optional
+  name: { type: String, trim: true }, // Keep for compatibility with existing data
+  fullName: { type: String, required: true, trim: true }, // Primary field for new users
+  username: { type: String, required: true, unique: true, lowercase: true }, // Required for new users
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['employee', 'employer', 'admin'], default: 'employee' },
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
-  profileImage: { type: String, default: '' }, // Changed from profilePhoto to profileImage
-  profilePhoto: { type: String, default: '' }, // Keep both for compatibility
+  profileImage: { type: String, default: '' }, // Keep for compatibility
+  profilePhoto: { type: String, default: '' }, // Keep for compatibility
   phone: { type: String, default: '' },
   location: { type: String, default: '' },
   headline: { type: String, default: '' },
-  bio: { type: String, default: '' }, // Changed from about to bio
-  about: { type: String, default: '' }, // Keep both for compatibility
+  bio: { type: String, default: '' }, // Keep for compatibility
+  about: { type: String, default: '' }, // Keep for compatibility
   skills: [{ type: String }],
   companyInfo: {
     companyName: { type: String },
@@ -468,8 +468,8 @@ app.post('/api/auth/register', [
       data: {
         user: {
           _id: user._id,
-          fullName: user.fullName || user.name,
-          name: user.name,
+          fullName: user.fullName,
+          name: user.name || user.fullName, // Fallback for compatibility
           username: user.username,
           email: user.email,
           role: user.role,
@@ -480,7 +480,17 @@ app.post('/api/auth/register', [
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
