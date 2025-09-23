@@ -706,7 +706,23 @@ app.get('/api/jobs/employer', authenticate, async (req, res) => {
 app.get('/api/blogs', async (req, res) => {
   try {
     const { limit = 20, page = 1, category, sortBy = 'publishedDate', sortOrder = 'desc' } = req.query;
-    const query = { isPublished: true };
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Handle both isPublished and status fields for compatibility
+    const query = { 
+      $or: [
+        { isPublished: true },
+        { status: 'published' }
+      ]
+    };
 
     if (category) {
       query.category = category;
@@ -716,7 +732,7 @@ app.get('/api/blogs', async (req, res) => {
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     const blogs = await Blog.find(query)
-      .populate('author', 'fullName profilePhoto')
+      .populate('author', 'fullName name profilePhoto profileImage email role')
       .sort(sort)
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
@@ -724,7 +740,17 @@ app.get('/api/blogs', async (req, res) => {
     res.json({ success: true, data: { blogs } });
   } catch (error) {
     console.error('Get blogs error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -742,8 +768,16 @@ app.get('/api/blogs/featured', async (req, res) => {
       });
     }
 
-    const blogs = await Blog.find({ status: 'published' })
-      .populate('author', 'name email')
+    // Handle both isPublished and status fields for compatibility
+    const query = { 
+      $or: [
+        { isPublished: true },
+        { status: 'published' }
+      ]
+    };
+    
+    const blogs = await Blog.find(query)
+      .populate('author', 'fullName name profilePhoto profileImage email role')
       .sort({ views: -1, publishedDate: -1 })
       .limit(parseInt(limit));
 
@@ -756,11 +790,38 @@ app.get('/api/blogs/featured', async (req, res) => {
 
 app.get('/api/blogs/categories', async (req, res) => {
   try {
-    const categories = await Blog.distinct('category', { status: 'published' });
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Handle both isPublished and status fields for compatibility
+    const query = { 
+      $or: [
+        { isPublished: true },
+        { status: 'published' }
+      ]
+    };
+    
+    const categories = await Blog.distinct('category', query);
     res.json({ success: true, data: { categories } });
   } catch (error) {
     console.error('Get blog categories error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
