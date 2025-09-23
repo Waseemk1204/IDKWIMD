@@ -190,7 +190,7 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema);
 
-// Community Post Schema
+// Community Post Schema - Updated to match existing database structure
 const communityPostSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
@@ -201,6 +201,7 @@ const communityPostSchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   isPinned: { type: Boolean, default: false },
   status: { type: String, enum: ['active', 'inactive', 'deleted'], default: 'active' },
+  isActive: { type: Boolean, default: true }, // Keep both for compatibility
   likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, { timestamps: true });
 
@@ -378,6 +379,34 @@ app.get('/api/debug/database', async (req, res) => {
     });
   } catch (error) {
     console.error('Debug database error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Debug endpoint to check community posts specifically
+app.get('/api/debug/community', async (req, res) => {
+  try {
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+
+    const db = mongoose.connection.db;
+    const communityCollection = db.collection('communityposts');
+    
+    const totalCount = await communityCollection.countDocuments();
+    const samplePosts = await communityCollection.find({}).limit(3).toArray();
+    
+    res.json({
+      success: true,
+      data: {
+        totalPosts: totalCount,
+        samplePosts: samplePosts,
+        collectionName: 'communityposts'
+      }
+    });
+  } catch (error) {
+    console.error('Debug community error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -692,7 +721,14 @@ app.get('/api/community', async (req, res) => {
       });
     }
 
-    const query = { status: 'active' };
+    // Try both status and isActive fields for compatibility
+    const query = { 
+      $or: [
+        { status: 'active' },
+        { isActive: true },
+        { status: { $exists: false }, isActive: { $exists: false } } // Include posts with neither field
+      ]
+    };
 
     if (tags) {
       query.tags = { $in: tags.split(',') };
@@ -706,6 +742,8 @@ app.get('/api/community', async (req, res) => {
       .sort(sort)
       .limit(parseInt(limit))
       .skip((parseInt(page) - 1) * parseInt(limit));
+
+    console.log(`Found ${posts.length} community posts`);
 
     res.json({ success: true, data: { posts } });
   } catch (error) {
@@ -725,9 +763,20 @@ app.get('/api/community/tags', async (req, res) => {
       });
     }
 
-    const tags = await CommunityPost.distinct('tags', { status: 'active' });
+    // Try both status and isActive fields for compatibility
+    const query = { 
+      $or: [
+        { status: 'active' },
+        { isActive: true },
+        { status: { $exists: false }, isActive: { $exists: false } }
+      ]
+    };
+
+    const tags = await CommunityPost.distinct('tags', query);
     const flattenedTags = tags.flat().filter(tag => tag && tag.trim());
     const uniqueTags = [...new Set(flattenedTags)];
+    
+    console.log(`Found ${uniqueTags.length} unique community tags`);
     
     res.json({ success: true, data: { tags: uniqueTags } });
   } catch (error) {
