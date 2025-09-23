@@ -54,31 +54,12 @@ export const Blogs: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        console.log('🔍 Loading blogs for dedicated page with filters:', {
-          category: selectedCategory === 'All' ? undefined : selectedCategory,
-          search: searchQuery || undefined,
-          sortBy: 'publishedDate',
-          sortOrder: 'desc',
-          limit: 20
-        });
-        
         const response = await blogService.getBlogsForBlogsPage({
           category: selectedCategory === 'All' ? undefined : selectedCategory,
           search: searchQuery || undefined,
           sortBy: 'publishedDate',
           sortOrder: 'desc',
           limit: 20
-        });
-        
-        console.log('📝 Dedicated blog page received data:', {
-          blogsCount: response.blogs?.length || 0,
-          blogs: response.blogs?.map(blog => ({
-            id: blog._id,
-            title: blog.title,
-            category: blog.category,
-            author: blog.author?.name || blog.author?.fullName
-          })) || [],
-          pagination: response.pagination
         });
         
         setBlogPosts(response.blogs);

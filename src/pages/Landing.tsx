@@ -354,16 +354,6 @@ export const Landing = () => {
 
         // Load featured blogs
         const blogsResponse = await apiService.getFeaturedBlogs(3);
-        console.log('🏠 Home page received featured blogs:', {
-          success: blogsResponse.success,
-          blogsCount: blogsResponse.data?.blogs?.length || 0,
-          blogs: blogsResponse.data?.blogs?.map(blog => ({
-            id: blog._id,
-            title: blog.title,
-            category: blog.category,
-            author: blog.author?.name || blog.author?.fullName
-          })) || []
-        });
         if (blogsResponse.success && blogsResponse.data?.blogs) {
           setBlogPosts(blogsResponse.data.blogs);
         }
