@@ -839,6 +839,126 @@ app.get('/api/blogs/categories', async (req, res) => {
   }
 });
 
+// Get blog by ID
+app.get('/api/blogs/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid blog ID format' 
+      });
+    }
+
+    const blog = await Blog.findById(id)
+      .populate('author', 'fullName name profilePhoto profileImage email role');
+
+    if (!blog) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Blog not found' 
+      });
+    }
+
+    // Increment view count
+    await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } });
+
+    res.json({ 
+      success: true, 
+      data: { blog } 
+    });
+  } catch (error) {
+    console.error('Get blog by ID error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Get related blogs
+app.get('/api/blogs/:id/related', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { limit = 3 } = req.query;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid blog ID format' 
+      });
+    }
+
+    // First get the current blog to find its category
+    const currentBlog = await Blog.findById(id);
+    if (!currentBlog) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Blog not found' 
+      });
+    }
+
+    // Find related blogs in the same category, excluding the current blog
+    const relatedBlogs = await Blog.find({
+      _id: { $ne: id }, // Exclude current blog
+      category: currentBlog.category,
+      $or: [
+        { isPublished: true },
+        { status: 'published' }
+      ]
+    })
+      .populate('author', 'fullName name profilePhoto profileImage email role')
+      .sort({ views: -1, publishedDate: -1 })
+      .limit(parseInt(limit));
+
+    res.json({ 
+      success: true, 
+      data: { blogs: relatedBlogs } 
+    });
+  } catch (error) {
+    console.error('Get related blogs error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // Community routes
 app.get('/api/community', async (req, res) => {
   try {

@@ -62,6 +62,18 @@ export const Blogs: React.FC = () => {
           limit: 20
         });
         
+        console.log('🔍 Blog data received:', {
+          blogsCount: response.blogs?.length || 0,
+          blogs: response.blogs?.map(blog => ({
+            id: blog._id,
+            title: blog.title,
+            category: blog.category,
+            author: blog.author?.name || blog.author?.fullName,
+            hasContent: !!blog.content,
+            hasExcerpt: !!blog.excerpt
+          })) || []
+        });
+        
         setBlogPosts(response.blogs);
       } catch (error) {
         console.error('Error loading blogs:', error);
