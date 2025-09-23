@@ -63,7 +63,9 @@ export const CommunityHub: React.FC = () => {
         params.tag = selectedTag;
       }
 
+      console.log('Loading community posts with params:', params);
       const response = await apiService.getCommunityPosts(params);
+      console.log('Community posts response:', response);
 
       if (response.success && response.data?.posts) {
         const newPosts = response.data.posts.map((post: any) => ({
@@ -71,6 +73,8 @@ export const CommunityHub: React.FC = () => {
           timeAgo: getTimeAgo(new Date(post.createdAt)),
           commentCount: post.comments?.length || 0
         }));
+
+        console.log('Processed posts:', newPosts);
 
         if (reset) {
           setPosts(newPosts);
@@ -81,6 +85,7 @@ export const CommunityHub: React.FC = () => {
         setHasMore(response.data.pagination?.hasNext || false);
         setCurrentPage(page);
       } else {
+        console.error('Failed to load posts - response:', response);
         setError('Failed to load posts');
       }
     } catch (error) {
@@ -94,8 +99,11 @@ export const CommunityHub: React.FC = () => {
   // Load community tags
   const loadTags = async () => {
     try {
+      console.log('Loading community tags...');
       const response = await apiService.getCommunityTags();
+      console.log('Community tags response:', response);
       if (response.success && response.data?.tags) {
+        console.log('Setting tags:', response.data.tags);
         setAllTags(response.data.tags);
       }
     } catch (error) {
