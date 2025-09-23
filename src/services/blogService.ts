@@ -272,19 +272,32 @@ class BlogService {
       const categories = await this.getBlogCategories();
       const allCategories = ['All', ...categories];
       
+      console.log('🔍 Getting category counts for:', allCategories);
+      
       // Get counts for each category
       const categoryCounts = await Promise.all(
         allCategories.map(async (category) => {
           if (category === 'All') {
             const response = await this.getBlogs({ limit: 1 });
-            return { name: category, count: response.pagination.totalBlogs };
+            console.log('📊 All category response:', {
+              success: response.success,
+              hasPagination: !!response.pagination,
+              pagination: response.pagination
+            });
+            return { name: category, count: response.pagination?.totalBlogs || 0 };
           } else {
             const response = await this.getBlogs({ category, limit: 1 });
-            return { name: category, count: response.pagination.totalBlogs };
+            console.log(`📊 ${category} category response:`, {
+              success: response.success,
+              hasPagination: !!response.pagination,
+              pagination: response.pagination
+            });
+            return { name: category, count: response.pagination?.totalBlogs || 0 };
           }
         })
       );
       
+      console.log('✅ Final category counts:', categoryCounts);
       return categoryCounts;
     } catch (error) {
       console.error('Error fetching category counts:', error);
