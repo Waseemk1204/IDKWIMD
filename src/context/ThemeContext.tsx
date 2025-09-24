@@ -15,7 +15,7 @@ export const ThemeProvider: React.FC<{
 }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme as Theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    return savedTheme as Theme || 'light';
   });
   useEffect(() => {
     if (theme === 'dark') {
