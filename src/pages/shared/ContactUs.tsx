@@ -130,8 +130,8 @@ export const ContactUs: React.FC = () => {
     {
       icon: <PhoneIcon className="w-5 h-5" />,
       label: 'Phone',
-      value: '+91 98765 43210',
-      href: 'tel:+919876543210'
+      value: '+91 9321495344',
+      href: 'tel:+919321495344'
     },
     {
       icon: <MapPinIcon className="w-5 h-5" />,

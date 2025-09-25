@@ -1191,7 +1191,7 @@ export const Landing = () => {
                       </div>
                       <div>
                         <p className="font-medium text-neutral-900 dark:text-white">Phone</p>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400">+91 98765 43210</p>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">+91 9321495344</p>
                       </div>
                     </div>
                     

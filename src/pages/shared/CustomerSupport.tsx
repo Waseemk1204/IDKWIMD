@@ -259,7 +259,7 @@ export const CustomerSupport: React.FC = () => {
       availability: 'Mon-Fri, 9 AM - 6 PM IST',
       action: () => {
         // For now, just show an alert - can be replaced with actual phone integration
-        alert('Phone support: +91 98765 43210\n\nOur phone lines are open Monday to Friday, 9 AM - 6 PM IST.');
+        alert('Phone support: +91 9321495344\n\nOur phone lines are open Monday to Friday, 9 AM - 6 PM IST.');
       },
       buttonText: 'Call Now',
       color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
