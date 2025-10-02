@@ -15,7 +15,14 @@ export const PrivacyPolicy: React.FC = () => {
     day: 'numeric'
   });
 
-  const sections = [
+  interface Section {
+    id: string;
+    title: string;
+    icon: React.ReactNode;
+    content: (string | { subtitle: string; items: string[] })[];
+  }
+
+  const sections: Section[] = [
     {
       id: 'introduction',
       title: 'Introduction',
@@ -253,7 +260,7 @@ export const PrivacyPolicy: React.FC = () => {
     }
   ];
 
-  const renderContent = (content: any[]) => {
+  const renderContent = (content: (string | { subtitle: string; items: string[] })[]) => {
     return content.map((item, index) => {
       if (typeof item === 'string') {
         return (
