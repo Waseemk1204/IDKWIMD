@@ -316,7 +316,7 @@ export const Signup: React.FC = () => {
                   By creating an account, you agree to our{' '}
                   <button className="text-primary-600 hover:text-primary-500">Terms of Service</button>
                   {' '}and{' '}
-                  <button className="text-primary-600 hover:text-primary-500">Privacy Policy</button>
+                  <Link to="/privacy-policy" className="text-primary-600 hover:text-primary-500">Privacy Policy</Link>
               </div>
               </CardContent>
             </Card>

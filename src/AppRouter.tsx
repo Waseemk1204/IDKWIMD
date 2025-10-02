@@ -39,6 +39,7 @@ import { BlogPostPage } from './pages/shared/BlogPost';
 import { ContactUs } from './pages/shared/ContactUs';
 import { CustomerSupport } from './pages/shared/CustomerSupport';
 import { SearchPage } from './pages/shared/SearchPage';
+import { PrivacyPolicy } from './pages/shared/PrivacyPolicy';
 import { NotFound } from './pages/NotFound';
 // Auth pages
 import { OAuthCallback } from './pages/auth/OAuthCallback';
@@ -117,6 +118,7 @@ export function AppRouter() {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/help" element={<CustomerSupport />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* Employer Routes */}
         <Route path="/employer" element={<ProtectedRoute requiredRole="employer">

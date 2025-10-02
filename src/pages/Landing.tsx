@@ -964,7 +964,11 @@ export const Landing = () => {
                     Help Center
                   </Link>
                 </li>
-                <li><span className="text-gray-400">Privacy</span></li>
+                <li>
+                  <Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors duration-200">
+                    Privacy
+                  </Link>
+                </li>
                 <li><span className="text-gray-400">Terms</span></li>
               </ul>
             </div>
