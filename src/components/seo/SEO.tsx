@@ -32,11 +32,14 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       <link rel="canonical" href={canonical} />
+      
+      {/* Override any existing title */}
+      <meta property="og:title" content={fullTitle} />
+      <meta name="twitter:title" content={fullTitle} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
-      <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
@@ -46,7 +49,6 @@ export const SEO: React.FC<SEOProps> = ({
       {/* Twitter */}
       <meta property="twitter:card" content={twitterCard} />
       <meta property="twitter:url" content={canonical} />
-      <meta property="twitter:title" content={fullTitle} />
       <meta property="twitter:description" content={description} />
       <meta property="twitter:image" content={ogImage} />
 
@@ -56,6 +58,16 @@ export const SEO: React.FC<SEOProps> = ({
           {JSON.stringify(structuredData)}
         </script>
       )}
+      
+      {/* Force title update script */}
+      <script>
+        {`
+          document.title = "${fullTitle}";
+          if (document.querySelector('meta[name="title"]')) {
+            document.querySelector('meta[name="title"]').setAttribute('content', '${fullTitle}');
+          }
+        `}
+      </script>
     </Helmet>
   );
 };
