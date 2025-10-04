@@ -60,8 +60,8 @@ export const Conversation: React.FC = () => {
       content,
       sender: {
         id: user?._id || '2',
-        name: user?.name || 'Current User',
-        profileImage: user?.profileImage || ''
+        name: user?.fullName || 'Current User',
+        profileImage: user?.profilePhoto || ''
       },
       timestamp: new Date()
     };

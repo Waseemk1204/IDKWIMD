@@ -179,7 +179,7 @@ export const Wallet: React.FC = () => {
             }
           },
           prefill: {
-            name: user?.name || '',
+            name: user?.fullName || '',
             email: user?.email || '',
           },
           theme: {

@@ -155,7 +155,7 @@ export const EmployeeDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name || 'Student'}!</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.fullName || 'Student'}!</h1>
             <p className="text-primary-100 text-lg">
               Ready to find your next opportunity? Let's make today productive.
             </p>

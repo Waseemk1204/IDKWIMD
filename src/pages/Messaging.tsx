@@ -295,9 +295,9 @@ export const Messaging: React.FC = () => {
     
     const otherParticipants = conversation.participants.filter(p => p._id !== user?._id);
     if (otherParticipants.length === 1) {
-      return otherParticipants[0].name;
+      return otherParticipants[0].fullName;
     } else if (otherParticipants.length > 1) {
-      return `${otherParticipants[0].name} and ${otherParticipants.length - 1} others`;
+      return `${otherParticipants[0].fullName} and ${otherParticipants.length - 1} others`;
     }
     return 'Unknown';
   };
@@ -305,7 +305,7 @@ export const Messaging: React.FC = () => {
   const getConversationAvatar = (conversation: Conversation) => {
     const otherParticipants = conversation.participants.filter(p => p._id !== user?._id);
     if (otherParticipants.length === 1) {
-      return otherParticipants[0].profileImage;
+      return otherParticipants[0].profilePhoto;
     }
     return undefined;
   };
@@ -440,7 +440,11 @@ export const Messaging: React.FC = () => {
                   <MessageItem
                     key={message._id}
                     content={message.content}
-                    sender={message.sender}
+                    sender={{
+                      id: message.sender._id,
+                      name: message.sender.fullName,
+                      profileImage: message.sender.profilePhoto
+                    }}
                     timestamp={new Date(message.createdAt)}
                     isCurrentUser={message.sender._id === user?._id}
                   />

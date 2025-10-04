@@ -28,10 +28,10 @@ export const PostJob: React.FC = () => {
 
   // Set company name from user data
   useEffect(() => {
-    if (user?.name) {
+    if (user?.fullName) {
       setFormData(prev => ({
         ...prev,
-        company: user.name
+        company: user.fullName
       }));
     }
   }, [user]);
