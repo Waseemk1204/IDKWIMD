@@ -31,7 +31,7 @@ class GoogleAuthService {
     if (this.isLoaded) return;
 
     const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    script.src = 'https://accounts.google.com/gsi/client?v=' + Date.now(); // Cache busting
     script.async = true;
     script.defer = true;
     script.onload = () => {
