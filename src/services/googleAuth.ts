@@ -18,6 +18,7 @@ export interface GoogleAuthResponse {
 
 class GoogleAuthService {
   private isLoaded = false;
+  private isResolved = false;
 
   constructor() {
     this.loadGoogleScript();
@@ -114,9 +115,13 @@ class GoogleAuthService {
         return;
       }
 
+      // Reset resolved state
+      this.isResolved = false;
+
       // Set up one-time callback
       const originalCallback = (window as any).google.accounts.id.callback;
       (window as any).google.accounts.id.callback = (response: any) => {
+        this.isResolved = true;
         const result = this.handleCredentialResponse(response);
         resolve(result);
         // Restore original callback
@@ -124,26 +129,24 @@ class GoogleAuthService {
       };
 
       try {
-        // Try One Tap first
-        (window as any).google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed()) {
-            // One Tap not displayed, try render button approach
-            console.log('One Tap not displayed, trying alternative approach');
+        // Simple prompt without deprecated status methods
+        (window as any).google.accounts.id.prompt();
+        
+        // Set a timeout to handle cases where prompt doesn't respond
+        setTimeout(() => {
+          // If we haven't resolved yet, it means the prompt didn't work
+          if (!this.isResolved) {
+            this.isResolved = true;
             resolve({
               success: false,
-              error: 'Google One Tap is not available. Please try again or use email/password login.'
-            });
-          } else if (notification.isSkippedMoment()) {
-            // User skipped, try again
-            console.log('One Tap skipped, user can try again');
-            resolve({
-              success: false,
-              error: 'Authentication skipped. Please try again.'
+              error: 'Google authentication timed out. Please try email/password login.'
             });
           }
-        });
+        }, 10000); // 10 second timeout
+        
       } catch (error) {
         console.error('Google OAuth error:', error);
+        this.isResolved = true;
         resolve({
           success: false,
           error: 'Failed to initiate Google authentication. Please try email/password login.'
