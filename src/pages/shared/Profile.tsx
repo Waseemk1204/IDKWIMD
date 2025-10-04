@@ -2,19 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { TrustBadge, VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
+import { TrustBadge, VerifiedBadge } from '../../components/ui/TrustBadge';
 import { 
   User, 
   Mail, 
   Phone, 
-  MapPin, 
   Calendar, 
-  Edit3, 
   Save, 
   X, 
   Upload, 
   Shield, 
-  Award, 
   Star,
   Briefcase,
   GraduationCap,
@@ -22,10 +19,7 @@ import {
   Camera,
   CheckCircle,
   AlertCircle,
-  Lock,
-  Eye,
-  EyeOff,
-  Building2
+  Lock
 } from 'lucide-react';
 
 interface ProfileFormData {
@@ -89,7 +83,7 @@ interface FormErrors {
 }
 
 export const Profile: React.FC = () => {
-  const { user, isAuthenticated, isLoading: authLoading, updateProfile } = useAuth();
+  const { user, isLoading: authLoading, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -431,7 +425,7 @@ export const Profile: React.FC = () => {
             <CardContent className="p-8 text-center">
               <div className="relative inline-block">
                 <div className="h-32 w-32 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center text-4xl font-bold text-white mx-auto">
-                  {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                  {user.fullName?.charAt(0)?.toUpperCase() || 'U'}
                 </div>
                 <button className="absolute bottom-0 right-0 w-8 h-8 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center shadow-lg border-2 border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                   <Camera className="h-4 w-4 text-primary-600" />
@@ -440,7 +434,7 @@ export const Profile: React.FC = () => {
               
               <div className="mt-6">
                 <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                  {user.name}
+                  {user.fullName}
                 </h2>
                 <p className="text-neutral-600 dark:text-neutral-400 capitalize mb-4">
                   {user.role === 'employee' ? 'Student' : 'Employer'}

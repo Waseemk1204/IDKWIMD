@@ -213,7 +213,7 @@ class ApiService {
     const response = await this.request(`/jobs?${queryParams.toString()}`);
     
     // Transform job data if successful
-    if (response.success && response.data?.jobs) {
+    if (response.success && response.data && 'jobs' in response.data) {
       response.data.jobs = response.data.jobs.map((job: any) => this.transformJobData(job));
     }
     
@@ -236,7 +236,7 @@ class ApiService {
     const response = await this.request(`/jobs/featured${params}`);
     
     // Transform job data if successful
-    if (response.success && response.data?.jobs) {
+    if (response.success && response.data && 'jobs' in response.data) {
       response.data.jobs = response.data.jobs.map((job: any) => this.transformJobData(job));
     }
     
@@ -281,7 +281,7 @@ class ApiService {
     const response = await this.request(`${endpoint}?${queryParams.toString()}`);
     
     // Transform job data if successful
-    if (response.success && response.data?.jobs) {
+    if (response.success && response.data && 'jobs' in response.data) {
       response.data.jobs = response.data.jobs.map((job: any) => this.transformJobData(job));
     }
     

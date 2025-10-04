@@ -176,14 +176,14 @@ export const GangMembers: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: 'yellow', text: 'Pending' },
-      accepted: { color: 'green', text: 'Connected' },
-      rejected: { color: 'red', text: 'Rejected' },
-      cancelled: { color: 'gray', text: 'Cancelled' }
+      pending: { variant: 'warning', text: 'Pending' },
+      accepted: { variant: 'success', text: 'Connected' },
+      rejected: { variant: 'danger', text: 'Rejected' },
+      cancelled: { variant: 'secondary', text: 'Cancelled' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    return <Badge color={config.color}>{config.text}</Badge>;
+    return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 
   const renderGangMembers = () => (
@@ -212,7 +212,7 @@ export const GangMembers: React.FC = () => {
                   {connection.user.skills && connection.user.skills.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {connection.user.skills.slice(0, 3).map((skill, index) => (
-                        <Badge key={index} color="blue" size="sm">{skill}</Badge>
+                        <Badge key={index} variant="primary" size="sm">{skill}</Badge>
                       ))}
                     </div>
                   )}
@@ -354,7 +354,7 @@ export const GangMembers: React.FC = () => {
               </div>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
                 <div className="flex-shrink-0">
-                  <Badge color="green">Following</Badge>
+                  <Badge variant="success">Following</Badge>
                 </div>
                 <Button
                   variant="outline"
@@ -424,10 +424,10 @@ export const GangMembers: React.FC = () => {
                     {user.skills && user.skills.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {user.skills.slice(0, 4).map((skill, index) => (
-                          <Badge key={index} color="blue" size="sm">{skill}</Badge>
+                          <Badge key={index} variant="primary" size="sm">{skill}</Badge>
                         ))}
                         {user.skills.length > 4 && (
-                          <Badge color="gray" size="sm">+{user.skills.length - 4} more</Badge>
+                          <Badge variant="secondary" size="sm">+{user.skills.length - 4} more</Badge>
                         )}
                       </div>
                     )}
@@ -496,7 +496,7 @@ export const GangMembers: React.FC = () => {
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                   {tab.count > 0 && (
-                    <Badge color="blue" size="sm">{tab.count}</Badge>
+                    <Badge variant="primary" size="sm">{tab.count}</Badge>
                   )}
                 </button>
               );

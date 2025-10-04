@@ -469,18 +469,18 @@ export const SearchPage: React.FC = () => {
                               {user.profileImage ? (
                                 <img
                                   src={user.profileImage}
-                                  alt={user.name}
+                                  alt={user.fullName}
                                   className="w-12 h-12 rounded-full object-cover"
                                 />
                               ) : (
                                 <span className="text-white font-medium">
-                                  {user.name.charAt(0).toUpperCase()}
+                                  {user.fullName.charAt(0).toUpperCase()}
                                 </span>
                               )}
                             </div>
                             <div className="flex-1">
                               <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                                {user.name}
+                                {user.fullName}
                               </h3>
                               <p className="text-neutral-600 dark:text-neutral-400 mb-1">{user.role}</p>
                               {user.location && (
