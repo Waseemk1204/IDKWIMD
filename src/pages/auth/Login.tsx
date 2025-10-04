@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
 import { StandardizedSocialSignIn } from '../../components/auth/StandardizedSocialSignIn';
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
+import { googleAuthService } from '../../services/googleAuth';
 import { Eye, EyeOff, Mail, Lock, Shield, CheckCircle, Users, Briefcase } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -20,8 +21,50 @@ export const Login: React.FC = () => {
   const location = useLocation();
 
   const handleGoogleSuccess = async () => {
-    // This will be called when Google OAuth succeeds
-    // The actual login will be handled by the GoogleAuthButton's onSuccess callback
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Get the Google user data from the service
+      const result = await googleAuthService.signIn();
+      
+      if (result.success && result.user) {
+        // Login with Google user data
+        const user = await loginWithGoogle(result.user);
+        
+        // Redirect based on user role or intent
+        const params = new URLSearchParams(location.search);
+        const intent = params.get('intent');
+        
+        // Check for intended job ID from localStorage
+        const intendedJobId = localStorage.getItem('intendedJobId');
+        
+        if (intendedJobId) {
+          // Clear the intended job ID and redirect to the specific job
+          localStorage.removeItem('intendedJobId');
+          navigate(`/employee/jobs/${intendedJobId}`);
+        } else {
+          // Always redirect to dashboard based on user role or intent
+          if (intent === 'employer' || user?.role === 'employer') {
+            navigate('/employer');
+          } else if (intent === 'employee' || user?.role === 'employee') {
+            navigate('/employee');
+          } else if (user?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            // Default to employee dashboard if no specific role
+            navigate('/employee');
+          }
+        }
+      } else {
+        setError(result.error || 'Google authentication failed');
+      }
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      setError(error instanceof Error ? error.message : 'Google authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleError = (error: string) => {
