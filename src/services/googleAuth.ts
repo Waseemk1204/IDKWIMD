@@ -49,8 +49,8 @@ class GoogleAuthService {
         callback: this.handleCredentialResponse.bind(this),
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: true, // Enable FedCM as required by Google
-        ux_mode: 'popup' // Use popup mode
+        use_fedcm_for_prompt: false, // Disable FedCM to avoid browser blocking
+        ux_mode: 'popup' // Use popup mode for better compatibility
       });
       this.isLoaded = true;
     }
@@ -124,13 +124,29 @@ class GoogleAuthService {
       };
 
       try {
-        // Trigger the sign-in flow with FedCM enabled
-        (window as any).google.accounts.id.prompt();
+        // Try One Tap first
+        (window as any).google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed()) {
+            // One Tap not displayed, try render button approach
+            console.log('One Tap not displayed, trying alternative approach');
+            resolve({
+              success: false,
+              error: 'Google One Tap is not available. Please try again or use email/password login.'
+            });
+          } else if (notification.isSkippedMoment()) {
+            // User skipped, try again
+            console.log('One Tap skipped, user can try again');
+            resolve({
+              success: false,
+              error: 'Authentication skipped. Please try again.'
+            });
+          }
+        });
       } catch (error) {
         console.error('Google OAuth error:', error);
         resolve({
           success: false,
-          error: 'Failed to initiate Google authentication'
+          error: 'Failed to initiate Google authentication. Please try email/password login.'
         });
       }
     });
