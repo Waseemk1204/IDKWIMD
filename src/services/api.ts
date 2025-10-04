@@ -123,6 +123,26 @@ class ApiService {
     return response;
   }
 
+  async loginWithGoogle(googleData: {
+    googleId: string;
+    email: string;
+    fullName: string;
+    profilePhoto?: string;
+    givenName?: string;
+    familyName?: string;
+  }): Promise<ApiResponse> {
+    const response = await this.request('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify(googleData),
+    });
+
+    if (response.success && response.data && typeof response.data === 'object' && 'token' in response.data) {
+      this.setToken((response.data as any).token);
+    }
+
+    return response;
+  }
+
   async register(userData: {
     fullName: string;
     username: string;

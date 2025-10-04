@@ -1,5 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import apiService from '../services/api';
+import { GoogleUserInfo } from '../services/googleAuth';
 
 type UserRole = 'employer' | 'employee' | 'admin' | null;
 
@@ -63,6 +64,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
   signup: (email: string, password: string, role: UserRole) => Promise<void>;
+  loginWithGoogle: (googleUser: GoogleUserInfo) => Promise<User>;
   logout: () => void;
   completeOnboarding: (userData: Partial<User>) => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<void>;
@@ -74,6 +76,7 @@ export const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: async () => null,
   signup: async () => {},
+  loginWithGoogle: async () => null,
   logout: () => {},
   completeOnboarding: async () => {},
   updateProfile: async () => {}
@@ -176,6 +179,36 @@ export const AuthProvider: React.FC<{
     }
   };
 
+  const loginWithGoogle = async (googleUser: GoogleUserInfo): Promise<User> => {
+    setIsLoading(true);
+    try {
+      const response = await apiService.loginWithGoogle({
+        googleId: googleUser.id,
+        email: googleUser.email,
+        fullName: googleUser.name,
+        profilePhoto: googleUser.picture,
+        givenName: googleUser.given_name,
+        familyName: googleUser.family_name
+      });
+      
+      if (response.success && response.data?.user) {
+        const userData = response.data.user;
+        const token = response.data.token;
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        apiService.setToken(token);
+        setIsLoading(false);
+        return userData;
+      } else {
+        throw new Error(response.message || 'Google login failed');
+      }
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await apiService.logout();
@@ -238,6 +271,7 @@ export const AuthProvider: React.FC<{
         isLoading,
         login,
         signup,
+        loginWithGoogle,
         logout,
         completeOnboarding,
         updateProfile

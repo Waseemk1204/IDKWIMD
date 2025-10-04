@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
 import { StandardizedSocialSignIn } from '../../components/auth/StandardizedSocialSignIn';
+import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 import { Eye, EyeOff, Mail, Lock, Shield, CheckCircle, Users, Briefcase } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -14,9 +15,18 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleGoogleSuccess = async () => {
+    // This will be called when Google OAuth succeeds
+    // The actual login will be handled by the GoogleAuthButton's onSuccess callback
+  };
+
+  const handleGoogleError = (error: string) => {
+    setError(error);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,10 +237,25 @@ export const Login: React.FC = () => {
 
                 {/* Social Sign-In Options */}
                 <div className="mt-6">
-                  <StandardizedSocialSignIn 
-                    mode="login"
-                    isLoading={isLoading}
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-neutral-300 dark:border-neutral-600" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <GoogleAuthButton 
+                      text="Continue with Google"
+                      className="w-full"
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                    />
+                  </div>
                 </div>
 
                 <div className="mt-6 text-center">

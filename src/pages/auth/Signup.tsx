@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { TrustBadge, VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
 import { StandardizedSocialSignIn } from '../../components/auth/StandardizedSocialSignIn';
+import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 import { 
   Mail, 
   Lock, 
@@ -293,11 +294,23 @@ export const Signup: React.FC = () => {
 
                 {/* Social Sign-In Options */}
                 <div className="mt-6">
-                  <StandardizedSocialSignIn 
-                    mode="signup"
-                    defaultRole={role}
-                    isLoading={isLoading}
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-neutral-300 dark:border-neutral-600" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <GoogleAuthButton 
+                      text="Continue with Google"
+                      className="w-full"
+                    />
+                  </div>
                 </div>
 
                 <div className="mt-6 text-center">
