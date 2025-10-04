@@ -18,7 +18,6 @@ export interface GoogleAuthResponse {
 
 class GoogleAuthService {
   private isLoaded = false;
-  private client: any = null;
 
   constructor() {
     this.loadGoogleScript();
