@@ -49,8 +49,8 @@ class GoogleAuthService {
         callback: this.handleCredentialResponse.bind(this),
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: false, // Disable FedCM to avoid browser blocking
-        ux_mode: 'popup' // Use popup instead of redirect
+        use_fedcm_for_prompt: true, // Enable FedCM as required by Google
+        ux_mode: 'popup' // Use popup mode
       });
       this.isLoaded = true;
     }
@@ -123,8 +123,16 @@ class GoogleAuthService {
         (window as any).google.accounts.id.callback = originalCallback;
       };
 
-      // Trigger the sign-in flow
-      (window as any).google.accounts.id.prompt();
+      try {
+        // Trigger the sign-in flow with FedCM enabled
+        (window as any).google.accounts.id.prompt();
+      } catch (error) {
+        console.error('Google OAuth error:', error);
+        resolve({
+          success: false,
+          error: 'Failed to initiate Google authentication'
+        });
+      }
     });
   }
 
