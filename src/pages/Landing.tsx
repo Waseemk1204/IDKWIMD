@@ -7,6 +7,7 @@ import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { FeaturesCycle } from '../components/FeaturesCycle';
 import { JobCard } from '../components/jobs/JobCard';
 import apiService from '../services/api';
+import { SEO, SEOConfigs } from '../components/seo/SEO';
 
 // API Test Component for debugging
 const ApiTestComponent = () => {
@@ -465,6 +466,7 @@ export const Landing = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 overflow-x-hidden pt-16 scrollbar-hide" style={{ overflowX: 'hidden' }}>
+      <SEO {...SEOConfigs.home} />
       <ApiTestComponent />
       <Navbar onAboutClick={handleAboutClick} onHowItWorksClick={handleHowItWorksClick} onContactClick={handleContactClick} />
       

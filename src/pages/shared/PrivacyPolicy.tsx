@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Eye, Lock, Users, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { SEO, SEOConfigs } from '../../components/seo/SEO';
 
 export const PrivacyPolicy: React.FC = () => {
   // Scroll to top when component mounts
@@ -293,6 +294,7 @@ export const PrivacyPolicy: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+      <SEO {...SEOConfigs.privacy} />
       {/* Header */}
       <div className="bg-white dark:bg-neutral-800 shadow-soft">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

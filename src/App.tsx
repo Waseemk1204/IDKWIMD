@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'sonner';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useEffect } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 
 export function App() {
   useEffect(() => {
@@ -150,13 +151,15 @@ export function App() {
     };
   }, []);
 
-  return <ThemeProvider>
-      <AuthProvider>
-        <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
-          <AppRouter />
-          <Toaster position="top-right" />
-          <SpeedInsights />
-        </div>
-      </AuthProvider>
-    </ThemeProvider>;
+  return <HelmetProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
+            <AppRouter />
+            <Toaster position="top-right" />
+            <SpeedInsights />
+          </div>
+        </AuthProvider>
+      </ThemeProvider>
+    </HelmetProvider>;
 }
