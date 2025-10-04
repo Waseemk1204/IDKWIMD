@@ -125,7 +125,8 @@ const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true, trim: true }, // Primary field for new users
   username: { type: String, required: true, unique: true, lowercase: true }, // Required for new users
   email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true },
+  password: { type: String, required: false }, // Make password optional for Google OAuth users
+  googleId: { type: String, unique: true, sparse: true }, // Google OAuth ID
   role: { type: String, enum: ['employee', 'employer', 'admin'], default: 'employee' },
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
@@ -581,6 +582,113 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
   } catch (error) {
     console.error('Get current user error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Google OAuth login/signup
+app.post('/api/auth/google', [
+  body('googleId').notEmpty().withMessage('Google ID is required'),
+  body('email').isEmail().normalizeEmail(),
+  body('fullName').trim().isLength({ min: 2, max: 50 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const { googleId, email, fullName, profilePhoto, givenName, familyName } = req.body;
+
+    console.log(`Google OAuth attempt for email: ${email}, Google ID: ${googleId}`);
+
+    // Check if user exists by Google ID or email
+    let user = await User.findOne({ 
+      $or: [
+        { googleId: googleId },
+        { email: email }
+      ]
+    });
+
+    if (user) {
+      // User exists - update Google ID if not set and login
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+
+      console.log(`Google OAuth login successful for existing user: ${user.email}`);
+    } else {
+      // Create new user
+      const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+      
+      // Ensure username is unique
+      let uniqueUsername = username;
+      let counter = 1;
+      while (await User.findOne({ username: uniqueUsername })) {
+        uniqueUsername = `${username}${counter}`;
+        counter++;
+      }
+
+      user = new User({
+        googleId: googleId,
+        fullName: fullName,
+        name: fullName, // Keep for compatibility
+        username: uniqueUsername,
+        email: email,
+        profilePhoto: profilePhoto || '',
+        profileImage: profilePhoto || '', // Keep for compatibility
+        role: 'employee', // Default role
+        isVerified: true, // Google users are considered verified
+        password: undefined // No password for Google OAuth users
+      });
+
+      await user.save();
+      console.log(`Google OAuth signup successful for new user: ${user.email}`);
+    }
+
+    // Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    res.json({
+      success: true,
+      message: 'Google authentication successful',
+      data: {
+        user: {
+          _id: user._id,
+          fullName: user.fullName || user.name,
+          name: user.name || user.fullName,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          isVerified: user.isVerified,
+          profilePhoto: user.profilePhoto || user.profileImage,
+          googleId: user.googleId
+        },
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      code: error.code,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
