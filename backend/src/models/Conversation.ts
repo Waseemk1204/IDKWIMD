@@ -7,8 +7,17 @@ export interface IConversation extends Document {
   lastMessageAt?: Date;
   isActive: boolean;
   title?: string;
-  conversationType: 'direct' | 'group' | 'job_related';
+  conversationType: 'direct' | 'group' | 'job_related' | 'community_related' | 'gang_related';
   job?: mongoose.Types.ObjectId;
+  communityPost?: mongoose.Types.ObjectId;
+  gangId?: mongoose.Types.ObjectId;
+  metadata?: {
+    connectionStrength?: number;
+    sharedInterests?: string[];
+    lastActivity?: Date;
+    messageCount?: number;
+    unreadCount?: { [userId: string]: number };
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,12 +45,43 @@ const conversationSchema = new Schema<IConversation>({
   },
   conversationType: {
     type: String,
-    enum: ['direct', 'group', 'job_related'],
+    enum: ['direct', 'group', 'job_related', 'community_related', 'gang_related'],
     default: 'direct'
   },
   job: {
     type: Schema.Types.ObjectId,
     ref: 'Job'
+  },
+  communityPost: {
+    type: Schema.Types.ObjectId,
+    ref: 'CommunityPost'
+  },
+  gangId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Gang'
+  },
+  metadata: {
+    connectionStrength: {
+      type: Number,
+      min: 0,
+      max: 100
+    },
+    sharedInterests: [{
+      type: String,
+      trim: true
+    }],
+    lastActivity: {
+      type: Date
+    },
+    messageCount: {
+      type: Number,
+      default: 0
+    },
+    unreadCount: {
+      type: Map,
+      of: Number,
+      default: {}
+    }
   }
 }, {
   timestamps: true,

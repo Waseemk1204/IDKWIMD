@@ -195,6 +195,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isNew: true
         },
         {
+          name: 'Unified Dashboard',
+          href: '/unified-dashboard',
+          icon: <TrendingUpIcon className="w-5 h-5" />,
+          isNew: true
+        },
+        {
           name: 'My Timesheet',
           href: '/employee/timesheet',
           icon: <ClockIcon className="w-5 h-5" />

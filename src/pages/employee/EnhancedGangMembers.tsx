@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, UserCheck, UserX, Heart, Search, Star, BarChart3 } from 'lucide-react';
+import { 
+  Users, UserPlus, UserCheck, UserX, Heart, Search, 
+  TrendingUp, BarChart3, Users2, Star, Filter, 
+  Loader2, RefreshCw, X, CheckCircle, AlertCircle,
+  MessageCircle, MessageSquare
+} from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -7,7 +12,8 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
-import { ConnectionInsights } from '../../components/connections/ConnectionInsights';
+import { QuickMessage, MessageIntegration } from '../../components/messaging/MessageIntegration';
+import { GangGroupChat } from '../../components/messaging/GangGroupChat';
 
 interface User {
   _id: string;
@@ -20,6 +26,8 @@ interface User {
   company?: string;
   about?: string;
   skills?: string[];
+  location?: string;
+  headline?: string;
 }
 
 interface Connection {
@@ -28,6 +36,11 @@ interface Connection {
   status: string;
   createdAt: string;
   updatedAt: string;
+  strength?: number;
+  strengthCategory?: string;
+  messageCount?: number;
+  lastInteraction?: string;
+  mutualConnections?: number;
 }
 
 interface Follow {
@@ -44,19 +57,60 @@ interface ConnectionRequest {
   createdAt: string;
 }
 
-export const GangMembers: React.FC = () => {
+interface ConnectionRecommendation {
+  _id: string;
+  recommendedUserId: User;
+  reasons: Array<{
+    type: string;
+    weight: number;
+    details?: string;
+  }>;
+  score: number;
+  createdAt: string;
+}
+
+interface ConnectionAnalytics {
+  summary: {
+    totalConnections: number;
+    strongConnections: number;
+    totalMessages: number;
+    avgStrength: number;
+  };
+  connectionGrowth: Array<{
+    _id: { year: number; month: number };
+    count: number;
+  }>;
+  analytics: Array<{
+    connectionId: string;
+    strength: number;
+    strengthCategory: string;
+    messageCount: number;
+    lastInteraction: string;
+    mutualConnections: number;
+    sharedJobApplications: number;
+  }>;
+}
+
+export const EnhancedGangMembers: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'gang' | 'requests' | 'follows' | 'discover' | 'recommendations' | 'analytics'>('discover');
+  const [activeTab, setActiveTab] = useState<'discover' | 'recommendations' | 'gang' | 'requests' | 'follows' | 'analytics'>('recommendations');
   const [connections, setConnections] = useState<Connection[]>([]);
   const [pendingRequests, setPendingRequests] = useState<ConnectionRequest[]>([]);
   const [follows, setFollows] = useState<Follow[]>([]);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<ConnectionRecommendation[]>([]);
+  const [analytics, setAnalytics] = useState<ConnectionAnalytics | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [showInsights, setShowInsights] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    skills: [] as string[],
+    location: '',
+    experienceLevel: '',
+    mutualConnections: false
+  });
 
   useEffect(() => {
     loadData();
@@ -70,7 +124,7 @@ export const GangMembers: React.FC = () => {
     } else if (activeTab === 'analytics') {
       loadAnalytics();
     }
-  }, [searchTerm, activeTab]);
+  }, [searchTerm, activeTab, filters]);
 
   const loadData = async () => {
     try {
@@ -87,7 +141,6 @@ export const GangMembers: React.FC = () => {
           apiService.getPendingRequests('received')
         ]);
         
-        // Keep sent and received requests separate for proper display
         const sentRequests = sentResponse.data?.requests || [];
         const receivedRequests = receivedResponse.data?.requests || [];
         setPendingRequests([...sentRequests, ...receivedRequests]);
@@ -96,9 +149,6 @@ export const GangMembers: React.FC = () => {
         if (response.success) {
           setFollows(response.data.follows || []);
         }
-      } else if (activeTab === 'discover') {
-        // Load available users (employees not connected)
-        await loadAvailableUsers();
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -178,27 +228,14 @@ export const GangMembers: React.FC = () => {
       const response = await apiService.sendConnectionRequest(userId);
       if (response.success) {
         await loadData();
-        // Refresh available users to remove the user we just sent a request to
         if (activeTab === 'discover') {
           await loadAvailableUsers();
+        } else if (activeTab === 'recommendations') {
+          await loadRecommendations();
         }
       }
     } catch (error) {
       console.error('Error sending connection request:', error);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleFollowAction = async (followId: string) => {
-    try {
-      setActionLoading(followId);
-      const response = await apiService.unfollowEmployer(followId);
-      if (response.success) {
-        await loadData();
-      }
-    } catch (error) {
-      console.error('Error unfollowing employer:', error);
     } finally {
       setActionLoading(null);
     }
@@ -218,6 +255,36 @@ export const GangMembers: React.FC = () => {
     }
   };
 
+  const handleBulkAction = async (action: 'connect' | 'follow') => {
+    if (selectedUsers.length === 0) return;
+
+    try {
+      setActionLoading('bulk');
+      const response = await apiService.bulkConnectionActions(action, selectedUsers);
+      if (response.success) {
+        setSelectedUsers([]);
+        await loadData();
+        if (activeTab === 'discover') {
+          await loadAvailableUsers();
+        } else if (activeTab === 'recommendations') {
+          await loadRecommendations();
+        }
+      }
+    } catch (error) {
+      console.error('Error performing bulk action:', error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { variant: 'warning', text: 'Pending' },
@@ -230,16 +297,45 @@ export const GangMembers: React.FC = () => {
     return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 
+  const getStrengthBadge = (strength: number) => {
+    if (strength >= 80) return <Badge variant="success">Strong</Badge>;
+    if (strength >= 60) return <Badge variant="primary">Good</Badge>;
+    if (strength >= 40) return <Badge variant="warning">Moderate</Badge>;
+    return <Badge variant="secondary">Weak</Badge>;
+  };
+
+  const getRecommendationReasonIcon = (type: string) => {
+    switch (type) {
+      case 'mutual_connections': return <Users2 className="h-4 w-4" />;
+      case 'shared_skills': return <Star className="h-4 w-4" />;
+      case 'same_location': return <Search className="h-4 w-4" />;
+      case 'same_company': return <Users className="h-4 w-4" />;
+      case 'similar_experience': return <TrendingUp className="h-4 w-4" />;
+      default: return <UserPlus className="h-4 w-4" />;
+    }
+  };
+
   const renderRecommendations = () => (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Search className="h-5 w-5 text-gray-400" />
-        <Input
-          placeholder="Search recommendations..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1"
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Search className="h-5 w-5 text-gray-400" />
+          <Input
+            placeholder="Search recommendations..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => loadRecommendations()}
+          disabled={loading}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </div>
       
       {loading ? (
@@ -249,7 +345,7 @@ export const GangMembers: React.FC = () => {
         </div>
       ) : recommendations.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <UserPlus className="h-12 w-12 mx-auto mb-4 text-gray-300" />
           <p>No recommendations available</p>
           <p className="text-sm">We'll suggest connections based on your profile and network</p>
         </div>
@@ -282,8 +378,9 @@ export const GangMembers: React.FC = () => {
                     
                     {/* Recommendation reasons */}
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {recommendation.reasons.slice(0, 3).map((reason: any, index: number) => (
+                      {recommendation.reasons.slice(0, 3).map((reason, index) => (
                         <div key={index} className="flex items-center space-x-1 text-xs text-gray-500">
+                          {getRecommendationReasonIcon(reason.type)}
                           <span>{reason.details}</span>
                         </div>
                       ))}
@@ -301,13 +398,11 @@ export const GangMembers: React.FC = () => {
                       disabled={actionLoading === recommendation.recommendedUserId._id}
                     >
                       {actionLoading === recommendation.recommendedUserId._id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                       ) : (
-                        <>
-                          <UserPlus className="h-4 w-4 mr-1" />
-                          Connect
-                        </>
+                        <UserPlus className="h-4 w-4 mr-1" />
                       )}
+                      Connect
                     </Button>
                     <Button
                       variant="outline"
@@ -315,7 +410,7 @@ export const GangMembers: React.FC = () => {
                       onClick={() => handleDismissRecommendation(recommendation._id)}
                       disabled={actionLoading === recommendation._id}
                     >
-                      <UserX className="h-4 w-4" />
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -355,7 +450,7 @@ export const GangMembers: React.FC = () => {
             <Card className="p-4">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Strong Connections</p>
@@ -383,7 +478,7 @@ export const GangMembers: React.FC = () => {
             <Card className="p-4">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
-                  <Star className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Avg Strength</p>
@@ -394,6 +489,31 @@ export const GangMembers: React.FC = () => {
               </div>
             </Card>
           </div>
+
+          {/* Connection Analytics */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Connection Strength Analysis
+            </h3>
+            <div className="space-y-3">
+              {analytics.analytics.map((analytic) => (
+                <div key={analytic.connectionId} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      Connection Strength: {analytic.strength}%
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {getStrengthBadge(analytic.strength)}
+                    <span className="text-xs text-gray-500">
+                      {analytic.messageCount} messages
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">
@@ -407,6 +527,24 @@ export const GangMembers: React.FC = () => {
 
   const renderGangMembers = () => (
     <div className="space-y-4">
+      {/* Group Chat Section */}
+      <GangGroupChat 
+        gangMembers={connections.map(conn => ({
+          _id: conn.user._id,
+          fullName: conn.user.fullName,
+          email: conn.user.email,
+          profilePhoto: conn.user.profilePhoto,
+          skills: conn.user.skills,
+          headline: conn.user.headline
+        }))}
+        currentUserId={user?._id || ''}
+      />
+      
+      {/* Individual Connections */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Individual Connections
+        </h3>
       {loading ? (
         <div className="text-center py-8">Loading gang members...</div>
       ) : connections.length === 0 ? (
@@ -440,7 +578,27 @@ export const GangMembers: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
                 <div className="flex-shrink-0">
                   {getStatusBadge(connection.status)}
+                  {connection.strength && getStrengthBadge(connection.strength)}
                 </div>
+                
+                {/* Direct Message Integration */}
+                <QuickMessage
+                  userId={connection.user._id}
+                  userName={connection.user.fullName}
+                  userPhoto={connection.user.profilePhoto}
+                  context={{
+                    type: 'connection',
+                    data: {
+                      connectionId: connection._id,
+                      connectionStrength: connection.strength,
+                      sharedSkills: connection.user.skills || []
+                    }
+                  }}
+                  onMessageSent={() => {
+                    // Optional: Show success message or update UI
+                  }}
+                />
+                
                 <Button
                   variant="outline"
                   size="sm"
@@ -578,7 +736,7 @@ export const GangMembers: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleFollowAction(follow._id)}
+                  onClick={() => handleConnectionAction('remove', follow._id)}
                   disabled={actionLoading === follow._id}
                   className="w-full sm:w-auto"
                 >
@@ -595,15 +753,57 @@ export const GangMembers: React.FC = () => {
 
   const renderDiscover = () => (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Search className="h-5 w-5 text-gray-400" />
-        <Input
-          placeholder="Search employees by name, email, or skills..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1"
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 flex-1">
+          <Search className="h-5 w-5 text-gray-400" />
+          <Input
+            placeholder="Search employees by name, email, or skills..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          Filters
+        </Button>
       </div>
+
+      {/* Bulk Actions */}
+      {selectedUsers.length > 0 && (
+        <Card className="p-4 bg-blue-50 dark:bg-blue-900/20">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-blue-600 dark:text-blue-400">
+              {selectedUsers.length} user{selectedUsers.length !== 1 ? 's' : ''} selected
+            </p>
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                onClick={() => handleBulkAction('connect')}
+                disabled={actionLoading === 'bulk'}
+              >
+                {actionLoading === 'bulk' ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <UserPlus className="h-4 w-4 mr-1" />
+                )}
+                Connect All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedUsers([])}
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
       
       {loading ? (
         <div className="text-center py-8">
@@ -627,6 +827,12 @@ export const GangMembers: React.FC = () => {
             <Card key={user._id} className="p-4 hover:shadow-md transition-shadow">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(user._id)}
+                    onChange={() => toggleUserSelection(user._id)}
+                    className="rounded border-gray-300"
+                  />
                   <Avatar name={user.fullName} src={user.profilePhoto} size="md" />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 dark:text-white truncate">
@@ -691,10 +897,10 @@ export const GangMembers: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Gang Members
+            Enhanced Gang Members
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Connect with other employees and follow employers to stay updated
+            Connect with other employees, discover recommendations, and track your network growth
           </p>
         </div>
 
@@ -732,19 +938,8 @@ export const GangMembers: React.FC = () => {
         {activeTab === 'requests' && renderRequests()}
         {activeTab === 'follows' && renderFollows()}
         {activeTab === 'analytics' && renderAnalytics()}
-        
-        {/* Connection Insights Modal */}
-        {showInsights && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <ConnectionInsights 
-                targetUserId={showInsights} 
-                onClose={() => setShowInsights(null)} 
-              />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 };
+

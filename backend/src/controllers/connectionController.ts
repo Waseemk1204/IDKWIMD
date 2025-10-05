@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import { Connection, IConnection } from '../models/Connection';
 import { Follow, IFollow } from '../models/Follow';
+import { ConnectionAnalytics, IConnectionAnalytics } from '../models/ConnectionAnalytics';
+import { ConnectionRecommendation, IConnectionRecommendation } from '../models/ConnectionRecommendation';
 import { IUser } from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
 import mongoose from 'mongoose';
 import User from '../models/User';
+import { UnifiedIntegrationService } from '../services/unifiedIntegrationService';
 
 // Send a connection request (Employee to Employee only)
 export const sendConnectionRequest = async (req: AuthRequest, res: Response) => {
@@ -153,6 +156,59 @@ export const acceptConnectionRequest = async (req: AuthRequest, res: Response) =
     // Update connection status to accepted
     connection.status = 'accepted';
     await connection.save();
+
+    // Track cross-module activity
+    try {
+      await UnifiedIntegrationService.trackActivity(
+        connection.requester.toString(),
+        'gang',
+        'connection_accepted',
+        connection._id.toString(),
+        'connection',
+        {
+          recipientId: connection.recipient.toString(),
+          connectionStrength: 50
+        }
+      );
+    } catch (trackingError) {
+      console.error('Error tracking connection activity:', trackingError);
+      // Don't fail the connection if tracking fails
+    }
+
+    // Create analytics tracking for the new connection
+    try {
+      const analytics = new ConnectionAnalytics({
+        connectionId: connection._id,
+        user1: connection.requester,
+        user2: connection.recipient,
+        strength: 50, // Initial strength
+        lastInteraction: new Date()
+      });
+      await analytics.save();
+    } catch (analyticsError) {
+      console.error('Error creating connection analytics:', analyticsError);
+      // Don't fail the connection if analytics creation fails
+    }
+
+    // Mark any existing recommendations as connected
+    try {
+      await ConnectionRecommendation.updateMany(
+        {
+          $or: [
+            { userId: connection.requester, recommendedUserId: connection.recipient },
+            { userId: connection.recipient, recommendedUserId: connection.requester }
+          ],
+          status: 'active'
+        },
+        {
+          status: 'connected',
+          connectedAt: new Date()
+        }
+      );
+    } catch (recommendationError) {
+      console.error('Error updating recommendations:', recommendationError);
+      // Don't fail the connection if recommendation update fails
+    }
 
     // Populate the connection with user details
     await connection.populate([

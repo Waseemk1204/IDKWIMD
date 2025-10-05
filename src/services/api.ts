@@ -573,6 +573,301 @@ class ApiService {
     return this.request('/community/tags');
   }
 
+  // Enhanced Community Hub methods
+  async getEnhancedCommunityPosts(params?: {
+    page?: number;
+    limit?: number;
+    sortBy?: 'newest' | 'trending' | 'top' | 'most_helpful' | 'expert_endorsed' | 'professional_relevance';
+    search?: string;
+    category?: string;
+    type?: 'discussion' | 'question' | 'insight' | 'announcement' | 'project' | 'mentorship';
+    industry?: string;
+    skillLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+    skills?: string[];
+    author?: string;
+    isMentorshipRequest?: boolean;
+    isTrending?: boolean;
+    isFeatured?: boolean;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            value.forEach(item => queryParams.append(key, item));
+          } else {
+            queryParams.append(key, value.toString());
+          }
+        }
+      });
+    }
+    return this.request(`/community-enhanced/posts?${queryParams.toString()}`);
+  }
+
+  async getEnhancedCommunityPostById(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}`);
+  }
+
+  async createEnhancedCommunityPost(postData: {
+    title: string;
+    content: string;
+    category: string;
+    type?: 'discussion' | 'question' | 'insight' | 'announcement' | 'project' | 'mentorship';
+    tags?: string[];
+    professionalContext?: {
+      industry?: string;
+      skillLevel?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+      relatedSkills?: string[];
+      jobRelevance?: boolean;
+      projectConnection?: string;
+    };
+    mentorship?: {
+      isMentorshipRequest?: boolean;
+      menteeLevel?: 'beginner' | 'intermediate' | 'advanced';
+      preferredMentorSkills?: string[];
+      mentorshipType?: 'career' | 'technical' | 'business' | 'general';
+    };
+  }): Promise<ApiResponse> {
+    return this.request('/community-enhanced/posts', {
+      method: 'POST',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  async updateEnhancedCommunityPost(id: string, postData: any): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  async deleteEnhancedCommunityPost(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleEnhancedPostLike(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}/like`, {
+      method: 'POST',
+    });
+  }
+
+  async addHelpfulVote(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}/helpful`, {
+      method: 'POST',
+    });
+  }
+
+  async addExpertEndorsement(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}/expert-endorsement`, {
+      method: 'POST',
+    });
+  }
+
+  async togglePostBookmark(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}/bookmark`, {
+      method: 'POST',
+    });
+  }
+
+  async sharePost(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/posts/${id}/share`, {
+      method: 'POST',
+    });
+  }
+
+  async getTrendingPosts(limit?: number): Promise<ApiResponse> {
+    const params = limit ? `?limit=${limit}` : '';
+    return this.request(`/community-enhanced/posts/trending${params}`);
+  }
+
+  async getPostsByProfessionalContext(params?: {
+    industry?: string;
+    skillLevel?: string;
+    skills?: string[];
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (Array.isArray(value)) {
+            value.forEach(item => queryParams.append(key, item));
+          } else {
+            queryParams.append(key, value.toString());
+          }
+        }
+      });
+    }
+    return this.request(`/community-enhanced/posts/professional-context?${queryParams.toString()}`);
+  }
+
+  async getUserBookmarks(params?: { page?: number; limit?: number }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return this.request(`/community-enhanced/bookmarks?${queryParams.toString()}`);
+  }
+
+  // Community Categories
+  async getCommunityCategories(parentOnly?: boolean): Promise<ApiResponse> {
+    const params = parentOnly ? '?parentOnly=true' : '';
+    return this.request(`/community-enhanced/categories${params}`);
+  }
+
+  async createCommunityCategory(categoryData: {
+    name: string;
+    description: string;
+    icon?: string;
+    color?: string;
+    parentCategory?: string;
+  }): Promise<ApiResponse> {
+    return this.request('/community-enhanced/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData),
+    });
+  }
+
+  // User Reputation
+  async getUserReputation(): Promise<ApiResponse> {
+    return this.request('/community-enhanced/reputation');
+  }
+
+  async getReputationLeaderboard(params?: {
+    limit?: number;
+    timeframe?: 'weekly' | 'monthly' | 'yearly' | 'alltime';
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return this.request(`/community-enhanced/reputation/leaderboard?${queryParams.toString()}`);
+  }
+
+  // Community Badges
+  async getCommunityBadges(params?: {
+    category?: 'contribution' | 'expertise' | 'leadership' | 'mentorship' | 'special';
+    isActive?: boolean;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return this.request(`/community-enhanced/badges?${queryParams.toString()}`);
+  }
+
+  async createCommunityBadge(badgeData: {
+    name: string;
+    description: string;
+    icon: string;
+    color: string;
+    category: 'contribution' | 'expertise' | 'leadership' | 'mentorship' | 'special';
+    requirements: {
+      type: 'points' | 'posts' | 'comments' | 'likes' | 'helpful' | 'expert' | 'mentorship' | 'events';
+      value: number;
+      timeframe?: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'alltime';
+    };
+    isRare?: boolean;
+  }): Promise<ApiResponse> {
+    return this.request('/community-enhanced/badges', {
+      method: 'POST',
+      body: JSON.stringify(badgeData),
+    });
+  }
+
+  // Community Events
+  async getCommunityEvents(params?: {
+    page?: number;
+    limit?: number;
+    status?: 'upcoming' | 'live' | 'completed' | 'cancelled';
+    type?: 'discussion' | 'workshop' | 'networking' | 'challenge' | 'qna';
+    category?: string;
+    host?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return this.request(`/community-enhanced/events?${queryParams.toString()}`);
+  }
+
+  async createCommunityEvent(eventData: {
+    title: string;
+    description: string;
+    category: string;
+    type: 'discussion' | 'workshop' | 'networking' | 'challenge' | 'qna';
+    startDate: string;
+    endDate?: string;
+    maxParticipants?: number;
+    tags?: string[];
+    isPublic?: boolean;
+    requirements?: {
+      minReputation?: number;
+      requiredSkills?: string[];
+      maxParticipants?: number;
+    };
+    location?: {
+      type: 'online' | 'physical';
+      address?: string;
+      meetingLink?: string;
+    };
+    agenda?: Array<{
+      time: string;
+      title: string;
+      description?: string;
+      speaker?: string;
+    }>;
+    resources?: Array<{
+      title: string;
+      url: string;
+      type: 'document' | 'video' | 'link';
+    }>;
+  }): Promise<ApiResponse> {
+    return this.request('/community-enhanced/events', {
+      method: 'POST',
+      body: JSON.stringify(eventData),
+    });
+  }
+
+  async joinCommunityEvent(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/events/${id}/join`, {
+      method: 'POST',
+    });
+  }
+
+  async leaveCommunityEvent(id: string): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/events/${id}/leave`, {
+      method: 'POST',
+    });
+  }
+
+  async submitEventFeedback(id: string, feedbackData: {
+    rating: number;
+    comment?: string;
+  }): Promise<ApiResponse> {
+    return this.request(`/community-enhanced/events/${id}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
+    });
+  }
+
   // Connection methods (Gang Members)
   async sendConnectionRequest(recipientId: string): Promise<ApiResponse> {
     return this.request('/connections/request', {
@@ -657,6 +952,73 @@ class ApiService {
     return this.request(`/connections/discover?${queryParams.toString()}`);
   }
 
+  // Enhanced Gang Members methods
+  async getConnectionRecommendations(page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (page) {
+      queryParams.append('page', page.toString());
+    }
+    if (limit) {
+      queryParams.append('limit', limit.toString());
+    }
+    return this.request(`/connections/recommendations?${queryParams.toString()}`);
+  }
+
+  async dismissRecommendation(recommendationId: string): Promise<ApiResponse> {
+    return this.request(`/connections/recommendations/${recommendationId}/dismiss`, {
+      method: 'POST',
+    });
+  }
+
+  async getConnectionAnalytics(): Promise<ApiResponse> {
+    return this.request('/connections/analytics');
+  }
+
+  async getMutualConnections(userId: string): Promise<ApiResponse> {
+    return this.request(`/connections/mutual/${userId}`);
+  }
+
+  async bulkConnectionActions(action: 'connect' | 'follow', userIds: string[]): Promise<ApiResponse> {
+    return this.request('/connections/bulk-actions', {
+      method: 'POST',
+      body: JSON.stringify({ action, userIds }),
+    });
+  }
+
+  // Unified Integration methods
+  async getUnifiedActivityFeed(page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (page) queryParams.append('page', page.toString());
+    if (limit) queryParams.append('limit', limit.toString());
+    return this.request(`/integration/activity-feed?${queryParams.toString()}`);
+  }
+
+  async getCrossModuleRecommendations(): Promise<ApiResponse> {
+    return this.request('/integration/recommendations');
+  }
+
+  async getUserContext(): Promise<ApiResponse> {
+    return this.request('/integration/user-context');
+  }
+
+  async updateIntegrationPreferences(preferences: any): Promise<ApiResponse> {
+    return this.request('/integration/preferences', {
+      method: 'PUT',
+      body: JSON.stringify({ preferences }),
+    });
+  }
+
+  async trackActivity(module: string, action: string, targetId?: string, targetType?: string, metadata?: any): Promise<ApiResponse> {
+    return this.request('/integration/track-activity', {
+      method: 'POST',
+      body: JSON.stringify({ module, action, targetId, targetType, metadata }),
+    });
+  }
+
+  async getNetworkInsights(): Promise<ApiResponse> {
+    return this.request('/integration/network-insights');
+  }
+
   // Search methods
   async globalSearch(params: {
     q: string;
@@ -707,7 +1069,7 @@ class ApiService {
     const queryParams = new URLSearchParams();
     if (page) queryParams.append('page', page.toString());
     if (limit) queryParams.append('limit', limit.toString());
-    return this.request(`/messages/conversations?${queryParams.toString()}`);
+    return this.request(`/v1/messages/conversations?${queryParams.toString()}`);
   }
 
   async createConversation(data: {
@@ -716,7 +1078,7 @@ class ApiService {
     conversationType?: 'direct' | 'group' | 'job_related';
     job?: string;
   }): Promise<ApiResponse> {
-    return this.request('/messages/conversations', {
+    return this.request('/v1/messages/conversations', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -726,7 +1088,7 @@ class ApiService {
     const queryParams = new URLSearchParams();
     if (page) queryParams.append('page', page.toString());
     if (limit) queryParams.append('limit', limit.toString());
-    return this.request(`/messages/conversations/${conversationId}/messages?${queryParams.toString()}`);
+    return this.request(`/v1/messages/conversations/${conversationId}/messages?${queryParams.toString()}`);
   }
 
   async sendMessage(conversationId: string, data: {
@@ -735,43 +1097,117 @@ class ApiService {
     attachments?: string[];
     replyTo?: string;
   }): Promise<ApiResponse> {
-    return this.request(`/messages/conversations/${conversationId}/messages`, {
+    return this.request(`/v1/messages/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async markMessagesAsRead(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/messages/conversations/${conversationId}/read`, {
+    return this.request(`/v1/messages/conversations/${conversationId}/read`, {
       method: 'PUT',
     });
   }
 
   async editMessage(messageId: string, content: string): Promise<ApiResponse> {
-    return this.request(`/messages/messages/${messageId}`, {
+    return this.request(`/v1/messages/messages/${messageId}`, {
       method: 'PUT',
       body: JSON.stringify({ content }),
     });
   }
 
   async deleteMessage(messageId: string): Promise<ApiResponse> {
-    return this.request(`/messages/messages/${messageId}`, {
+    return this.request(`/v1/messages/messages/${messageId}`, {
       method: 'DELETE',
     });
   }
 
   async getConversationParticipants(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/messages/conversations/${conversationId}/participants`);
+    return this.request(`/v1/messages/conversations/${conversationId}/participants`);
   }
 
   async deleteConversation(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/messages/conversations/${conversationId}`, {
+    return this.request(`/v1/messages/conversations/${conversationId}`, {
       method: 'DELETE',
     });
   }
 
   async getUnreadCount(): Promise<ApiResponse> {
-    return this.request('/messages/unread-count');
+    return this.request('/v1/messages/unread-count');
+  }
+
+  // Enhanced messaging methods
+  async addReaction(messageId: string, reactionType: string): Promise<ApiResponse> {
+    return this.request(`/v1/messages/messages/${messageId}/reactions`, {
+      method: 'POST',
+      body: JSON.stringify({ reactionType }),
+    });
+  }
+
+  async createThread(conversationId: string, data: {
+    parentMessageId: string;
+    title?: string;
+  }): Promise<ApiResponse> {
+    return this.request(`/v1/messages/conversations/${conversationId}/threads`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async searchMessages(query: string, conversationId?: string, page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('q', query);
+    if (conversationId) queryParams.append('conversationId', conversationId);
+    if (page) queryParams.append('page', page.toString());
+    if (limit) queryParams.append('limit', limit.toString());
+    return this.request(`/v1/messages/search?${queryParams.toString()}`);
+  }
+
+  // Unified messaging integration methods
+  async createJobConversation(data: {
+    applicationId: string;
+    jobId: string;
+  }): Promise<ApiResponse> {
+    return this.request('/v1/unified-messaging/job-conversation', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createCommunityConversation(data: {
+    postId: string;
+    authorId: string;
+  }): Promise<ApiResponse> {
+    return this.request('/v1/unified-messaging/community-conversation', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createGangConversation(data: {
+    connectionId: string;
+    targetUserId: string;
+  }): Promise<ApiResponse> {
+    return this.request('/v1/unified-messaging/gang-conversation', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getConversationSuggestions(): Promise<ApiResponse> {
+    return this.request('/v1/unified-messaging/suggestions');
+  }
+
+  async getMessagingAnalytics(timeframe?: '7d' | '30d' | '90d'): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (timeframe) queryParams.append('timeframe', timeframe);
+    return this.request(`/v1/unified-messaging/analytics?${queryParams.toString()}`);
+  }
+
+  async updateConnectionStrength(conversationId: string): Promise<ApiResponse> {
+    return this.request(`/v1/unified-messaging/conversations/${conversationId}/connection-strength`, {
+      method: 'PUT',
+    });
   }
 
   // Wallet methods
@@ -1003,6 +1439,96 @@ class ApiService {
     return this.request('/notifications/settings', {
       method: 'PUT',
       body: JSON.stringify({ settings }),
+    });
+  }
+
+  // Unified notification methods
+  async getUnifiedNotifications(params?: {
+    page?: number;
+    limit?: number;
+    module?: string;
+    priority?: string;
+    unreadOnly?: boolean;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.module) queryParams.append('module', params.module);
+    if (params?.priority) queryParams.append('priority', params.priority);
+    if (params?.unreadOnly) queryParams.append('unreadOnly', params.unreadOnly.toString());
+    return this.request(`/v1/unified-notifications/notifications?${queryParams.toString()}`);
+  }
+
+  async markUnifiedNotificationAsRead(notificationId: string): Promise<ApiResponse> {
+    return this.request(`/v1/unified-notifications/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  }
+
+  async markAllUnifiedNotificationsAsRead(): Promise<ApiResponse> {
+    return this.request('/v1/unified-notifications/notifications/read-all', {
+      method: 'PUT',
+    });
+  }
+
+  async getNotificationPreferences(): Promise<ApiResponse> {
+    return this.request('/v1/unified-notifications/preferences');
+  }
+
+  async updateNotificationPreferences(preferences: any): Promise<ApiResponse> {
+    return this.request('/v1/unified-notifications/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    });
+  }
+
+  async getCrossModuleActivity(params?: {
+    page?: number;
+    limit?: number;
+    module?: string;
+    timeframe?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.module) queryParams.append('module', params.module);
+    if (params?.timeframe) queryParams.append('timeframe', params.timeframe);
+    return this.request(`/v1/unified-notifications/activity?${queryParams.toString()}`);
+  }
+
+  async getSmartNotificationSuggestions(): Promise<ApiResponse> {
+    return this.request('/v1/unified-notifications/suggestions');
+  }
+
+  async getNotificationAnalytics(timeframe?: string): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (timeframe) queryParams.append('timeframe', timeframe);
+    return this.request(`/v1/unified-notifications/analytics?${queryParams.toString()}`);
+  }
+
+  // Unified user context methods
+  async getUnifiedUserContext(): Promise<ApiResponse> {
+    return this.request('/v1/unified-context/context');
+  }
+
+  async getCrossModuleActivitySummary(timeframe?: string): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (timeframe) queryParams.append('timeframe', timeframe);
+    return this.request(`/v1/unified-context/activity-summary?${queryParams.toString()}`);
+  }
+
+  async getUserNetworkInsights(): Promise<ApiResponse> {
+    return this.request('/v1/unified-context/network-insights');
+  }
+
+  async getEcosystemIntegrationStatus(): Promise<ApiResponse> {
+    return this.request('/v1/unified-context/integration-status');
+  }
+
+  async updateUserPreferences(preferences: any): Promise<ApiResponse> {
+    return this.request('/v1/unified-context/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
     });
   }
 }

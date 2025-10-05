@@ -25,6 +25,7 @@ import { MyApplications } from './pages/employee/MyApplications';
 import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
 import { EmployeeWallet } from './pages/employee/Wallet';
 import { GangMembers } from './pages/employee/GangMembers';
+import { UnifiedDashboardPage } from './pages/shared/UnifiedDashboard';
 // Admin pages
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { VerificationRequests } from './pages/admin/VerificationRequests';
@@ -144,6 +145,13 @@ export function AppRouter() {
           <Route path="timesheet" element={<TimesheetSubmission />} />
           <Route path="wallet" element={<EmployeeWallet />} />
           <Route path="gang-members" element={<GangMembers />} />
+        </Route>
+
+        {/* Unified Dashboard - Available to all authenticated users */}
+        <Route path="/unified-dashboard" element={<ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<UnifiedDashboardPage />} />
         </Route>
 
         {/* Admin Routes */}

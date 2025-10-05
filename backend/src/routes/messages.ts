@@ -10,8 +10,11 @@ import {
   getUnreadCount,
   editMessage,
   deleteMessage,
-  getConversationParticipants
-} from '../controllers/messageController';
+  getConversationParticipants,
+  addReaction,
+  createThread,
+  searchMessages
+} from '../controllers/enhancedMessageController';
 import {
   validateCreateMessage,
   validateEditMessage,
@@ -34,6 +37,11 @@ router.post('/conversations/:conversationId/messages', validateCreateMessage, se
 router.put('/conversations/:conversationId/read', markMessagesAsRead as any);
 router.put('/messages/:messageId', validateEditMessage, editMessage as any);
 router.delete('/messages/:messageId', deleteMessage as any);
+
+// Enhanced features
+router.post('/messages/:messageId/reactions', addReaction as any);
+router.post('/conversations/:conversationId/threads', createThread as any);
+router.get('/search', searchMessages as any);
 
 // Conversation routes
 router.get('/conversations/:conversationId/participants', getConversationParticipants as any);

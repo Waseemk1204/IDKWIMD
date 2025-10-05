@@ -5,13 +5,25 @@ export interface IMessage extends Document {
   conversation: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
   content: string;
-  messageType: 'text' | 'image' | 'file' | 'system';
+  messageType: 'text' | 'image' | 'file' | 'system' | 'job_context' | 'community_context';
   attachments?: string[];
   isRead: boolean;
   readAt?: Date;
   editedAt?: Date;
   isEdited: boolean;
   replyTo?: mongoose.Types.ObjectId;
+  threadId?: mongoose.Types.ObjectId;
+  reactions?: {
+    reactionType: string;
+    count: number;
+    users: mongoose.Types.ObjectId[];
+  }[];
+  context?: {
+    jobId?: mongoose.Types.ObjectId;
+    communityPostId?: mongoose.Types.ObjectId;
+    connectionId?: mongoose.Types.ObjectId;
+    applicationId?: mongoose.Types.ObjectId;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,7 +47,7 @@ const messageSchema = new Schema<IMessage>({
   },
   messageType: {
     type: String,
-    enum: ['text', 'image', 'file', 'system'],
+    enum: ['text', 'image', 'file', 'system', 'job_context', 'community_context'],
     default: 'text'
   },
   attachments: [{
@@ -58,6 +70,42 @@ const messageSchema = new Schema<IMessage>({
   replyTo: {
     type: Schema.Types.ObjectId,
     ref: 'Message'
+  },
+  threadId: {
+    type: Schema.Types.ObjectId,
+    ref: 'MessageThread'
+  },
+  reactions: [{
+    reactionType: {
+      type: String,
+      enum: ['like', 'love', 'laugh', 'wow', 'sad', 'angry', 'thumbs_up', 'lightbulb', 'checkmark', 'question']
+    },
+    count: {
+      type: Number,
+      default: 0
+    },
+    users: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }]
+  }],
+  context: {
+    jobId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Job'
+    },
+    communityPostId: {
+      type: Schema.Types.ObjectId,
+      ref: 'CommunityPost'
+    },
+    connectionId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Connection'
+    },
+    applicationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Application'
+    }
   }
 }, {
   timestamps: true,

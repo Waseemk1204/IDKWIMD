@@ -59,12 +59,54 @@ export const setupSocketHandlers = (io: SocketIOServer): void => {
       conversationId: string;
       content: string;
       messageType?: string;
+      replyTo?: string;
+      threadId?: string;
+      context?: any;
     }) => {
       // Broadcast message to conversation room
       socket.to(`conversation_${data.conversationId}`).emit('new_message', {
         ...data,
         sender: socket.userId,
         timestamp: new Date()
+      });
+    });
+
+    // Handle message reactions
+    socket.on('add_reaction', (data: {
+      messageId: string;
+      reactionType: string;
+    }) => {
+      // Broadcast reaction to conversation room
+      socket.broadcast.emit('message_reaction', {
+        messageId: data.messageId,
+        reactionType: data.reactionType,
+        userId: socket.userId,
+        timestamp: new Date()
+      });
+    });
+
+    // Handle message editing
+    socket.on('edit_message', (data: {
+      messageId: string;
+      content: string;
+    }) => {
+      // Broadcast edited message to conversation room
+      socket.to(`conversation_${data.conversationId}`).emit('message_edited', {
+        messageId: data.messageId,
+        content: data.content,
+        editedAt: new Date()
+      });
+    });
+
+    // Handle message deletion
+    socket.on('delete_message', (data: {
+      messageId: string;
+      conversationId: string;
+    }) => {
+      // Broadcast deleted message to conversation room
+      socket.to(`conversation_${data.conversationId}`).emit('message_deleted', {
+        messageId: data.messageId,
+        deletedAt: new Date()
       });
     });
 
@@ -110,4 +152,37 @@ export const sendNotificationToUser = (io: SocketIOServer, userId: string, notif
 // Helper function to send message to conversation
 export const sendMessageToConversation = (io: SocketIOServer, conversationId: string, message: any): void => {
   io.to(`conversation_${conversationId}`).emit('new_message', message);
+};
+
+// Cross-module real-time updates
+export const sendCrossModuleUpdate = (io: SocketIOServer, userId: string, update: {
+  type: 'community_post' | 'gang_connection' | 'job_application' | 'message_sent' | 'notification';
+  module: string;
+  data: any;
+  timestamp: Date;
+}): void => {
+  io.to(`user_${userId}`).emit('cross_module_update', update);
+};
+
+// Send unified notification
+export const sendUnifiedNotification = (io: SocketIOServer, userId: string, notification: {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  module: string;
+  priority: 'low' | 'medium' | 'high';
+  actionUrl?: string;
+  timestamp: Date;
+}): void => {
+  io.to(`user_${userId}`).emit('unified_notification', notification);
+};
+
+// Send ecosystem integration update
+export const sendEcosystemUpdate = (io: SocketIOServer, userId: string, update: {
+  type: 'integration_status' | 'context_update' | 'activity_summary';
+  data: any;
+  timestamp: Date;
+}): void => {
+  io.to(`user_${userId}`).emit('ecosystem_update', update);
 };

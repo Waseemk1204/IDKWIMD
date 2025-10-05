@@ -19,8 +19,10 @@ import {
   Camera,
   CheckCircle,
   AlertCircle,
-  Lock
+  Lock,
+  MessageCircle
 } from 'lucide-react';
+import { QuickMessage, MessageIntegration } from '../../components/messaging/MessageIntegration';
 
 interface ProfileFormData {
   fullName: string;
@@ -445,6 +447,24 @@ export const Profile: React.FC = () => {
                 ) : (
                   <TrustBadge variant="pending" size="lg" text="Verification Pending" />
                 )}
+                
+                {/* Messaging Integration */}
+                <div className="mt-4">
+                  <MessageIntegration
+                    userId={user._id}
+                    userName={user.fullName}
+                    userPhoto={user.profilePhoto}
+                    connectionStrength={85} // This would come from connection analytics
+                    sharedInterests={user.skills || []}
+                    recentActivity={[
+                      {
+                        type: 'community_post',
+                        data: { title: 'Latest post', content: 'Recent activity' },
+                        timestamp: new Date()
+                      }
+                    ]}
+                  />
+                </div>
               </div>
 
               {/* Profile Stats */}
