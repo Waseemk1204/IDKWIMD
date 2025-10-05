@@ -5,6 +5,8 @@ import { Toaster } from 'sonner';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
+import { DevelopmentNotice } from './components/ui/DevelopmentNotice';
+import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 
 export function App() {
   useEffect(() => {
@@ -158,6 +160,12 @@ export function App() {
             <AppRouter />
             <Toaster position="top-right" />
             <SpeedInsights />
+            
+            {/* Development Notice Dialog */}
+            <DevelopmentNotice />
+            
+            {/* Sticky Feedback Button */}
+            <StickyFeedbackButton />
           </div>
         </AuthProvider>
       </ThemeProvider>
