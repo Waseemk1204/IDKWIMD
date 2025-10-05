@@ -1531,6 +1531,37 @@ class ApiService {
       body: JSON.stringify(preferences),
     });
   }
+
+  // ===== COMMUNITY HUB INTEGRATION METHODS =====
+
+  // Message post author
+  async messagePostAuthor(postId: string, targetUserId: string): Promise<ApiResponse> {
+    return this.request(`/v1/community-enhanced/posts/${postId}/message-author`, {
+      method: 'POST',
+      body: JSON.stringify({ targetUserId }),
+    });
+  }
+
+  // Invite gang to discussion
+  async inviteGangToDiscussion(postId: string, gangMemberIds: string[]): Promise<ApiResponse> {
+    return this.request(`/v1/community-enhanced/posts/${postId}/invite-gang`, {
+      method: 'POST',
+      body: JSON.stringify({ gangMemberIds }),
+    });
+  }
+
+  // Get personalized discussions
+  async getPersonalizedDiscussions(limit: number = 10): Promise<ApiResponse> {
+    return this.request(`/v1/community-enhanced/posts/personalized?limit=${limit}`);
+  }
+
+  // Update cross-module activity
+  async updateCrossModuleActivity(module: string, action: string, data: any): Promise<ApiResponse> {
+    return this.request('/v1/community-enhanced/activity', {
+      method: 'POST',
+      body: JSON.stringify({ module, action, data }),
+    });
+  }
 }
 
 // Create and export a singleton instance

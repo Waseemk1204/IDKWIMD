@@ -20,6 +20,7 @@ import {
 import apiService from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { QuickMessage } from '../messaging/MessageIntegration';
+import { CommunityIntegrationLayer } from './CommunityIntegrationLayer';
 
 interface EnhancedCommunityPost {
   _id: string;
@@ -417,6 +418,17 @@ export const EnhancedPostCard: React.FC<EnhancedPostCardProps> = ({
             </Button>
           </div>
         </div>
+
+        {/* Community Integration Layer */}
+        <CommunityIntegrationLayer 
+          post={post}
+          onMessageSent={() => {
+            // Show success message or update UI
+          }}
+          onInvitationSent={() => {
+            // Show success message
+          }}
+        />
       </div>
     </div>
   );

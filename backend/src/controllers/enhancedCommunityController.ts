@@ -9,6 +9,7 @@ import { UserBookmark, IUserBookmark } from '../models/UserBookmark';
 import { UserFollow, IUserFollow } from '../models/UserFollow';
 import { IUser } from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
+import { CommunityIntegrationService } from '../services/communityIntegrationService';
 import mongoose from 'mongoose';
 
 // Get all community posts with enhanced filtering and professional context
@@ -823,6 +824,112 @@ export const getUserBookmarks = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch bookmarks'
+    });
+  }
+};
+
+// ===== COMMUNITY HUB INTEGRATION METHODS =====
+
+// Message author from post
+export const messagePostAuthor = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { postId } = req.params;
+    const { targetUserId } = req.body;
+    const userId = req.user._id;
+
+    const conversation = await CommunityIntegrationService.createPostConversation(
+      postId, 
+      userId, 
+      targetUserId
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Conversation created successfully',
+      data: { conversation }
+    });
+  } catch (error) {
+    console.error('Message post author error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Invite gang to discussion
+export const inviteGangToDiscussion = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { postId } = req.params;
+    const { gangMemberIds } = req.body;
+    const userId = req.user._id;
+
+    const invitations = await CommunityIntegrationService.inviteGangToDiscussion(
+      postId,
+      userId,
+      gangMemberIds
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Gang invitations sent successfully',
+      data: { invitations }
+    });
+  } catch (error) {
+    console.error('Invite gang to discussion error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Get personalized discussions
+export const getPersonalizedDiscussions = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { limit = 10 } = req.query;
+    const userId = req.user._id;
+
+    const discussions = await CommunityIntegrationService.getPersonalizedDiscussions(
+      userId,
+      Number(limit)
+    );
+
+    res.json({
+      success: true,
+      data: { discussions }
+    });
+  } catch (error) {
+    console.error('Get personalized discussions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+// Update cross-module activity
+export const updateCrossModuleActivity = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { module, action, data } = req.body;
+    const userId = req.user._id;
+
+    await CommunityIntegrationService.updateCrossModuleActivity(
+      userId,
+      module,
+      action,
+      data
+    );
+
+    res.json({
+      success: true,
+      message: 'Cross-module activity updated successfully'
+    });
+  } catch (error) {
+    console.error('Update cross-module activity error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 };

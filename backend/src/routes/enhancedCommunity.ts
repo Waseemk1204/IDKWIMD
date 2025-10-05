@@ -13,7 +13,12 @@ import {
   sharePost,
   getTrendingPosts,
   getPostsByProfessionalContext,
-  getUserBookmarks
+  getUserBookmarks,
+  // Integration methods
+  messagePostAuthor,
+  inviteGangToDiscussion,
+  getPersonalizedDiscussions,
+  updateCrossModuleActivity
 } from '../controllers/enhancedCommunityController';
 
 import {
@@ -69,6 +74,16 @@ router.post('/events', authenticate, createCommunityEvent);
 router.post('/events/:id/join', authenticate, joinCommunityEvent);
 router.post('/events/:id/leave', authenticate, leaveCommunityEvent);
 router.post('/events/:id/feedback', authenticate, submitEventFeedback);
+
+// ===== COMMUNITY HUB INTEGRATION ROUTES =====
+
+// Cross-module messaging and invitations
+router.post('/posts/:id/message-author', authenticate, messagePostAuthor);
+router.post('/posts/:id/invite-gang', authenticate, inviteGangToDiscussion);
+
+// Personalized content and activity
+router.get('/posts/personalized', authenticate, getPersonalizedDiscussions);
+router.post('/activity', authenticate, updateCrossModuleActivity);
 
 export default router;
 

@@ -20,6 +20,7 @@ import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
 import { GangCommunityIntegration } from './GangCommunityIntegration';
 import { ProfessionalRecommendations } from './ProfessionalRecommendations';
+import { UnifiedActivityFeed } from '../../components/community/UnifiedActivityFeed';
 
 interface UserStats {
   totalPosts: number;
@@ -416,6 +417,7 @@ export const CommunityDashboard: React.FC = () => {
 
           {activeTab === 'gang' && <GangCommunityIntegration />}
           {activeTab === 'recommendations' && <ProfessionalRecommendations />}
+          {activeTab === 'activity' && <UnifiedActivityFeed />}
         </div>
       </div>
     </div>
