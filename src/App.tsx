@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'sonner';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 import { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { DevelopmentNotice } from './components/ui/DevelopmentNotice';
@@ -160,6 +161,7 @@ export function App() {
             <AppRouter />
             <Toaster position="top-right" />
             <SpeedInsights />
+            <Analytics />
             
             {/* Development Notice Dialog */}
             <DevelopmentNotice />
