@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { TrustBadge, VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
 import { StandardizedSocialSignIn } from '../../components/auth/StandardizedSocialSignIn';
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
+import { SignupSuccessAnimation } from '../../components/ui/SignupSuccessAnimation';
 import { googleAuthService } from '../../services/googleAuth';
 import { 
   Mail, 
@@ -33,6 +34,8 @@ export const Signup: React.FC = () => {
   const [role, setRole] = useState<'employer' | 'employee'>(initialRole);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [userName, setUserName] = useState('');
   
   const { signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -49,24 +52,19 @@ export const Signup: React.FC = () => {
         // Login with Google user data
         const user = await loginWithGoogle(result.user);
         
-        // Redirect based on user role or intent
-        if (user?.role === 'employer') {
-          navigate('/employer');
-        } else if (user?.role === 'employee') {
-          navigate('/employee');
-        } else if (user?.role === 'admin') {
-          navigate('/admin');
-        } else {
-          // Default to employee dashboard if no specific role
-          navigate('/employee');
-        }
+        // Extract name for personalization
+        const name = result.user.fullName || result.user.email?.split('@')[0] || 'there';
+        setUserName(name);
+        
+        // Show success animation
+        setShowSuccessAnimation(true);
       } else {
         setError(result.error || 'Google authentication failed');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Google OAuth error:', error);
       setError(error instanceof Error ? error.message : 'Google authentication failed');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -89,12 +87,29 @@ export const Signup: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await signup(email, password, role);
-      navigate(`/onboarding/${role}`);
+      const user = await signup(email, password, role);
+      
+      // Extract name from email for personalization
+      const nameFromEmail = email.split('@')[0];
+      setUserName(nameFromEmail);
+      
+      // Show success animation
+      setShowSuccessAnimation(true);
     } catch (err) {
       setError('Failed to create an account. Please try again.');
-    } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAnimationComplete = () => {
+    setShowSuccessAnimation(false);
+    setIsLoading(false);
+    
+    // Navigate based on user role
+    if (role === 'employer') {
+      navigate('/employer');
+    } else {
+      navigate('/employee');
     }
   };
 
@@ -119,6 +134,16 @@ export const Signup: React.FC = () => {
 
   return (
     <div className="min-h-screen gradient-hero flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Success Animation */}
+      {showSuccessAnimation && (
+        <SignupSuccessAnimation
+          userName={userName}
+          userRole={role}
+          onComplete={handleAnimationComplete}
+          isVisible={showSuccessAnimation}
+        />
+      )}
+      
       <div className="max-w-6xl w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           
