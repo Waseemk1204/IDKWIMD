@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Mail, X } from 'lucide-react';
 import { Button } from './Button';
 
@@ -8,8 +8,27 @@ interface StickyFeedbackButtonProps {
 
 export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ className = '' }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const buttonRef = useRef<HTMLDivElement>(null);
+
+  // Close expanded panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
 
   const handleFeedbackClick = () => {
+    console.log('Feedback button clicked'); // Debug log
     const subject = encodeURIComponent('Part-Time Pays Site Feedback');
     const body = encodeURIComponent(
       `Hi ParttimePays Team,\n\nI'd like to share some feedback about the website:\n\n` +
@@ -23,15 +42,30 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
     );
     
     const mailtoLink = `mailto:waseemk1204@gmail.com?subject=${subject}&body=${body}`;
-    window.open(mailtoLink, '_blank');
+    console.log('Opening mailto link:', mailtoLink); // Debug log
+    
+    // Try multiple methods to ensure the email client opens
+    try {
+      window.open(mailtoLink, '_blank');
+    } catch (error) {
+      console.error('Error opening mailto link:', error);
+      // Fallback: try to create a temporary link and click it
+      const tempLink = document.createElement('a');
+      tempLink.href = mailtoLink;
+      tempLink.target = '_blank';
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      document.body.removeChild(tempLink);
+    }
   };
 
   const toggleExpanded = () => {
+    console.log('Toggle expanded clicked, current state:', isExpanded); // Debug log
     setIsExpanded(!isExpanded);
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-40 ${className}`}>
+    <div ref={buttonRef} className={`fixed bottom-6 right-6 z-50 ${className}`}>
       {/* Main Feedback Button */}
       <div className="relative">
         <Button
@@ -44,7 +78,7 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
 
         {/* Expanded Options */}
         {isExpanded && (
-          <div className="absolute bottom-16 right-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 min-w-64 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="absolute bottom-16 right-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 min-w-64 transform transition-all duration-200 ease-out animate-fade-in-up">
             {/* Close Button */}
             <button
               onClick={toggleExpanded}
