@@ -37,6 +37,21 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
     { duration: 1500, message: "You're the best! 🎉" }
   ];
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isVisible) {
+      // Store original overflow style
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+      
+      // Cleanup function to restore scrolling
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isVisible]);
+
   // Generate confetti pieces
   const generateConfetti = () => {
     const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
@@ -44,6 +59,7 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
     
     // Use viewport dimensions for better mobile support
     const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
     
     for (let i = 0; i < 50; i++) {
       pieces.push({
@@ -105,6 +121,21 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
   useEffect(() => {
     if (isVisible) {
       generateConfetti();
+    }
+  }, [isVisible]);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isVisible) {
+      // Store original overflow style
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+      
+      // Cleanup function to restore scrolling
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
     }
   }, [isVisible]);
 

@@ -7,7 +7,7 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
-  onClick?: (e?: React.MouseEvent) => void;
+  onClick?: () => void;
   variant?: CardVariant;
   size?: CardSize;
   trustIndicator?: boolean;

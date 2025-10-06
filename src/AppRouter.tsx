@@ -1,174 +1,197 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { HelmetProvider } from 'react-helmet-async';
-
-// Import all pages
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+// Layouts
+import { DashboardLayout } from './layouts/DashboardLayout';
+// Public pages
 import { Landing } from './pages/Landing';
 import { Login } from './pages/auth/Login';
 import { Signup } from './pages/auth/Signup';
-import { OnboardingEmployee } from './pages/auth/OnboardingEmployee';
 import { OnboardingEmployer } from './pages/auth/OnboardingEmployer';
-import { NotFound } from './pages/NotFound';
-import { PrivacyPolicy } from './pages/shared/PrivacyPolicy';
-
+import { OnboardingEmployee } from './pages/auth/OnboardingEmployee';
+// Employer pages
+import { EmployerDashboard } from './pages/employer/Dashboard';
+import { PostJob } from './pages/employer/PostJob';
+import { EditJob } from './pages/employer/EditJob';
+import { EmployerWallet } from './pages/employer/Wallet';
+import { TimesheetApproval } from './pages/employer/TimesheetApproval';
+import { JobManagement } from './pages/employer/JobManagement';
+import { JobApplicants } from './pages/employer/JobApplicants';
 // Employee pages
 import { EmployeeDashboard } from './pages/employee/Dashboard';
 import { BrowseJobs } from './pages/employee/BrowseJobs';
 import { JobDetails } from './pages/employee/JobDetails';
 import { MyApplications } from './pages/employee/MyApplications';
-import { GangMembers } from './pages/employee/GangMembers';
 import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
 import { EmployeeWallet } from './pages/employee/Wallet';
-
-// Employer pages
-import { EmployerDashboard } from './pages/employer/Dashboard';
-import { PostJob } from './pages/employer/PostJob';
-import { EditJob } from './pages/employer/EditJob';
-import { JobManagement } from './pages/employer/JobManagement';
-import { JobApplicants } from './pages/employer/JobApplicants';
-import { TimesheetApproval } from './pages/employer/TimesheetApproval';
-import { EmployerWallet } from './pages/employer/Wallet';
-
+import { GangMembers } from './pages/employee/GangMembers';
+import { UnifiedDashboardPage } from './pages/shared/UnifiedDashboard';
 // Admin pages
 import { AdminDashboard } from './pages/admin/Dashboard';
-import { EnhancedDashboard } from './pages/admin/EnhancedDashboard';
-import { JobApproval } from './pages/admin/JobApproval';
 import { VerificationRequests } from './pages/admin/VerificationRequests';
+import { JobApproval } from './pages/admin/JobApproval';
 import { DisputeManagement } from './pages/admin/DisputeManagement';
-
+// Shared pages
+import { Notifications } from './pages/shared/Notifications';
+import { EnhancedProfile } from './pages/shared/EnhancedProfile';
+import { AboutUs } from './pages/shared/AboutUs';
+import { Blogs } from './pages/shared/Blogs';
+import { BlogPostPage } from './pages/shared/BlogPost';
+import { ContactUs } from './pages/shared/ContactUs';
+import { CustomerSupport } from './pages/shared/CustomerSupport';
+import { SearchPage } from './pages/shared/SearchPage';
+import { PrivacyPolicy } from './pages/shared/PrivacyPolicy';
+import { NotFound } from './pages/NotFound';
+// Auth pages
+import { OAuthCallback } from './pages/auth/OAuthCallback';
+// Messaging pages
+import { Messaging } from './pages/Messaging';
 // Community pages
 import { CommunityHub } from './pages/community/CommunityHub';
-import { CreatePost } from './pages/community/CreatePost';
 import { PostDetail } from './pages/community/PostDetail';
-import { CommunityDashboard } from './pages/community/CommunityDashboard';
-import { CreateEnhancedPost } from './pages/community/CreateEnhancedPost';
-
-// Messaging pages
-import { Inbox } from './pages/messaging/Inbox';
-import { Conversation } from './pages/messaging/Conversation';
-import { Messaging } from './pages/Messaging';
-
-// Shared pages
-import { Profile } from './pages/shared/Profile';
-import { EnhancedProfile } from './pages/shared/EnhancedProfile';
-import { SearchPage } from './pages/shared/SearchPage';
-import { Verification } from './pages/shared/Verification';
-import { Wallet } from './pages/shared/Wallet';
-import { BlogPostPage as BlogPost } from './pages/shared/BlogPost';
-import { Blogs as BlogList } from './pages/shared/Blogs';
-import { AboutUs as About } from './pages/shared/AboutUs';
-import { ContactUs as Contact } from './pages/shared/ContactUs';
-import { CustomerSupport as Help } from './pages/shared/CustomerSupport';
-
-// Components
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { PublicRoute } from './components/auth/PublicRoute';
-import ErrorBoundary from './components/ErrorBoundary';
-import { DevelopmentNotice } from './components/ui/DevelopmentNotice';
-import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
-
-// Import Analytics
-import { Analytics } from '@vercel/analytics/react';
-
-// Protected route wrapper
-const ProtectedRouteWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <ProtectedRoute>
-      {children}
-    </ProtectedRoute>
-  );
+import { CreatePost } from './pages/community/CreatePost';
+// Public Landing component that redirects logged-in users
+const PublicLanding: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (isAuthenticated && user) {
+    // Redirect to appropriate dashboard based on user role
+    if (user.role === 'employer') {
+      return <Navigate to="/employer" replace />;
+    } else if (user.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else {
+      return <Navigate to="/employee" replace />;
+    }
+  }
+  
+  return <Landing />;
 };
 
-// Public route wrapper
-const PublicRouteWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <PublicRoute>
-      {children}
-    </PublicRoute>
-  );
+// Protected route component
+const ProtectedRoute: React.FC<{
+  children: React.ReactNode;
+  requiredRole?: string;
+}> = ({
+  children,
+  requiredRole
+}) => {
+  const {
+    user,
+    isAuthenticated,
+    isLoading
+  } = useAuth();
+  
+  // Show loading state while authentication is being checked
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  if (requiredRole && user?.role !== requiredRole) {
+    return <Navigate to="/" />;
+  }
+  return <>{children}</>;
 };
-
 export function AppRouter() {
-  return (
-    <HelmetProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <ErrorBoundary>
-              <div className="min-h-screen bg-background">
-                <DevelopmentNotice />
-                <StickyFeedbackButton />
-                
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<PublicRouteWrapper><Landing /></PublicRouteWrapper>} />
-                  <Route path="/login" element={<PublicRouteWrapper><Login /></PublicRouteWrapper>} />
-                  <Route path="/signup" element={<PublicRouteWrapper><Signup /></PublicRouteWrapper>} />
-                  <Route path="/onboarding/employee" element={<ProtectedRouteWrapper><OnboardingEmployee /></ProtectedRouteWrapper>} />
-                  <Route path="/onboarding/employer" element={<ProtectedRouteWrapper><OnboardingEmployer /></ProtectedRouteWrapper>} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/help" element={<Help />} />
-                  <Route path="/blogs" element={<BlogList />} />
-                  <Route path="/blog/:id" element={<BlogPost />} />
+  return <BrowserRouter future={{
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }}>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<PublicLanding />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/onboarding/employer" element={<OnboardingEmployer />} />
+        <Route path="/onboarding/employee" element={<OnboardingEmployee />} />
+        <Route path="/auth/success" element={<OAuthCallback />} />
+        <Route path="/auth/error" element={<OAuthCallback />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<BlogPostPage />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/help" element={<CustomerSupport />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
-                  {/* Employee Routes */}
-                  <Route path="/employee/dashboard" element={<ProtectedRouteWrapper><EmployeeDashboard /></ProtectedRouteWrapper>} />
-                  <Route path="/employee/jobs" element={<ProtectedRouteWrapper><BrowseJobs /></ProtectedRouteWrapper>} />
-                  <Route path="/employee/jobs/:id" element={<ProtectedRouteWrapper><JobDetails /></ProtectedRouteWrapper>} />
-                  <Route path="/employee/applications" element={<ProtectedRouteWrapper><MyApplications /></ProtectedRouteWrapper>} />
-                  <Route path="/employee/gang-members" element={<ProtectedRouteWrapper><GangMembers /></ProtectedRouteWrapper>} />
-                  <Route path="/employee/timesheet" element={<ProtectedRouteWrapper><TimesheetSubmission /></ProtectedRouteWrapper>} />
-                  <Route path="/employee/wallet" element={<ProtectedRouteWrapper><EmployeeWallet /></ProtectedRouteWrapper>} />
+        {/* Employer Routes */}
+        <Route path="/employer" element={<ProtectedRoute requiredRole="employer">
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<EmployerDashboard />} />
+          <Route path="post-job" element={<PostJob />} />
+          <Route path="jobs/:id/edit" element={<EditJob />} />
+          <Route path="jobs/:id/applicants" element={<JobApplicants />} />
+          <Route path="wallet" element={<EmployerWallet />} />
+          <Route path="timesheets" element={<TimesheetApproval />} />
+          <Route path="jobs" element={<JobManagement />} />
+        </Route>
 
-                  {/* Employer Routes */}
-                  <Route path="/employer/dashboard" element={<ProtectedRouteWrapper><EmployerDashboard /></ProtectedRouteWrapper>} />
-                  <Route path="/employer/post-job" element={<ProtectedRouteWrapper><PostJob /></ProtectedRouteWrapper>} />
-                  <Route path="/employer/edit-job/:id" element={<ProtectedRouteWrapper><EditJob /></ProtectedRouteWrapper>} />
-                  <Route path="/employer/jobs" element={<ProtectedRouteWrapper><JobManagement /></ProtectedRouteWrapper>} />
-                  <Route path="/employer/jobs/:id/applicants" element={<ProtectedRouteWrapper><JobApplicants /></ProtectedRouteWrapper>} />
-                  <Route path="/employer/timesheet-approval" element={<ProtectedRouteWrapper><TimesheetApproval /></ProtectedRouteWrapper>} />
-                  <Route path="/employer/wallet" element={<ProtectedRouteWrapper><EmployerWallet /></ProtectedRouteWrapper>} />
+        {/* Employee Routes */}
+        <Route path="/employee" element={<ProtectedRoute requiredRole="employee">
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<EmployeeDashboard />} />
+          <Route path="jobs" element={<BrowseJobs />} />
+          <Route path="jobs/:id" element={<JobDetails />} />
+          <Route path="applications" element={<MyApplications />} />
+          <Route path="timesheet" element={<TimesheetSubmission />} />
+          <Route path="wallet" element={<EmployeeWallet />} />
+          <Route path="gang-members" element={<GangMembers />} />
+        </Route>
 
-                  {/* Admin Routes */}
-                  <Route path="/admin/dashboard" element={<ProtectedRouteWrapper><AdminDashboard /></ProtectedRouteWrapper>} />
-                  <Route path="/admin/enhanced-dashboard" element={<ProtectedRouteWrapper><EnhancedDashboard /></ProtectedRouteWrapper>} />
-                  <Route path="/admin/job-approval" element={<ProtectedRouteWrapper><JobApproval /></ProtectedRouteWrapper>} />
-                  <Route path="/admin/verification-requests" element={<ProtectedRouteWrapper><VerificationRequests /></ProtectedRouteWrapper>} />
-                  <Route path="/admin/disputes" element={<ProtectedRouteWrapper><DisputeManagement /></ProtectedRouteWrapper>} />
+        {/* Unified Dashboard - Available to all authenticated users */}
+        <Route path="/unified-dashboard" element={<ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<UnifiedDashboardPage />} />
+        </Route>
 
-                  {/* Community Routes */}
-                  <Route path="/community" element={<ProtectedRouteWrapper><CommunityHub /></ProtectedRouteWrapper>} />
-                  <Route path="/community/dashboard" element={<ProtectedRouteWrapper><CommunityDashboard /></ProtectedRouteWrapper>} />
-                  <Route path="/community/create-post" element={<ProtectedRouteWrapper><CreatePost /></ProtectedRouteWrapper>} />
-                  <Route path="/community/create-enhanced-post" element={<ProtectedRouteWrapper><CreateEnhancedPost /></ProtectedRouteWrapper>} />
-                  <Route path="/community/post/:id" element={<ProtectedRouteWrapper><PostDetail /></ProtectedRouteWrapper>} />
+        {/* Admin Routes */}
+        <Route path="/admin" element={<ProtectedRoute requiredRole="admin">
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="verification" element={<VerificationRequests />} />
+          <Route path="job-approval" element={<JobApproval />} />
+          <Route path="disputes" element={<DisputeManagement />} />
+        </Route>
 
-                  {/* Messaging Routes */}
-                  <Route path="/messaging" element={<ProtectedRouteWrapper><Messaging /></ProtectedRouteWrapper>} />
-                  <Route path="/messaging/inbox" element={<ProtectedRouteWrapper><Inbox /></ProtectedRouteWrapper>} />
-                  <Route path="/messaging/conversation/:id" element={<ProtectedRouteWrapper><Conversation /></ProtectedRouteWrapper>} />
+        {/* Messaging Routes - Available to all authenticated users */}
+        <Route path="/messaging" element={<ProtectedRoute>
+              <Messaging />
+            </ProtectedRoute>} />
 
-                  {/* Shared Routes */}
-                  <Route path="/profile" element={<ProtectedRouteWrapper><Profile /></ProtectedRouteWrapper>} />
-                  <Route path="/profile/enhanced" element={<ProtectedRouteWrapper><EnhancedProfile /></ProtectedRouteWrapper>} />
-                  <Route path="/search" element={<ProtectedRouteWrapper><SearchPage /></ProtectedRouteWrapper>} />
-                  <Route path="/verification" element={<ProtectedRouteWrapper><Verification /></ProtectedRouteWrapper>} />
-                  <Route path="/wallet" element={<ProtectedRouteWrapper><Wallet /></ProtectedRouteWrapper>} />
+        {/* Community Routes - Available to all authenticated users */}
+        <Route path="/community" element={<ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<CommunityHub />} />
+          <Route path="post/:id" element={<PostDetail />} />
+          <Route path="create" element={<CreatePost />} />
+        </Route>
 
-                  {/* Catch all route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                
-                <Analytics />
-              </div>
-            </ErrorBoundary>
-          </BrowserRouter>
-        </AuthProvider>
-      </ThemeProvider>
-    </HelmetProvider>
-  );
+        {/* Shared Routes */}
+        <Route path="/notifications" element={<ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<Notifications />} />
+        </Route>
+        <Route path="/profile" element={<ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>}>
+          <Route index element={<EnhancedProfile />} />
+        </Route>
+
+        {/* 404 Route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>;
 }
