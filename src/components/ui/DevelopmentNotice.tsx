@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, AlertCircle, Users, MessageSquare } from 'lucide-react';
 import { Button } from './Button';
 import { Card } from './Card';
@@ -9,6 +10,7 @@ interface DevelopmentNoticeProps {
 
 export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user has already dismissed the notice
@@ -18,6 +20,27 @@ export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss 
     }
   }, []);
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isVisible) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      
+      // Prevent scrolling
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      
+      return () => {
+        // Restore scrolling
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isVisible]);
+
   const handleDismiss = () => {
     setIsVisible(false);
     localStorage.setItem('dev-notice-dismissed', 'true');
@@ -25,15 +48,32 @@ export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss 
   };
 
   const handleSignUpClick = () => {
+    // Close the dialog first
+    setIsVisible(false);
+    localStorage.setItem('dev-notice-dismissed', 'true');
+    
     // Navigate to signup page
-    window.location.href = '/signup';
+    navigate('/signup');
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Only close if clicking on the backdrop, not the card
+    if (e.target === e.currentTarget) {
+      handleDismiss();
+    }
   };
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-      <Card className="max-w-2xl w-full bg-white dark:bg-gray-800 border-2 border-orange-500 shadow-2xl animate-fade-in-up">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
+      onClick={handleBackdropClick}
+    >
+      <Card 
+        className="max-w-2xl w-full bg-white dark:bg-gray-800 border-2 border-orange-500 shadow-2xl animate-fade-in-up"
+        onClick={(e) => e?.stopPropagation()}
+      >
         <div className="p-4 sm:p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4 sm:mb-6">

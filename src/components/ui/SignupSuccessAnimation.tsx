@@ -44,7 +44,6 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
     
     // Use viewport dimensions for better mobile support
     const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-    const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
     
     for (let i = 0; i < 50; i++) {
       pieces.push({
