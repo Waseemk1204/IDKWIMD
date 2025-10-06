@@ -1,5 +1,5 @@
-import { LandingTest } from './LandingTest';
+import { SimpleLandingTest } from './SimpleLandingTest';
 
 export function App() {
-  return <LandingTest />;
+  return <SimpleLandingTest />;
 }
