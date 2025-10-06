@@ -1,162 +1,19 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
-// Layouts
-import { DashboardLayout } from './layouts/DashboardLayout';
-// Public pages
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Landing } from './pages/Landing';
 import { Login } from './pages/auth/Login';
 import { Signup } from './pages/auth/Signup';
-import { OnboardingEmployer } from './pages/auth/OnboardingEmployer';
-import { OnboardingEmployee } from './pages/auth/OnboardingEmployee';
-// Employer pages
-import { EmployerDashboard } from './pages/employer/Dashboard';
-import { PostJob } from './pages/employer/PostJob';
-import { EditJob } from './pages/employer/EditJob';
-import { EmployerWallet } from './pages/employer/Wallet';
-import { TimesheetApproval } from './pages/employer/TimesheetApproval';
-import { JobManagement } from './pages/employer/JobManagement';
-import { JobApplicants } from './pages/employer/JobApplicants';
-// Employee pages
-import { EmployeeDashboard } from './pages/employee/Dashboard';
-import { BrowseJobs } from './pages/employee/BrowseJobs';
-import { JobDetails } from './pages/employee/JobDetails';
-import { MyApplications } from './pages/employee/MyApplications';
-import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
-import { EmployeeWallet } from './pages/employee/Wallet';
-import { GangMembers } from './pages/employee/GangMembers';
-import { UnifiedDashboardPage } from './pages/shared/UnifiedDashboard';
-// Admin pages
-import { AdminDashboard } from './pages/admin/Dashboard';
-import { VerificationRequests } from './pages/admin/VerificationRequests';
-import { JobApproval } from './pages/admin/JobApproval';
-import { DisputeManagement } from './pages/admin/DisputeManagement';
-// Shared pages
-import { Notifications } from './pages/shared/Notifications';
-import { EnhancedProfile } from './pages/shared/EnhancedProfile';
-import { AboutUs } from './pages/shared/AboutUs';
-import { Blogs } from './pages/shared/Blogs';
-import { BlogPostPage } from './pages/shared/BlogPost';
-import { ContactUs } from './pages/shared/ContactUs';
-import { CustomerSupport } from './pages/shared/CustomerSupport';
-import { SearchPage } from './pages/shared/SearchPage';
-import { PrivacyPolicy } from './pages/shared/PrivacyPolicy';
 import { NotFound } from './pages/NotFound';
-// Auth pages
-import { OAuthCallback } from './pages/auth/OAuthCallback';
-// Messaging pages
-import { Messaging } from './pages/Messaging';
-// Community pages
-import { CommunityHub } from './pages/community/CommunityHub';
-import { PostDetail } from './pages/community/PostDetail';
-import { CreatePost } from './pages/community/CreatePost';
-// Public Landing component that redirects logged-in users
-const PublicLanding: React.FC = () => {
-  return <Landing />;
-};
 
-// Protected route component
-const ProtectedRoute: React.FC<{
-  children: React.ReactNode;
-  requiredRole?: string;
-}> = ({
-  children,
-  requiredRole
-}) => {
-  // For now, just render children to avoid auth context issues
-  // TODO: Implement proper auth checking
-  return <>{children}</>;
-};
 export function AppRouter() {
-  return <BrowserRouter>
+  return (
+    <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<PublicLanding />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/onboarding/employer" element={<OnboardingEmployer />} />
-        <Route path="/onboarding/employee" element={<OnboardingEmployee />} />
-        <Route path="/auth/success" element={<OAuthCallback />} />
-        <Route path="/auth/error" element={<OAuthCallback />} />
-        <Route path="/blogs" element={<Blogs />} />
-        <Route path="/blogs/:id" element={<BlogPostPage />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/help" element={<CustomerSupport />} />
-        <Route path="/search" element={<SearchPage />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-
-        {/* Employer Routes */}
-        <Route path="/employer" element={<ProtectedRoute requiredRole="employer">
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<EmployerDashboard />} />
-          <Route path="post-job" element={<PostJob />} />
-          <Route path="jobs/:id/edit" element={<EditJob />} />
-          <Route path="jobs/:id/applicants" element={<JobApplicants />} />
-          <Route path="wallet" element={<EmployerWallet />} />
-          <Route path="timesheets" element={<TimesheetApproval />} />
-          <Route path="jobs" element={<JobManagement />} />
-        </Route>
-
-        {/* Employee Routes */}
-        <Route path="/employee" element={<ProtectedRoute requiredRole="employee">
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<EmployeeDashboard />} />
-          <Route path="jobs" element={<BrowseJobs />} />
-          <Route path="jobs/:id" element={<JobDetails />} />
-          <Route path="applications" element={<MyApplications />} />
-          <Route path="timesheet" element={<TimesheetSubmission />} />
-          <Route path="wallet" element={<EmployeeWallet />} />
-          <Route path="gang-members" element={<GangMembers />} />
-        </Route>
-
-        {/* Unified Dashboard - Available to all authenticated users */}
-        <Route path="/unified-dashboard" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<UnifiedDashboardPage />} />
-        </Route>
-
-        {/* Admin Routes */}
-        <Route path="/admin" element={<ProtectedRoute requiredRole="admin">
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="verification" element={<VerificationRequests />} />
-          <Route path="job-approval" element={<JobApproval />} />
-          <Route path="disputes" element={<DisputeManagement />} />
-        </Route>
-
-        {/* Messaging Routes - Available to all authenticated users */}
-        <Route path="/messaging" element={<ProtectedRoute>
-              <Messaging />
-            </ProtectedRoute>} />
-
-        {/* Community Routes - Available to all authenticated users */}
-        <Route path="/community" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<CommunityHub />} />
-          <Route path="post/:id" element={<PostDetail />} />
-          <Route path="create" element={<CreatePost />} />
-        </Route>
-
-        {/* Shared Routes */}
-        <Route path="/notifications" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<Notifications />} />
-        </Route>
-        <Route path="/profile" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<EnhancedProfile />} />
-        </Route>
-
-        {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>;
+    </BrowserRouter>
+  );
 }
