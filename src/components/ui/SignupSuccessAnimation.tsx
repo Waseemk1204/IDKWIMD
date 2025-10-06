@@ -127,33 +127,15 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isVisible) {
-      // Store original styles
+      // Store original overflow style
       const originalBodyOverflow = document.body.style.overflow;
-      const originalHtmlOverflow = document.documentElement.style.overflow;
-      const originalBodyPosition = document.body.style.position;
-      const originalBodyTop = document.body.style.top;
-      const originalBodyWidth = document.body.style.width;
       
-      // Get current scroll position
-      const scrollY = window.scrollY;
-      
-      // Prevent scrolling
+      // Simple and safe scroll lock
       document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
       
       // Cleanup function to restore scrolling
       return () => {
         document.body.style.overflow = originalBodyOverflow;
-        document.documentElement.style.overflow = originalHtmlOverflow;
-        document.body.style.position = originalBodyPosition;
-        document.body.style.top = originalBodyTop;
-        document.body.style.width = originalBodyWidth;
-        
-        // Restore scroll position
-        window.scrollTo(0, scrollY);
       };
     }
   }, [isVisible]);
