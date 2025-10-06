@@ -1,5 +1,5 @@
-import { UltraMinimalApp } from './UltraMinimalApp';
+import { SimpleRouterTest } from './SimpleRouterTest';
 
 export function App() {
-  return <UltraMinimalApp />;
+  return <SimpleRouterTest />;
 }
