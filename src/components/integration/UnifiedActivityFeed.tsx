@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Users, Briefcase, MessageSquare, Heart, Star, TrendingUp, Zap } from 'lucide-react';
+import { Activity, Users, Briefcase, MessageSquare, Heart, TrendingUp } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
@@ -34,7 +34,7 @@ export const UnifiedActivityFeed: React.FC<UnifiedActivityFeedProps> = ({
   showFilters = true,
   limit = 20
 }) => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -96,7 +96,7 @@ export const UnifiedActivityFeed: React.FC<UnifiedActivityFeedProps> = ({
     }
   };
 
-  const getActionText = (action: string, module: string) => {
+  const getActionText = (action: string, _module: string) => {
     switch (action) {
       case 'connection_accepted': return 'accepted a connection request';
       case 'job_applied': return 'applied to a job';
@@ -112,7 +112,7 @@ export const UnifiedActivityFeed: React.FC<UnifiedActivityFeedProps> = ({
   const getImpactBadge = (score: number) => {
     if (score >= 80) return <Badge variant="primary" className="bg-red-500">High Impact</Badge>;
     if (score >= 60) return <Badge variant="secondary" className="bg-yellow-500">Medium Impact</Badge>;
-    return <Badge variant="outline">Low Impact</Badge>;
+    return <Badge variant="secondary">Low Impact</Badge>;
   };
 
   const filteredActivities = filter === 'all' 
@@ -140,7 +140,7 @@ export const UnifiedActivityFeed: React.FC<UnifiedActivityFeedProps> = ({
             Unified Activity Feed
           </h2>
         </div>
-        <Badge variant="outline" className="text-sm">
+        <Badge variant="secondary" className="text-sm">
           {filteredActivities.length} activities
         </Badge>
       </div>
@@ -202,7 +202,7 @@ export const UnifiedActivityFeed: React.FC<UnifiedActivityFeedProps> = ({
                   
                   <div className="flex items-center space-x-2 mb-2">
                     <Badge 
-                      variant="outline" 
+                      variant="secondary" 
                       className={`text-xs ${getModuleColor(activity.module)}`}
                     >
                       {getModuleIcon(activity.module)}
@@ -232,7 +232,7 @@ export const UnifiedActivityFeed: React.FC<UnifiedActivityFeedProps> = ({
       {hasMore && (
         <div className="text-center">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={loadMore}
             disabled={loading}
             className="w-full"

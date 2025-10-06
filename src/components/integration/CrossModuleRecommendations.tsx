@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Lightbulb, Briefcase, Users, Heart, MessageSquare, TrendingUp, Star, ArrowRight } from 'lucide-react';
+import { Lightbulb, Briefcase, Users, Heart, TrendingUp, Star, ArrowRight } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import apiService from '../../services/api';
@@ -26,10 +25,9 @@ interface CrossModuleRecommendationsProps {
 
 export const CrossModuleRecommendations: React.FC<CrossModuleRecommendationsProps> = ({
   className = '',
-  showHeader = true,
-  limit = 10
+  showHeader = true
 }) => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [recommendations, setRecommendations] = useState<CrossModuleRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'jobs' | 'connections' | 'community'>('all');
@@ -109,7 +107,7 @@ export const CrossModuleRecommendations: React.FC<CrossModuleRecommendationsProp
   const getRelevanceBadge = (score: number) => {
     if (score >= 80) return <Badge variant="primary" className="bg-green-500">Highly Relevant</Badge>;
     if (score >= 70) return <Badge variant="secondary" className="bg-yellow-500">Relevant</Badge>;
-    return <Badge variant="outline">Somewhat Relevant</Badge>;
+    return <Badge variant="secondary">Somewhat Relevant</Badge>;
   };
 
   const handleRecommendationAction = async (recommendation: CrossModuleRecommendation) => {
@@ -167,7 +165,7 @@ export const CrossModuleRecommendations: React.FC<CrossModuleRecommendationsProp
               Smart Recommendations
             </h2>
           </div>
-          <Badge variant="outline" className="text-sm">
+          <Badge variant="secondary" className="text-sm">
             {filteredRecommendations.length} suggestions
           </Badge>
         </div>

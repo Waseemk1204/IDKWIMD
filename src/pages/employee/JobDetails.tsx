@@ -12,10 +12,8 @@ import {
   Users, 
   Calendar,
   Briefcase,
-  Star,
   CheckCircle,
-  AlertCircle,
-  ExternalLink
+  AlertCircle
 } from 'lucide-react';
 
 export const JobDetails: React.FC = () => {

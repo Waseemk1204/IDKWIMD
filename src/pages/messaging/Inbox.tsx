@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { SearchIcon, PlusIcon, UsersIcon } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';

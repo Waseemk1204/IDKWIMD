@@ -13,11 +13,8 @@ import {
   ExternalLink,
   CheckCircle,
   XCircle,
-  Clock,
   Star,
-  Eye,
-  MessageSquare,
-  Download
+  Eye
 } from 'lucide-react';
 
 interface Application {

@@ -424,11 +424,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                {user.name?.charAt(0).toUpperCase() || 'U'}
+                {user.fullName?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                  {user.name || 'Company Name'}
+                  {user.fullName || 'Company Name'}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">
                   {user.role}
@@ -469,12 +469,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} mb-3`}>
             <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              {user.name?.charAt(0).toUpperCase() || 'U'}
+              {user.fullName?.charAt(0).toUpperCase() || 'U'}
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
-                  {user.name || 'Company Name'}
+                  {user.fullName || 'Company Name'}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">
                   {user.role}

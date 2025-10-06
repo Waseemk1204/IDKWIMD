@@ -20,7 +20,7 @@ interface GangGroupChatProps {
   currentUserId: string;
 }
 
-export const GangGroupChat: React.FC<GangGroupChatProps> = ({ gangMembers, currentUserId }) => {
+export const GangGroupChat: React.FC<GangGroupChatProps> = ({ gangMembers, currentUserId: _currentUserId }) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -43,8 +43,7 @@ export const GangGroupChat: React.FC<GangGroupChatProps> = ({ gangMembers, curre
       const response = await apiService.createConversation({
         participants: selectedMembers,
         conversationType: 'group',
-        title: `Gang Group Chat (${selectedMembers.length + 1} members)`,
-        gangId: 'gang_group' // Special identifier for gang group chats
+        title: `Gang Group Chat (${selectedMembers.length + 1} members)`
       });
 
       if (response.success) {
@@ -72,8 +71,7 @@ export const GangGroupChat: React.FC<GangGroupChatProps> = ({ gangMembers, curre
       const response = await apiService.createConversation({
         participants: allMemberIds,
         conversationType: 'group',
-        title: `Gang Group Chat (${gangMembers.length + 1} members)`,
-        gangId: 'gang_group'
+        title: `Gang Group Chat (${gangMembers.length + 1} members)`
       });
 
       if (response.success) {

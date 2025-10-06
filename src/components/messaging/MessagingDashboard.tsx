@@ -9,13 +9,10 @@ import {
   Briefcase, 
   FileText, 
   TrendingUp,
-  Clock,
   CheckCircle,
-  AlertCircle,
   Lightbulb,
   ArrowRight
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
 interface ConversationSuggestion {
@@ -55,7 +52,7 @@ interface MessagingAnalytics {
 }
 
 export const MessagingDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [suggestions, setSuggestions] = useState<ConversationSuggestion[]>([]);
   const [analytics, setAnalytics] = useState<MessagingAnalytics | null>(null);
   const [loading, setLoading] = useState(true);

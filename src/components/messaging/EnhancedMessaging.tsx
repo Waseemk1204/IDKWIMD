@@ -8,20 +8,14 @@ import {
   Send, 
   Smile, 
   Paperclip, 
-  MoreVertical, 
   Phone, 
   Video, 
   Info,
   Search,
-  Filter,
   Plus,
   Reply,
   Edit,
-  Trash2,
-  ThumbsUp,
-  Lightbulb,
-  CheckCircle,
-  HelpCircle
+  Trash2
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -111,7 +105,7 @@ export const EnhancedMessaging: React.FC<EnhancedMessagingProps> = ({ className 
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
-  const [showContextMenu, setShowContextMenu] = useState<string | null>(null);
+  const [_showContextMenu, _setShowContextMenu] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [socket, setSocket] = useState<any>(null);
@@ -333,10 +327,7 @@ export const EnhancedMessaging: React.FC<EnhancedMessagingProps> = ({ className 
   // Handle adding reaction
   const handleAddReaction = async (messageId: string, reactionType: string) => {
     try {
-      const response = await apiService.request(`/v1/messages/messages/${messageId}/reactions`, {
-        method: 'POST',
-        body: JSON.stringify({ reactionType })
-      });
+      const response = await apiService.addReaction(messageId, reactionType);
 
       if (response.success) {
         // Emit socket event

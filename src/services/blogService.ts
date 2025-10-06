@@ -8,6 +8,7 @@ export interface BlogPost {
   author: {
     _id: string;
     name: string;
+    fullName?: string;
     email: string;
     profileImage?: string;
     bio?: string;

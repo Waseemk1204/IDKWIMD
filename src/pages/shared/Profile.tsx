@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
+import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { TrustBadge, VerifiedBadge } from '../../components/ui/TrustBadge';
 import { 
@@ -20,9 +20,10 @@ import {
   CheckCircle,
   AlertCircle,
   Lock,
-  MessageCircle
+  Edit3,
+  Building2
 } from 'lucide-react';
-import { QuickMessage, MessageIntegration } from '../../components/messaging/MessageIntegration';
+import { MessageIntegration } from '../../components/messaging/MessageIntegration';
 
 interface ProfileFormData {
   fullName: string;
@@ -35,34 +36,38 @@ interface ProfileFormData {
   location: string;
   website: string;
   skills: string;
+  name?: string;
+  bio?: string;
   experiences: Array<{
     company: string;
     title: string;
-    from: string;
-    to: string;
-    description: string;
+    from: string | Date;
+    to?: string | Date;
+    description?: string;
     current: boolean;
   }>;
   education: Array<{
     institution: string;
     degree: string;
     field: string;
-    from: string;
-    to: string;
-    current: boolean;
+    from: string | Date;
+    to?: string | Date;
+    gpa?: string;
+    description?: string;
+    current?: boolean;
   }>;
   socialLinks: {
-    linkedin: string;
-    twitter: string;
-    github: string;
-    portfolio: string;
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+    portfolio?: string;
   };
   companyInfo?: {
     companyName: string;
-    companyWebsite: string;
+    website: string;
     companySize: string;
     industry: string;
-    headquarters: string;
+    headquarters?: string;
     description: string;
   };
 }
@@ -82,6 +87,8 @@ interface FormErrors {
   education?: string;
   socialLinks?: string;
   companyInfo?: string;
+  name?: string;
+  bio?: string;
 }
 
 export const Profile: React.FC = () => {
@@ -113,7 +120,7 @@ export const Profile: React.FC = () => {
     },
     companyInfo: user?.role === 'employer' ? {
       companyName: '',
-      companyWebsite: '',
+      website: '',
       companySize: '',
       industry: '',
       headquarters: '',
@@ -145,7 +152,7 @@ export const Profile: React.FC = () => {
         },
         companyInfo: user?.role === 'employer' ? user.companyInfo || {
           companyName: '',
-          companyWebsite: '',
+          website: '',
           companySize: '',
           industry: '',
           headquarters: '',
@@ -224,8 +231,16 @@ export const Profile: React.FC = () => {
         location: formData.location,
         website: formData.website,
         skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-        experiences: formData.experiences,
-        education: formData.education,
+        experiences: formData.experiences.map(exp => ({
+          ...exp,
+          from: typeof exp.from === 'string' ? new Date(exp.from) : exp.from,
+          to: exp.to ? (typeof exp.to === 'string' ? new Date(exp.to) : exp.to) : undefined
+        })),
+        education: formData.education.map(edu => ({
+          ...edu,
+          from: typeof edu.from === 'string' ? new Date(edu.from) : edu.from,
+          to: edu.to ? (typeof edu.to === 'string' ? new Date(edu.to) : edu.to) : undefined
+        })),
         socialLinks: formData.socialLinks,
         ...(user?.role === 'employer' && formData.companyInfo && {
           companyInfo: formData.companyInfo
@@ -273,7 +288,7 @@ export const Profile: React.FC = () => {
         },
         companyInfo: user?.role === 'employer' ? user.companyInfo || {
           companyName: '',
-          companyWebsite: '',
+          website: '',
           companySize: '',
           industry: '',
           headquarters: '',
@@ -312,7 +327,7 @@ export const Profile: React.FC = () => {
             id={name}
             name={name}
             rows={4}
-            value={formData[name]}
+            value={typeof formData[name] === 'string' ? formData[name] : ''}
             onChange={handleChange}
             placeholder={placeholder}
             className={`input-professional ${hasError ? 'border-error-300 dark:border-error-600 bg-error-50 dark:bg-error-900/20' : ''}`}
@@ -324,7 +339,7 @@ export const Profile: React.FC = () => {
             id={name}
             name={name}
             type={type}
-            value={formData[name]}
+            value={typeof formData[name] === 'string' ? formData[name] : ''}
             onChange={handleChange}
             placeholder={placeholder}
             className={`input-professional ${hasError ? 'border-error-300 dark:border-error-600 bg-error-50 dark:bg-error-900/20' : ''}`}

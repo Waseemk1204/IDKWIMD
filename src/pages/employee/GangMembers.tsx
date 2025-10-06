@@ -219,14 +219,14 @@ export const GangMembers: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
+    const statusConfig: Record<string, { variant: 'warning' | 'success' | 'danger' | 'secondary', text: string }> = {
       pending: { variant: 'warning', text: 'Pending' },
       accepted: { variant: 'success', text: 'Connected' },
       rejected: { variant: 'danger', text: 'Rejected' },
       cancelled: { variant: 'secondary', text: 'Cancelled' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.pending;
     return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 

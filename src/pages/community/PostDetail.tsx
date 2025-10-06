@@ -326,7 +326,7 @@ export const PostDetail: React.FC = () => {
             {isAuthenticated ? (
               <form onSubmit={handleComment} className="mb-6">
                 <div className="flex items-start space-x-3">
-                  <Avatar name={user?.name || 'User'} src={user?.profileImage} size="sm" />
+                  <Avatar name={user?.fullName || 'User'} src={user?.profilePhoto} size="sm" />
                   <div className="flex-1">
                     <textarea 
                       value={commentText} 

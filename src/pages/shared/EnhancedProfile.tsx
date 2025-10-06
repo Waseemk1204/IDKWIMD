@@ -4,9 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button';
 import { 
   User, 
-  Mail, 
-  Phone, 
-  MapPin, 
   Edit3, 
   Save, 
   X, 
@@ -15,7 +12,6 @@ import {
   Building2,
   GraduationCap,
   Briefcase,
-  Globe,
   Linkedin,
   Twitter,
   Github,
@@ -25,9 +21,9 @@ import {
 interface Experience {
   company: string;
   title: string;
-  from: string;
-  to: string;
-  description: string;
+  from: string | Date;
+  to?: string | Date;
+  description?: string;
   current: boolean;
 }
 
@@ -35,25 +31,28 @@ interface Education {
   institution: string;
   degree: string;
   field: string;
-  from: string;
-  to: string;
-  current: boolean;
+  from: string | Date;
+  to?: string | Date;
+  gpa?: string;
+  description?: string;
+  current?: boolean;
 }
 
 interface SocialLinks {
-  linkedin: string;
-  twitter: string;
-  github: string;
-  portfolio: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  portfolio?: string;
 }
 
 interface CompanyInfo {
   companyName: string;
-  companyWebsite: string;
   companySize: string;
   industry: string;
-  headquarters: string;
+  website: string;
   description: string;
+  foundedYear?: number;
+  headquarters?: string;
 }
 
 interface ProfileFormData {
@@ -100,7 +99,7 @@ export const EnhancedProfile: React.FC = () => {
     },
     companyInfo: user?.role === 'employer' ? {
       companyName: '',
-      companyWebsite: '',
+      website: '',
       companySize: '',
       industry: '',
       headquarters: '',
@@ -132,7 +131,7 @@ export const EnhancedProfile: React.FC = () => {
         },
         companyInfo: user?.role === 'employer' ? user.companyInfo || {
           companyName: '',
-          companyWebsite: '',
+          website: '',
           companySize: '',
           industry: '',
           headquarters: '',
@@ -247,8 +246,16 @@ export const EnhancedProfile: React.FC = () => {
         location: formData.location,
         website: formData.website,
         skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-        experiences: formData.experiences,
-        education: formData.education,
+        experiences: formData.experiences.map(exp => ({
+          ...exp,
+          from: typeof exp.from === 'string' ? new Date(exp.from) : exp.from,
+          to: exp.to ? (typeof exp.to === 'string' ? new Date(exp.to) : exp.to) : undefined
+        })),
+        education: formData.education.map(edu => ({
+          ...edu,
+          from: typeof edu.from === 'string' ? new Date(edu.from) : edu.from,
+          to: edu.to ? (typeof edu.to === 'string' ? new Date(edu.to) : edu.to) : undefined
+        })),
         socialLinks: formData.socialLinks,
         ...(user?.role === 'employer' && formData.companyInfo && {
           companyInfo: formData.companyInfo
@@ -287,7 +294,7 @@ export const EnhancedProfile: React.FC = () => {
         },
         companyInfo: user?.role === 'employer' ? user.companyInfo || {
           companyName: '',
-          companyWebsite: '',
+          website: '',
           companySize: '',
           industry: '',
           headquarters: '',
@@ -665,7 +672,7 @@ export const EnhancedProfile: React.FC = () => {
                       </label>
                       <input
                         type="date"
-                        value={exp.from}
+                        value={exp.from instanceof Date ? exp.from.toISOString().split('T')[0] : exp.from}
                         onChange={(e) => updateExperience(index, 'from', e.target.value)}
                         disabled={!isEditing}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -677,7 +684,7 @@ export const EnhancedProfile: React.FC = () => {
                       </label>
                       <input
                         type="date"
-                        value={exp.to}
+                        value={exp.to instanceof Date ? exp.to.toISOString().split('T')[0] : exp.to || ''}
                         onChange={(e) => updateExperience(index, 'to', e.target.value)}
                         disabled={!isEditing || exp.current}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -804,7 +811,7 @@ export const EnhancedProfile: React.FC = () => {
                       </label>
                       <input
                         type="date"
-                        value={edu.from}
+                        value={edu.from instanceof Date ? edu.from.toISOString().split('T')[0] : edu.from}
                         onChange={(e) => updateEducation(index, 'from', e.target.value)}
                         disabled={!isEditing}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -816,7 +823,7 @@ export const EnhancedProfile: React.FC = () => {
                       </label>
                       <input
                         type="date"
-                        value={edu.to}
+                        value={edu.to instanceof Date ? edu.to.toISOString().split('T')[0] : edu.to || ''}
                         onChange={(e) => updateEducation(index, 'to', e.target.value)}
                         disabled={!isEditing || edu.current}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -874,8 +881,8 @@ export const EnhancedProfile: React.FC = () => {
                 </label>
                 <input
                   type="url"
-                  value={formData.companyInfo?.companyWebsite || ''}
-                  onChange={(e) => handleCompanyInfoChange('companyWebsite', e.target.value)}
+                  value={formData.companyInfo?.website || ''}
+                  onChange={(e) => handleCompanyInfoChange('website', e.target.value)}
                   disabled={!isEditing}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   placeholder="https://company.com"

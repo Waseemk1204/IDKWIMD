@@ -392,7 +392,7 @@ export const Navbar: React.FC = () => {
                     className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     onClick={toggleProfileMenu}
                   >
-                    <Avatar name={user?.name} src={user?.profileImage} size="sm" />
+                    <Avatar name={user?.fullName} src={user?.profilePhoto} size="sm" />
                     <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -401,7 +401,7 @@ export const Navbar: React.FC = () => {
                     <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl py-2 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 border border-gray-200 dark:border-gray-700 transform transition-all duration-200 origin-top-right">
                       {/* User Info Header */}
                       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.fullName}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
                       </div>
                       
@@ -483,11 +483,11 @@ export const Navbar: React.FC = () => {
                 {/* User Info */}
                 <div className="flex items-center px-4 mb-4">
                   <div className="flex-shrink-0">
-                    <Avatar name={user?.name} src={user?.profileImage} size="md" />
+                    <Avatar name={user?.fullName} src={user?.profilePhoto} size="md" />
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="text-base font-medium text-gray-800 dark:text-white">
-                      {user?.name}
+                      {user?.fullName}
                     </div>
                     <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       {user?.email}

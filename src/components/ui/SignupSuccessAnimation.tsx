@@ -42,10 +42,14 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
     const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
     const pieces: ConfettiPiece[] = [];
     
+    // Use viewport dimensions for better mobile support
+    const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+    
     for (let i = 0; i < 50; i++) {
       pieces.push({
         id: i,
-        x: Math.random() * window.innerWidth,
+        x: Math.random() * viewportWidth,
         y: -10,
         color: colors[Math.floor(Math.random() * colors.length)],
         size: Math.random() * 8 + 4,
@@ -65,13 +69,14 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
     if (!isVisible) return;
 
     const animateConfetti = () => {
+      const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
       setConfetti(prev => 
         prev.map(piece => ({
           ...piece,
           x: piece.x + piece.velocity.x,
           y: piece.y + piece.velocity.y,
           rotation: piece.rotation + 5
-        })).filter(piece => piece.y < window.innerHeight + 50)
+        })).filter(piece => piece.y < viewportHeight + 50)
       );
     };
 
@@ -121,7 +126,7 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
       {/* Confetti Animation */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {confetti.map(piece => (
@@ -142,38 +147,38 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
       </div>
 
       {/* Main Animation Container */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in-up">
+      <div className="relative bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-8 max-w-sm sm:max-w-md w-full text-center animate-fade-in-up">
         {/* Success Icon */}
-        <div className="relative mb-6">
-          <div className="w-20 h-20 mx-auto bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center animate-scale-in">
-            <CheckCircle className="w-12 h-12 text-white animate-pulse" />
+        <div className="relative mb-4 sm:mb-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center animate-scale-in">
+            <CheckCircle className="w-8 h-8 sm:w-12 sm:h-12 text-white animate-pulse" />
           </div>
           
           {/* Floating Icons */}
-          <div className="absolute -top-2 -right-2 animate-bounce">
-            <Sparkles className="w-6 h-6 text-yellow-400" />
+          <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 animate-bounce">
+            <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-400" />
           </div>
-          <div className="absolute -bottom-2 -left-2 animate-bounce" style={{ animationDelay: '0.5s' }}>
-            <Heart className="w-6 h-6 text-red-400" />
+          <div className="absolute -bottom-1 -left-1 sm:-bottom-2 sm:-left-2 animate-bounce" style={{ animationDelay: '0.5s' }}>
+            <Heart className="w-4 h-4 sm:w-6 sm:h-6 text-red-400" />
           </div>
-          <div className="absolute top-1/2 -left-4 animate-bounce" style={{ animationDelay: '1s' }}>
-            <Trophy className="w-5 h-5 text-purple-400" />
+          <div className="absolute top-1/2 -left-3 sm:-left-4 animate-bounce" style={{ animationDelay: '1s' }}>
+            <Trophy className="w-3 h-3 sm:w-5 sm:h-5 text-purple-400" />
           </div>
         </div>
 
         {/* Dynamic Message */}
-        <div className="mb-6 min-h-[60px] flex items-center justify-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white animate-fade-in-up">
+        <div className="mb-4 sm:mb-6 min-h-[50px] sm:min-h-[60px] flex items-center justify-center">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white animate-fade-in-up leading-tight px-2">
             {steps[currentStep]?.message}
           </h2>
         </div>
 
         {/* Role-specific content */}
         {currentStep >= 2 && (
-          <div className="mb-6 animate-fade-in-up">
-            <div className="flex items-center justify-center gap-3 mb-3">
+          <div className="mb-4 sm:mb-6 animate-fade-in-up">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               {getRoleIcon()}
-              <p className="text-lg text-gray-700 dark:text-gray-300 font-medium">
+              <p className="text-sm sm:text-lg text-gray-700 dark:text-gray-300 font-medium leading-tight">
                 {getRoleMessage()}
               </p>
             </div>
@@ -182,12 +187,12 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
 
         {/* Final Message */}
         {showMessage && (
-          <div className="mb-6 animate-fade-in-up">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
-              <p className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+          <div className="mb-4 sm:mb-6 animate-fade-in-up">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-3 sm:p-4 border border-blue-200 dark:border-blue-700">
+              <p className="text-sm sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1 sm:mb-2 leading-tight">
                 🎉 You're absolutely amazing! 🎉
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 Thank you for choosing ParttimePays. We're excited to have you on board!
               </p>
             </div>
@@ -195,11 +200,11 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
         )}
 
         {/* Progress Indicator */}
-        <div className="flex justify-center space-x-2 mb-6">
+        <div className="flex justify-center space-x-1.5 sm:space-x-2 mb-4 sm:mb-6">
           {steps.map((_, index) => (
             <div
               key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
                 index <= currentStep 
                   ? 'bg-gradient-to-r from-blue-500 to-purple-500 scale-125' 
                   : 'bg-gray-300 dark:bg-gray-600'
@@ -213,7 +218,7 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
           <div className="animate-fade-in-up">
             <Button
               onClick={onComplete}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
             >
               Let's Get Started! 🚀
             </Button>
@@ -221,7 +226,7 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
         )}
 
         {/* Background Pattern */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 rounded-xl sm:rounded-2xl overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5"></div>
         </div>
       </div>

@@ -6,9 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { 
   ArrowLeft,
   Save,
-  AlertCircle,
-  CheckCircle,
-  X
+  AlertCircle
 } from 'lucide-react';
 
 export const EditJob: React.FC = () => {

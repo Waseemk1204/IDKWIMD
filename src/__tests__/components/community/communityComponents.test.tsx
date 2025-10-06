@@ -1,12 +1,11 @@
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { EnhancedPostCard } from '../../components/community/EnhancedPostCard';
-import { GangCommunityIntegration } from '../../components/community/GangCommunityIntegration';
-import { ProfessionalRecommendations } from '../../components/community/ProfessionalRecommendations';
+import { EnhancedPostCard } from '../../../components/community/EnhancedPostCard';
+import { GangCommunityIntegration } from '../../../components/community/GangCommunityIntegration';
+import { ProfessionalRecommendations } from '../../../components/community/ProfessionalRecommendations';
 
 // Mock the API service
-jest.mock('../../services/api', () => ({
+jest.mock('../../../services/api', () => ({
   getEnhancedCommunityPosts: jest.fn(),
   getTrendingPosts: jest.fn(),
   getConnectionRecommendations: jest.fn(),

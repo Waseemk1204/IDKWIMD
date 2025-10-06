@@ -4,7 +4,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
-import { StandardizedSocialSignIn } from '../../components/auth/StandardizedSocialSignIn';
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 import { googleAuthService } from '../../services/googleAuth';
 import { Eye, EyeOff, Mail, Lock, Shield, CheckCircle, Users, Briefcase } from 'lucide-react';

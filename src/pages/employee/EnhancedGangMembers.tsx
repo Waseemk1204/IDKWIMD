@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, UserPlus, UserCheck, UserX, Heart, Search, 
   TrendingUp, BarChart3, Users2, Star, Filter, 
-  Loader2, RefreshCw, X, CheckCircle, AlertCircle,
-  MessageCircle, MessageSquare
+  Loader2, RefreshCw, X, CheckCircle
 } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
@@ -12,7 +11,7 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
-import { QuickMessage, MessageIntegration } from '../../components/messaging/MessageIntegration';
+import { QuickMessage } from '../../components/messaging/MessageIntegration';
 import { GangGroupChat } from '../../components/messaging/GangGroupChat';
 
 interface User {
@@ -105,7 +104,7 @@ export const EnhancedGangMembers: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, _setFilters] = useState({
     skills: [] as string[],
     location: '',
     experienceLevel: '',
@@ -286,14 +285,14 @@ export const EnhancedGangMembers: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
+    const statusConfig: Record<string, { variant: 'warning' | 'success' | 'danger' | 'secondary', text: string }> = {
       pending: { variant: 'warning', text: 'Pending' },
       accepted: { variant: 'success', text: 'Connected' },
       rejected: { variant: 'danger', text: 'Rejected' },
       cancelled: { variant: 'secondary', text: 'Cancelled' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.pending;
     return <Badge variant={config.variant}>{config.text}</Badge>;
   };
 
@@ -614,6 +613,7 @@ export const EnhancedGangMembers: React.FC = () => {
           </Card>
         ))
       )}
+      </div>
     </div>
   );
 

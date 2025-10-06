@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Building2, Briefcase, Mail, Phone, MapPin, Users } from 'lucide-react';
+import { Building2, Briefcase, Mail, Phone, MapPin } from 'lucide-react';
 import { VerifiedBadge, TrustBadge } from '../../components/ui/TrustBadge';
 
 interface FormData {
@@ -16,6 +16,7 @@ interface FormData {
   companySize: string;
   location: string;
   description: string;
+  website: string;
 }
 
 interface FormErrors {
@@ -26,6 +27,7 @@ interface FormErrors {
   industry?: string;
   companySize?: string;
   location?: string;
+  website?: string;
 }
 
 export const OnboardingEmployer: React.FC = () => {
@@ -42,7 +44,8 @@ export const OnboardingEmployer: React.FC = () => {
     industry: '',
     companySize: '',
     location: '',
-    description: ''
+    description: '',
+    website: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -113,7 +116,8 @@ export const OnboardingEmployer: React.FC = () => {
           companyName: formData.companyName,
           industry: formData.industry,
           companySize: formData.companySize,
-          description: formData.description
+          description: formData.description,
+          website: formData.website
         },
         isVerified: false
       });

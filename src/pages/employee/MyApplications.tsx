@@ -6,15 +6,13 @@ import { Button } from '../../components/ui/Button';
 import { 
   Briefcase,
   MapPin,
-  Calendar,
   DollarSign,
   Clock,
   CheckCircle,
   XCircle,
   Eye,
   AlertCircle,
-  ExternalLink,
-  Filter
+  ExternalLink
 } from 'lucide-react';
 
 interface Application {
@@ -39,7 +37,7 @@ interface Application {
 
 export const MyApplications: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

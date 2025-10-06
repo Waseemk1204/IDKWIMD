@@ -9,9 +9,6 @@ import {
   TagIcon, 
   BriefcaseIcon, 
   GraduationCapIcon,
-  MapPinIcon,
-  StarIcon,
-  UsersIcon,
   LightbulbIcon,
   HelpCircleIcon,
   MegaphoneIcon,
@@ -31,7 +28,7 @@ interface CommunityCategory {
 }
 
 export const CreateEnhancedPost: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -83,7 +80,7 @@ export const CreateEnhancedPost: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...(typeof prev[parent as keyof typeof prev] === 'object' && prev[parent as keyof typeof prev] !== null ? prev[parent as keyof typeof prev] as Record<string, any> : {}),
           [child]: value
         }
       }));
@@ -170,7 +167,26 @@ export const CreateEnhancedPost: React.FC = () => {
     setError(null);
 
     try {
-      const response = await apiService.createEnhancedCommunityPost(formData);
+      const response = await apiService.createEnhancedCommunityPost({
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
+        ...(formData.type && { type: formData.type }),
+        ...(formData.tags.length > 0 && { tags: formData.tags }),
+        ...(formData.professionalContext.industry && { 
+          professionalContext: {
+            ...formData.professionalContext,
+            skillLevel: formData.professionalContext.skillLevel || undefined
+          }
+        }),
+        ...(formData.mentorship.mentorshipType && { 
+          mentorship: {
+            ...formData.mentorship,
+            menteeLevel: formData.mentorship.menteeLevel || undefined,
+            mentorshipType: formData.mentorship.mentorshipType || undefined
+          }
+        })
+      });
       
       if (response.success) {
         navigate(`/community-enhanced/post/${response.data.post._id}`);
@@ -284,15 +300,15 @@ export const CreateEnhancedPost: React.FC = () => {
               <Select
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
+                options={[
+                  { value: '', label: 'Select a category' },
+                  ...categories.map(category => ({
+                    value: category._id,
+                    label: category.name
+                  }))
+                ]}
                 required
-              >
-                <option value="">Select a category</option>
-                {categories.map(category => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
+              />
             </div>
 
             <div>
@@ -366,19 +382,20 @@ export const CreateEnhancedPost: React.FC = () => {
               <Select
                 value={formData.professionalContext.industry}
                 onChange={(e) => handleInputChange('professionalContext.industry', e.target.value)}
-              >
-                <option value="">Select industry</option>
-                <option value="technology">Technology</option>
-                <option value="finance">Finance</option>
-                <option value="healthcare">Healthcare</option>
-                <option value="education">Education</option>
-                <option value="marketing">Marketing</option>
-                <option value="design">Design</option>
-                <option value="consulting">Consulting</option>
-                <option value="retail">Retail</option>
-                <option value="manufacturing">Manufacturing</option>
-                <option value="other">Other</option>
-              </Select>
+                options={[
+                  { value: '', label: 'Select industry' },
+                  { value: 'technology', label: 'Technology' },
+                  { value: 'finance', label: 'Finance' },
+                  { value: 'healthcare', label: 'Healthcare' },
+                  { value: 'education', label: 'Education' },
+                  { value: 'marketing', label: 'Marketing' },
+                  { value: 'design', label: 'Design' },
+                  { value: 'consulting', label: 'Consulting' },
+                  { value: 'retail', label: 'Retail' },
+                  { value: 'manufacturing', label: 'Manufacturing' },
+                  { value: 'other', label: 'Other' }
+                ]}
+              />
             </div>
 
             <div>
@@ -388,13 +405,14 @@ export const CreateEnhancedPost: React.FC = () => {
               <Select
                 value={formData.professionalContext.skillLevel}
                 onChange={(e) => handleInputChange('professionalContext.skillLevel', e.target.value)}
-              >
-                <option value="">Select skill level</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-                <option value="expert">Expert</option>
-              </Select>
+                options={[
+                  { value: '', label: 'Select skill level' },
+                  { value: 'beginner', label: 'Beginner' },
+                  { value: 'intermediate', label: 'Intermediate' },
+                  { value: 'advanced', label: 'Advanced' },
+                  { value: 'expert', label: 'Expert' }
+                ]}
+              />
             </div>
           </div>
 
@@ -483,12 +501,13 @@ export const CreateEnhancedPost: React.FC = () => {
                       <Select
                         value={formData.mentorship.menteeLevel}
                         onChange={(e) => handleInputChange('mentorship.menteeLevel', e.target.value)}
-                      >
-                        <option value="">Select your level</option>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                      </Select>
+                        options={[
+                          { value: '', label: 'Select your level' },
+                          { value: 'beginner', label: 'Beginner' },
+                          { value: 'intermediate', label: 'Intermediate' },
+                          { value: 'advanced', label: 'Advanced' }
+                        ]}
+                      />
                     </div>
 
                     <div>
@@ -498,13 +517,14 @@ export const CreateEnhancedPost: React.FC = () => {
                       <Select
                         value={formData.mentorship.mentorshipType}
                         onChange={(e) => handleInputChange('mentorship.mentorshipType', e.target.value)}
-                      >
-                        <option value="">Select type</option>
-                        <option value="career">Career Guidance</option>
-                        <option value="technical">Technical Skills</option>
-                        <option value="business">Business Skills</option>
-                        <option value="general">General Development</option>
-                      </Select>
+                        options={[
+                          { value: '', label: 'Select type' },
+                          { value: 'career', label: 'Career Guidance' },
+                          { value: 'technical', label: 'Technical Skills' },
+                          { value: 'business', label: 'Business Skills' },
+                          { value: 'general', label: 'General Development' }
+                        ]}
+                      />
                     </div>
                   </div>
 

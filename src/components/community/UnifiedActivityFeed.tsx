@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, MessageCircle, Users, Briefcase, Heart } from 'lucide-react';
+import { MessageCircle, Users, Briefcase } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 
 export const UnifiedActivityFeed: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

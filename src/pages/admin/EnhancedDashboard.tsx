@@ -6,22 +6,17 @@ import { Button } from '../../components/ui/Button';
 import { 
   Users, 
   Briefcase, 
-  FileText, 
   DollarSign, 
-  TrendingUp, 
-  TrendingDown,
   UserCheck,
   Clock,
   AlertTriangle,
   BarChart3,
-  PieChart,
   Activity,
   ArrowRight,
-  Calendar,
   Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
 
 interface DashboardAnalytics {
   overview: {
@@ -451,7 +446,7 @@ export const EnhancedDashboard: React.FC = () => {
                         fill="#8884d8"
                         dataKey="count"
                       >
-                        {userAnalytics.roleDistribution.map((entry, index) => (
+                        {userAnalytics.roleDistribution.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -524,7 +519,7 @@ export const EnhancedDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {jobAnalytics.categoryDistribution.slice(0, 10).map((category, index) => (
+                    {jobAnalytics.categoryDistribution.slice(0, 10).map((category, _index) => (
                       <div key={category._id} className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">{category._id}</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">{category.count}</span>

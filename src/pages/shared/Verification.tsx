@@ -4,8 +4,7 @@ import { apiService } from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Textarea } from '../../components/ui/Textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/Select';
+import { Select } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
 import { 
   Shield, 
@@ -48,7 +47,7 @@ interface Verification {
 }
 
 export const Verification: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user: _user, isAuthenticated } = useAuth();
   const [verifications, setVerifications] = useState<Verification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showSubmitForm, setShowSubmitForm] = useState(false);
@@ -338,17 +337,16 @@ export const Verification: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Verification Type
                   </label>
-                  <Select value={verificationType} onValueChange={(value: any) => setVerificationType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="identity">Identity Verification</SelectItem>
-                      <SelectItem value="employment">Employment Verification</SelectItem>
-                      <SelectItem value="education">Education Verification</SelectItem>
-                      <SelectItem value="company">Company Verification</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Select 
+                    value={verificationType} 
+                    onChange={(e) => setVerificationType(e.target.value as "identity" | "employment" | "education" | "company")}
+                    options={[
+                      { value: 'identity', label: 'Identity Verification' },
+                      { value: 'employment', label: 'Employment Verification' },
+                      { value: 'education', label: 'Education Verification' },
+                      { value: 'company', label: 'Company Verification' }
+                    ]}
+                  />
                 </div>
 
                 <div>

@@ -237,7 +237,7 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                     className="flex items-center space-x-2 p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                   >
-                    <Avatar name={user?.name} src={user?.profileImage} size="sm" />
+                    <Avatar name={user?.fullName} src={user?.profilePhoto} size="sm" />
                     <ChevronDownIcon className={`w-4 h-4 text-neutral-500 transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -246,7 +246,7 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                     <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl py-2 bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 border border-neutral-200 dark:border-neutral-700 transform transition-all duration-200 origin-top-right">
                       {/* User Info Header */}
                       <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user?.name}</p>
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user?.fullName}</p>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">{user?.role}</p>
                       </div>
                       
@@ -324,11 +324,11 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
               {/* User Info */}
               <div className="flex items-center px-4 mb-4">
                 <div className="flex-shrink-0">
-                  <Avatar name={user?.name} src={user?.profileImage} size="md" />
+                  <Avatar name={user?.fullName} src={user?.profilePhoto} size="md" />
                 </div>
                 <div className="ml-3 flex-1">
                   <div className="text-base font-medium text-neutral-800 dark:text-neutral-100">
-                    {user?.name}
+                    {user?.fullName}
                   </div>
                   <div className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                     {user?.email}

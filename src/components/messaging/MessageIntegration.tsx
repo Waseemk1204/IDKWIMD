@@ -18,7 +18,7 @@ interface QuickMessageProps {
 export const QuickMessage: React.FC<QuickMessageProps> = ({
   userId,
   userName,
-  userPhoto,
+  userPhoto: _userPhoto,
   context,
   onMessageSent
 }) => {
@@ -256,7 +256,7 @@ export const MessageIntegration: React.FC<MessageIntegrationProps> = ({
         }}
       />
       
-      {(sharedInterests?.length > 0 || connectionStrength) && (
+      {(sharedInterests && sharedInterests.length > 0 || connectionStrength) && (
         <div className="space-y-2">
           <Button
             variant="outline"

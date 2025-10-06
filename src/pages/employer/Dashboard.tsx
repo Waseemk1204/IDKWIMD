@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
+import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { TrustBadge, VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
+import { TrustBadge, VerifiedBadge } from '../../components/ui/TrustBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { 
   Briefcase, 
@@ -16,21 +16,15 @@ import {
   XCircle,
   TrendingUp,
   Star,
-  Building2,
   Target,
-  Eye,
-  MessageSquare,
-  Calendar,
-  DollarSign,
-  UserCheck,
-  UserX
+  Eye
 } from 'lucide-react';
 
 export const EmployerDashboard: React.FC = () => {
   const { user } = useAuth();
   
   // Real data will be loaded from API
-  const [stats, setStats] = useState({
+  const [stats, _setStats] = useState({
     activeJobs: 0,
     totalApplications: 0,
     pendingTimesheets: 0,
@@ -41,7 +35,7 @@ export const EmployerDashboard: React.FC = () => {
   });
 
   const [recentApplications, setRecentApplications] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, _setIsLoading] = useState(true);
   
   // Load dashboard data from API
   useEffect(() => {
@@ -60,14 +54,14 @@ export const EmployerDashboard: React.FC = () => {
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {
-        setIsLoading(false);
+        _setIsLoading(false);
       }
     };
     
     loadDashboardData();
   }, []);
   
-  const [pendingTimesheets, setPendingTimesheets] = useState<any[]>([]);
+  const [pendingTimesheets, _setPendingTimesheets] = useState<any[]>([]);
 
   const quickActions = [
     {
@@ -328,7 +322,7 @@ export const EmployerDashboard: React.FC = () => {
                 <div key={timesheet.id} className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-gradient-to-r from-trust-500 to-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
-                      {timesheet.name.split(' ').map(n => n[0]).join('')}
+                      {timesheet.name.split(' ').map((n: string) => n[0]).join('')}
                     </div>
                     <div>
                       <p className="font-medium text-neutral-900 dark:text-neutral-100">

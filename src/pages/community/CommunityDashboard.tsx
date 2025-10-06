@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  TrendingUpIcon, 
   UsersIcon, 
   MessageSquareIcon, 
   CalendarIcon,
   AwardIcon,
   StarIcon,
-  EyeIcon,
   ThumbsUpIcon,
-  BookmarkIcon,
-  ShareIcon,
   BriefcaseIcon,
   LightbulbIcon,
   BarChart3Icon,
@@ -18,8 +14,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
-import { GangCommunityIntegration } from './GangCommunityIntegration';
-import { ProfessionalRecommendations } from './ProfessionalRecommendations';
+import { GangCommunityIntegration } from '../../components/community/GangCommunityIntegration';
+import { ProfessionalRecommendations } from '../../components/community/ProfessionalRecommendations';
 import { UnifiedActivityFeed } from '../../components/community/UnifiedActivityFeed';
 
 interface UserStats {
@@ -55,7 +51,7 @@ export const CommunityDashboard: React.FC = () => {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'gang' | 'recommendations'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gang' | 'recommendations' | 'activity'>('overview');
 
   useEffect(() => {
     loadDashboardData();

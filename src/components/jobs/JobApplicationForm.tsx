@@ -105,7 +105,7 @@ export const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      const response = await apiService.submitJobApplication(jobId, {
+      const response = await apiService.submitApplication(jobId, {
         coverLetter: formData.coverLetter.trim(),
         salaryExpectation: formData.salaryExpectation ? Number(formData.salaryExpectation) : undefined,
         availability: formData.availability.trim() || undefined,
@@ -316,12 +316,12 @@ export const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
-                  {user?.name?.charAt(0).toUpperCase()}
+                  {user?.fullName?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
                 <p className="text-sm font-medium text-neutral-900 dark:text-white">
-                  {user?.name}
+                  {user?.fullName}
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   {user?.email}

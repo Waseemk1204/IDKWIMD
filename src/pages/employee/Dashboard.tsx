@@ -28,7 +28,7 @@ export const EmployeeDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   // Real data will be loaded from API
-  const [stats, setStats] = useState({
+  const [stats, _setStats] = useState({
     activeApplications: 0,
     totalEarnings: 0,
     hoursThisMonth: 0,

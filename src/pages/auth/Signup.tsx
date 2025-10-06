@@ -4,15 +4,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { TrustBadge, VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
-import { StandardizedSocialSignIn } from '../../components/auth/StandardizedSocialSignIn';
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 import { SignupSuccessAnimation } from '../../components/ui/SignupSuccessAnimation';
 import { googleAuthService } from '../../services/googleAuth';
 import { 
   Mail, 
   Lock, 
-  User, 
-  Briefcase, 
   Users, 
   Shield, 
   CheckCircle, 
@@ -50,10 +47,10 @@ export const Signup: React.FC = () => {
       
       if (result.success && result.user) {
         // Login with Google user data
-        const user = await loginWithGoogle(result.user);
+        await loginWithGoogle(result.user);
         
         // Extract name for personalization
-        const name = result.user.fullName || result.user.email?.split('@')[0] || 'there';
+        const name = result.user.name || result.user.email?.split('@')[0] || 'there';
         setUserName(name);
         
         // Show success animation
@@ -87,7 +84,7 @@ export const Signup: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const user = await signup(email, password, role);
+      await signup(email, password, role);
       
       // Extract name from email for personalization
       const nameFromEmail = email.split('@')[0];

@@ -7,14 +7,12 @@ import {
   Filter, 
   MapPin, 
   DollarSign, 
-  Clock, 
   Star,
   Briefcase,
   Users,
   FileText,
   MessageSquare,
-  Calendar,
-  X
+  Calendar
 } from 'lucide-react';
 
 interface SearchFilters {

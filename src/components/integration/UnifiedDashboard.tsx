@@ -38,7 +38,7 @@ interface UnifiedDashboardProps {
 export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
   className = ''
 }) => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [insights, setInsights] = useState<NetworkInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'overview' | 'activity' | 'recommendations' | 'insights'>('overview');
@@ -71,7 +71,7 @@ export const UnifiedDashboard: React.FC<UnifiedDashboardProps> = ({
   const getScoreBadge = (score: number) => {
     if (score >= 80) return <Badge variant="primary" className="bg-green-500">Excellent</Badge>;
     if (score >= 60) return <Badge variant="secondary" className="bg-yellow-500">Good</Badge>;
-    return <Badge variant="outline" className="bg-red-500 text-white">Needs Improvement</Badge>;
+    return <Badge variant="secondary" className="bg-red-500 text-white">Needs Improvement</Badge>;
   };
 
   if (loading) {

@@ -1,23 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users2, Star, MapPin, Building, TrendingUp, MessageCircle, Calendar } from 'lucide-react';
+import { Users2, Star, MapPin, Building, TrendingUp } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
-
-interface User {
-  _id: string;
-  fullName: string;
-  username: string;
-  email: string;
-  profilePhoto?: string;
-  headline?: string;
-  skills?: string[];
-  location?: string;
-  company?: string;
-}
 
 interface MutualConnection {
   _id: string;
@@ -68,7 +56,7 @@ export const ConnectionInsights: React.FC<ConnectionInsightsProps> = ({
         
         // Calculate insights
         const sharedSkills = user.skills.filter(skill => 
-          targetUser.skills.some(targetSkill => 
+          targetUser.skills.some((targetSkill: string) => 
             targetSkill.toLowerCase().includes(skill.toLowerCase()) || 
             skill.toLowerCase().includes(targetSkill.toLowerCase())
           )

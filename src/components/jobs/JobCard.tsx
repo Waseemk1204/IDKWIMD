@@ -19,6 +19,10 @@ export interface Job {
   duration?: string;
   urgency?: 'high' | 'medium' | 'low';
   type?: 'part-time' | 'full-time' | 'contract' | 'internship';
+  responsibilities?: string[];
+  requirements?: string[];
+  experienceLevel?: 'entry' | 'mid' | 'senior';
+  isRemote?: boolean;
 }
 
 interface JobCardProps {

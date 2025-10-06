@@ -5,17 +5,12 @@ import {
   PlusIcon, 
   TrendingUpIcon, 
   ClockIcon, 
-  StarIcon, 
   ChevronLeft, 
   ChevronRight,
   FilterIcon,
-  BookmarkIcon,
-  ShareIcon,
   ThumbsUpIcon,
   MessageSquareIcon,
   AwardIcon,
-  UsersIcon,
-  CalendarIcon,
   LightbulbIcon,
   HelpCircleIcon,
   MegaphoneIcon,
@@ -93,7 +88,7 @@ interface CommunityCategory {
 }
 
 export const EnhancedCommunityHub: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user: _user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'trending' | 'top' | 'most_helpful' | 'expert_endorsed' | 'professional_relevance'>('newest');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

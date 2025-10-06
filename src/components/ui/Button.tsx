@@ -11,7 +11,7 @@ type ButtonVariant =
   | 'trust' 
   | 'gradient';
 
-type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -111,6 +111,7 @@ export const Button: React.FC<ButtonProps> = ({
     md: 'text-base px-4 py-2.5 gap-2',
     lg: 'text-lg px-6 py-3 gap-2.5',
     xl: 'text-xl px-8 py-4 gap-3',
+    icon: 'p-2 w-10 h-10',
   };
 
   const widthStyles = isFullWidth ? 'w-full' : '';

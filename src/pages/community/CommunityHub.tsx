@@ -32,7 +32,6 @@ export const CommunityHub: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'trending' | 'newest' | 'top'>('trending');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [allTags, setAllTags] = useState<{name: string, count: number}[]>([]);
@@ -166,7 +165,7 @@ export const CommunityHub: React.FC = () => {
   };
 
   // Handle touch gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     setIsScrolling(true);
   };
 
@@ -175,7 +174,7 @@ export const CommunityHub: React.FC = () => {
     
     e.preventDefault();
     const touch = e.touches[0];
-    const deltaX = touch.clientX - (topicsRef.current.dataset.lastTouchX || 0);
+    const deltaX = touch.clientX - (parseInt(topicsRef.current.dataset.lastTouchX || '0'));
     topicsRef.current.scrollLeft -= deltaX;
     topicsRef.current.dataset.lastTouchX = touch.clientX.toString();
   };

@@ -6,7 +6,7 @@ import { Input } from '../../components/ui/Input';
 import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
 export const CreatePost: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user: _user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');

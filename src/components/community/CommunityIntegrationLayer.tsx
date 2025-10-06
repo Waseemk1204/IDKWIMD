@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Users, Share2, Bell, UserPlus } from 'lucide-react';
+import { MessageCircle, Users, Share2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
@@ -112,7 +112,7 @@ const GangInviteModal: React.FC<{
   postId: string;
   onClose: () => void;
   onInvite: () => void;
-}> = ({ postId, onClose, onInvite }) => {
+}> = ({ postId: _postId, onClose, onInvite }) => {
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [gangMembers, setGangMembers] = useState<any[]>([]);
 

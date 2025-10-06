@@ -59,7 +59,7 @@ interface CommunityPost {
 }
 
 export const GangCommunityIntegration: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [gangMembers, setGangMembers] = useState<GangMember[]>([]);
   const [gangPosts, setGangPosts] = useState<CommunityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);

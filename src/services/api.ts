@@ -233,8 +233,9 @@ class ApiService {
     const response = await this.request(`/jobs?${queryParams.toString()}`);
     
     // Transform job data if successful
-    if (response.success && response.data && 'jobs' in response.data) {
-      response.data.jobs = response.data.jobs.map((job: any) => this.transformJobData(job));
+    if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'jobs' in response.data) {
+      const data = response.data as { jobs: any[] };
+      data.jobs = data.jobs.map((job: any) => this.transformJobData(job));
     }
     
     return response;
@@ -244,8 +245,9 @@ class ApiService {
     const response = await this.request(`/jobs/${id}`);
     
     // Transform job data if successful
-    if (response.success && response.data?.job) {
-      response.data.job = this.transformJobData(response.data.job);
+    if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'job' in response.data) {
+      const data = response.data as { job: any };
+      data.job = this.transformJobData(data.job);
     }
     
     return response;
@@ -256,8 +258,9 @@ class ApiService {
     const response = await this.request(`/jobs/featured${params}`);
     
     // Transform job data if successful
-    if (response.success && response.data && 'jobs' in response.data) {
-      response.data.jobs = response.data.jobs.map((job: any) => this.transformJobData(job));
+    if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'jobs' in response.data) {
+      const data = response.data as { jobs: any[] };
+      data.jobs = data.jobs.map((job: any) => this.transformJobData(job));
     }
     
     return response;
@@ -301,14 +304,19 @@ class ApiService {
     const response = await this.request(`${endpoint}?${queryParams.toString()}`);
     
     // Transform job data if successful
-    if (response.success && response.data && 'jobs' in response.data) {
-      response.data.jobs = response.data.jobs.map((job: any) => this.transformJobData(job));
+    if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'jobs' in response.data) {
+      const data = response.data as { jobs: any[] };
+      data.jobs = data.jobs.map((job: any) => this.transformJobData(job));
     }
     
     return response;
   }
 
   // Application methods
+  async getUserApplications(): Promise<ApiResponse> {
+    return this.request('/applications/user');
+  }
+
   async getApplications(params?: any): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
     if (params) {

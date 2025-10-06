@@ -9,13 +9,11 @@ import {
   ShareIcon, 
   AwardIcon,
   EyeIcon,
-  ClockIcon,
   MapPinIcon,
   BriefcaseIcon,
   GraduationCapIcon,
-  UsersIcon,
   StarIcon,
-  MessageCircle
+  TrendingUpIcon
 } from 'lucide-react';
 import apiService from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';

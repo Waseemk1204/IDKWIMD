@@ -193,7 +193,7 @@ export const BlogPostPage: React.FC = () => {
       }
     } catch (error) {
       // Handle user cancellation gracefully
-      if (error.name === 'AbortError') {
+      if ((error as Error).name === 'AbortError') {
         // User canceled the share dialog - this is normal, don't show error
         return;
       }
