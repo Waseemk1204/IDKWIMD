@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { DevelopmentNotice } from './components/ui/DevelopmentNotice';
 import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export function App() {
   useEffect(() => {
@@ -158,7 +159,9 @@ export function App() {
       <ThemeProvider>
         <AuthProvider>
           <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
-            <AppRouter />
+            <ErrorBoundary>
+              <AppRouter />
+            </ErrorBoundary>
             <Toaster position="top-right" />
             <SpeedInsights />
             <Analytics />

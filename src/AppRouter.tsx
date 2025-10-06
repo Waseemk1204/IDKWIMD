@@ -100,10 +100,7 @@ const ProtectedRoute: React.FC<{
   return <>{children}</>;
 };
 export function AppRouter() {
-  return <BrowserRouter future={{
-    v7_startTransition: true,
-    v7_relativeSplatPath: true
-  }}>
+  return <BrowserRouter>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLanding />} />
