@@ -53,7 +53,7 @@ class GoogleAuthService {
         auto_select: false,
         cancel_on_tap_outside: true,
         use_fedcm_for_prompt: true, // Enable FedCM as required by Google
-        ux_mode: 'redirect' // Use redirect mode for better reliability
+        ux_mode: 'popup' // Use popup mode to avoid callback URL issues
       });
       
       this.isLoaded = true;
@@ -142,10 +142,19 @@ class GoogleAuthService {
           throw new Error('Google Identity Services not loaded');
         }
         
-        // Simple prompt without deprecated status methods
-        (window as any).google.accounts.id.prompt();
-        
-        console.log('Google OAuth prompt initiated, waiting for response...');
+        // Try popup mode first
+        try {
+          (window as any).google.accounts.id.prompt();
+          console.log('Google OAuth prompt initiated (popup mode), waiting for response...');
+        } catch (popupError) {
+          console.warn('Popup mode failed, trying redirect mode:', popupError);
+          // Fallback to redirect mode if popup fails
+          (window as any).google.accounts.id.prompt({
+            ux_mode: 'redirect',
+            redirect_uri: window.location.origin + '/auth/google/callback'
+          });
+          console.log('Google OAuth prompt initiated (redirect mode), waiting for response...');
+        }
         
         // Set a timeout to handle cases where prompt doesn't respond
         setTimeout(() => {

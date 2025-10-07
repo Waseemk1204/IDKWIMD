@@ -44,6 +44,7 @@ import { PrivacyPolicy } from './pages/shared/PrivacyPolicy';
 import { NotFound } from './pages/NotFound';
 // Auth pages
 import { OAuthCallback } from './pages/auth/OAuthCallback';
+import { GoogleAuthCallback } from './pages/auth/GoogleAuthCallback';
 // Messaging pages
 import { Messaging } from './pages/Messaging';
 // Community pages
@@ -113,6 +114,7 @@ export function AppRouter() {
         <Route path="/onboarding/employee" element={<OnboardingEmployee />} />
         <Route path="/auth/success" element={<OAuthCallback />} />
         <Route path="/auth/error" element={<OAuthCallback />} />
+        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogPostPage />} />
         <Route path="/about" element={<AboutUs />} />
