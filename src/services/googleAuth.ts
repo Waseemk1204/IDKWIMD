@@ -45,15 +45,21 @@ class GoogleAuthService {
    */
   private initializeGoogleAuth(): void {
     if (typeof window !== 'undefined' && (window as any).google) {
+      console.log('Initializing Google Auth with client ID:', GOOGLE_CLIENT_ID);
+      
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: this.handleCredentialResponse.bind(this),
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: false, // Disable FedCM to avoid browser blocking
-        ux_mode: 'popup' // Use popup mode for better compatibility
+        use_fedcm_for_prompt: true, // Enable FedCM as required by Google
+        ux_mode: 'redirect' // Use redirect mode for better reliability
       });
+      
       this.isLoaded = true;
+      console.log('Google Auth initialized successfully');
+    } else {
+      console.error('Google Identity Services not available');
     }
   }
 
@@ -129,20 +135,30 @@ class GoogleAuthService {
       };
 
       try {
+        console.log('Initiating Google OAuth prompt...');
+        
+        // Check if Google API is available
+        if (!(window as any).google?.accounts?.id) {
+          throw new Error('Google Identity Services not loaded');
+        }
+        
         // Simple prompt without deprecated status methods
         (window as any).google.accounts.id.prompt();
+        
+        console.log('Google OAuth prompt initiated, waiting for response...');
         
         // Set a timeout to handle cases where prompt doesn't respond
         setTimeout(() => {
           // If we haven't resolved yet, it means the prompt didn't work
           if (!this.isResolved) {
+            console.warn('Google OAuth timeout - no response received');
             this.isResolved = true;
             resolve({
               success: false,
               error: 'Google authentication timed out. Please try email/password login.'
             });
           }
-        }, 10000); // 10 second timeout
+        }, 30000); // 30 second timeout
         
       } catch (error) {
         console.error('Google OAuth error:', error);
