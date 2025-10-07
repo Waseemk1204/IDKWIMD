@@ -169,7 +169,7 @@ class GoogleAuthService {
           size: 'large',
           type: 'standard',
           ux_mode: 'redirect',
-          redirect_uri: window.location.origin + '/auth/google/callback'
+          redirect_uri: window.location.origin + '/login'
         });
         
         // Wait for the button to render and then click it

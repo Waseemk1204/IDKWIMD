@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
@@ -18,6 +18,81 @@ export const Login: React.FC = () => {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const handleGoogleCallback = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const credential = urlParams.get('credential');
+      const error = urlParams.get('error');
+      
+      if (credential) {
+        console.log('Processing Google OAuth callback on login page');
+        setIsLoading(true);
+        setError('');
+        
+        try {
+          // Decode the JWT token to get user info
+          const payload = JSON.parse(atob(credential.split('.')[1]));
+          console.log('Decoded JWT payload:', payload);
+          
+          const googleUser = {
+            googleId: payload.sub,
+            email: payload.email,
+            fullName: payload.name,
+            profilePhoto: payload.picture,
+            givenName: payload.given_name,
+            familyName: payload.family_name
+          };
+          
+          console.log('Google user data:', googleUser);
+          
+          // Login with Google user data
+          const user = await loginWithGoogle(googleUser);
+          
+          if (user) {
+            console.log('Google login successful:', user);
+            
+            // Redirect based on user role or intent
+            const params = new URLSearchParams(location.search);
+            const intent = params.get('intent');
+            
+            // Check for intended job ID from localStorage
+            const intendedJobId = localStorage.getItem('intendedJobId');
+            
+            if (intendedJobId) {
+              // Clear the intended job ID and redirect to the specific job
+              localStorage.removeItem('intendedJobId');
+              navigate(`/employee/jobs/${intendedJobId}`);
+            } else {
+              // Always redirect to dashboard based on user role or intent
+              if (intent === 'employer' || user?.role === 'employer') {
+                navigate('/employer');
+              } else if (intent === 'employee' || user?.role === 'employee') {
+                navigate('/employee');
+              } else if (user?.role === 'admin') {
+                navigate('/admin');
+              } else {
+                navigate('/employee'); // Default to employee dashboard
+              }
+            }
+          } else {
+            throw new Error('Login failed');
+          }
+        } catch (loginError) {
+          console.error('Google login error:', loginError);
+          setError('Google authentication failed. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+      } else if (error) {
+        console.error('Google OAuth error:', error);
+        setError('Google authentication failed. Please try again.');
+      }
+    };
+
+    handleGoogleCallback();
+  }, [location, loginWithGoogle, navigate]);
 
   const handleGoogleSuccess = async () => {
     setIsLoading(true);
