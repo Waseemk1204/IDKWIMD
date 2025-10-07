@@ -163,13 +163,20 @@ class GoogleAuthService {
         tempDiv.style.visibility = 'hidden';
         document.body.appendChild(tempDiv);
         
+        // Use production redirect URI for deployed site
+        const redirectUri = window.location.hostname === 'localhost' 
+          ? window.location.origin + '/login'  // Local development
+          : 'https://parttimepays.in/login';    // Production
+        
+        console.log('Using redirect URI:', redirectUri);
+        
         // Render the Google Sign-In button
         (window as any).google.accounts.id.renderButton(tempDiv, {
           theme: 'outline',
           size: 'large',
           type: 'standard',
           ux_mode: 'redirect',
-          redirect_uri: window.location.origin + '/login'
+          redirect_uri: redirectUri
         });
         
         // Wait for the button to render and then click it
@@ -181,9 +188,25 @@ class GoogleAuthService {
           } else {
             console.error('Google OAuth button not found');
             document.body.removeChild(tempDiv);
-            throw new Error('Failed to create Google OAuth button');
+            resolve({
+              success: false,
+              error: 'Failed to create Google OAuth button'
+            });
+            return;
           }
         }, 100);
+        
+        // Add timeout for popup
+        setTimeout(() => {
+          if (!this.isResolved) {
+            console.log('Google OAuth popup timeout');
+            document.body.removeChild(tempDiv);
+            resolve({
+              success: false,
+              error: 'Google authentication timed out. Please try again.'
+            });
+          }
+        }, 30000); // 30 second timeout
         
         // Clean up after a delay
         setTimeout(() => {

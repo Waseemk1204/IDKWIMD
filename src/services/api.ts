@@ -1,6 +1,6 @@
 // API service for communicating with the backend
 const getApiBaseUrl = () => {
-  // In production (Vercel), always use relative URLs
+  // In production, use relative URLs for Vercel API routes
   if (import.meta.env.PROD) {
     return '/api';
   }

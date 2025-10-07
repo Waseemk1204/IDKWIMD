@@ -19,6 +19,8 @@ export default defineConfig({
     include: ['react', 'react-dom', 'react-router-dom']
   },
   server: {
+    port: 5173,
+    strictPort: true,
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
