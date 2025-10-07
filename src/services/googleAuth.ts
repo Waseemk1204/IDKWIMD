@@ -154,11 +154,43 @@ class GoogleAuthService {
           throw new Error('Google Identity Services not loaded');
         }
         
-        // Use redirect mode only - no popups
-        (window as any).google.accounts.id.prompt({
+        // Use Google Identity Services with redirect mode
+        // Create a temporary button element and trigger it
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'fixed';
+        tempDiv.style.top = '-1000px';
+        tempDiv.style.left = '-1000px';
+        tempDiv.style.visibility = 'hidden';
+        document.body.appendChild(tempDiv);
+        
+        // Render the Google Sign-In button
+        (window as any).google.accounts.id.renderButton(tempDiv, {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard',
           ux_mode: 'redirect',
           redirect_uri: window.location.origin + '/auth/google/callback'
         });
+        
+        // Wait for the button to render and then click it
+        setTimeout(() => {
+          const button = tempDiv.querySelector('div[role="button"]') as HTMLElement;
+          if (button) {
+            console.log('Clicking Google OAuth button programmatically');
+            button.click();
+          } else {
+            console.error('Google OAuth button not found');
+            document.body.removeChild(tempDiv);
+            throw new Error('Failed to create Google OAuth button');
+          }
+        }, 100);
+        
+        // Clean up after a delay
+        setTimeout(() => {
+          if (document.body.contains(tempDiv)) {
+            document.body.removeChild(tempDiv);
+          }
+        }, 5000);
         
         console.log('Google OAuth redirect initiated - user will be redirected to Google');
         

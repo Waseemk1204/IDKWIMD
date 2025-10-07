@@ -13,7 +13,7 @@ export const GoogleAuthCallback: React.FC = () => {
       try {
         console.log('Processing Google OAuth callback...');
         
-        // Get the credential from URL parameters
+        // Get the credential from URL parameters (JWT token)
         const urlParams = new URLSearchParams(window.location.search);
         const credential = urlParams.get('credential');
         const error = urlParams.get('error');
