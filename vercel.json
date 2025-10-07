@@ -23,12 +23,6 @@
       "destination": "/index.html"
     }
   ],
-  "routes": [
-    {
-      "src": "/login",
-      "dest": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/sitemap.xml",
