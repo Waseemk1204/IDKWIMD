@@ -49,7 +49,10 @@ class GoogleAuthService {
       
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
-        callback: this.handleCredentialResponse.bind(this),
+        callback: () => {
+          // This will be overridden by the Promise callback
+          console.log('Default Google OAuth callback called');
+        },
         auto_select: false,
         cancel_on_tap_outside: true,
         use_fedcm_for_prompt: true, // Enable FedCM as required by Google
@@ -134,8 +137,10 @@ class GoogleAuthService {
       // Set up one-time callback
       const originalCallback = (window as any).google.accounts.id.callback;
       (window as any).google.accounts.id.callback = (response: any) => {
+        console.log('Google OAuth callback triggered with response:', response);
         this.isResolved = true;
         const result = this.handleCredentialResponse(response);
+        console.log('Google OAuth result:', result);
         resolve(result);
         // Restore original callback
         (window as any).google.accounts.id.callback = originalCallback;
