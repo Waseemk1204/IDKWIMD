@@ -150,11 +150,8 @@
     overflow-x: hidden;
   }
 
-  /* Mobile scroll lock support */
+  /* Mobile scroll lock support (less aggressive) */
   body.scroll-locked {
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
     overflow: hidden !important;
     touch-action: none !important;
   }

@@ -30,15 +30,11 @@ export const lockScroll = () => {
   originalBodyHeight = document.body.style.height;
   
   if (isMobile()) {
-    // Mobile-specific scroll lock
+    // Mobile-specific scroll lock (less aggressive)
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
     
-    // Prevent touch scrolling
+    // Prevent touch scrolling without breaking layout
     document.body.style.touchAction = 'none';
     document.documentElement.style.touchAction = 'none';
     
