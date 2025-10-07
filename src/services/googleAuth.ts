@@ -52,7 +52,7 @@ class GoogleAuthService {
         callback: this.handleCredentialResponse.bind(this),
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: false, // Disable FedCM temporarily to avoid issues
+        use_fedcm_for_prompt: true, // Enable FedCM as required by Google
         ux_mode: 'popup', // Use popup mode
         context: 'signin', // Specify context
         itp_support: true // Support Intelligent Tracking Prevention
@@ -70,8 +70,11 @@ class GoogleAuthService {
    */
   private handleCredentialResponse(response: any): GoogleAuthResponse {
     try {
+      console.log('Google OAuth credential response received:', response);
+      
       // Decode the JWT token to get user info
       const payload = this.decodeJWT(response.credential);
+      console.log('Decoded JWT payload:', payload);
       
       const userInfo: GoogleUserInfo = {
         id: payload.sub,
@@ -81,6 +84,8 @@ class GoogleAuthService {
         given_name: payload.given_name,
         family_name: payload.family_name
       };
+
+      console.log('Google user info:', userInfo);
 
       return {
         success: true,
@@ -148,14 +153,25 @@ class GoogleAuthService {
         try {
           (window as any).google.accounts.id.prompt((notification: any) => {
             console.log('Google OAuth notification:', notification);
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              console.warn('Google OAuth prompt not displayed or skipped');
-              // Try redirect mode as fallback
+            console.log('Notification type:', typeof notification);
+            console.log('Notification methods:', Object.getOwnPropertyNames(notification));
+            
+            if (notification.isNotDisplayed && notification.isNotDisplayed()) {
+              console.warn('Google OAuth prompt not displayed');
               this.isResolved = true;
               resolve({
                 success: false,
                 error: 'Google authentication prompt was blocked. Please try email/password login or allow popups.'
               });
+            } else if (notification.isSkippedMoment && notification.isSkippedMoment()) {
+              console.warn('Google OAuth prompt was skipped');
+              this.isResolved = true;
+              resolve({
+                success: false,
+                error: 'Google authentication was skipped. Please try again.'
+              });
+            } else {
+              console.log('Google OAuth prompt displayed successfully');
             }
           });
           console.log('Google OAuth prompt initiated (popup mode), waiting for response...');
