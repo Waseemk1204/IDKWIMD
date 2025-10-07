@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export const GoogleAuthCallback: React.FC = () => {
   const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
 
   useEffect(() => {
@@ -27,11 +29,49 @@ export const GoogleAuthCallback: React.FC = () => {
         
         if (credential) {
           console.log('Google OAuth callback received credential');
-          setStatus('success');
+          setStatus('processing');
           
-          // For now, redirect to login page with success message
-          // In a real implementation, you would process the credential here
-          setTimeout(() => navigate('/login?google_auth=success'), 2000);
+          try {
+            // Decode the JWT token to get user info
+            const payload = JSON.parse(atob(credential.split('.')[1]));
+            console.log('Decoded JWT payload:', payload);
+            
+            const googleUser = {
+              googleId: payload.sub,
+              email: payload.email,
+              fullName: payload.name,
+              profilePhoto: payload.picture,
+              givenName: payload.given_name,
+              familyName: payload.family_name
+            };
+            
+            console.log('Google user data:', googleUser);
+            
+            // Login with Google user data
+            const user = await loginWithGoogle(googleUser);
+            
+            if (user) {
+              console.log('Google login successful:', user);
+              setStatus('success');
+              
+              // Redirect based on user role
+              if (user.role === 'employer') {
+                setTimeout(() => navigate('/employer'), 2000);
+              } else if (user.role === 'employee') {
+                setTimeout(() => navigate('/employee'), 2000);
+              } else if (user.role === 'admin') {
+                setTimeout(() => navigate('/admin'), 2000);
+              } else {
+                setTimeout(() => navigate('/employee'), 2000); // Default
+              }
+            } else {
+              throw new Error('Login failed');
+            }
+          } catch (loginError) {
+            console.error('Google login error:', loginError);
+            setStatus('error');
+            setTimeout(() => navigate('/login?google_auth=error'), 2000);
+          }
         } else {
           console.warn('No credential found in callback');
           setStatus('error');
@@ -45,26 +85,26 @@ export const GoogleAuthCallback: React.FC = () => {
     };
 
     handleCallback();
-  }, [navigate]);
+  }, [navigate, loginWithGoogle]);
 
   const getStatusMessage = () => {
     switch (status) {
       case 'processing':
         return {
-          title: 'Processing Google Authentication...',
-          message: 'Please wait while we complete your sign-in.',
+          title: 'Completing Google Sign-In...',
+          message: 'Please wait while we process your authentication.',
           icon: 'animate-spin'
         };
       case 'success':
         return {
-          title: 'Authentication Successful!',
-          message: 'Redirecting you to the login page...',
+          title: 'Welcome! Sign-In Successful',
+          message: 'Redirecting you to your dashboard...',
           icon: 'text-green-600'
         };
       case 'error':
         return {
-          title: 'Authentication Failed',
-          message: 'Redirecting you to the login page...',
+          title: 'Sign-In Failed',
+          message: 'There was an issue with your Google authentication. Redirecting to login...',
           icon: 'text-red-600'
         };
     }

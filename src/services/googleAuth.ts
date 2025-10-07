@@ -56,7 +56,7 @@ class GoogleAuthService {
         auto_select: false,
         cancel_on_tap_outside: true,
         use_fedcm_for_prompt: false, // Disable FedCM to avoid AbortError issues
-        ux_mode: 'popup', // Use popup mode
+        ux_mode: 'redirect', // Use redirect mode only - no popups
         context: 'signin', // Specify context
         itp_support: true // Support Intelligent Tracking Prevention
       });
@@ -147,71 +147,24 @@ class GoogleAuthService {
       };
 
       try {
-        console.log('Initiating Google OAuth prompt...');
+        console.log('Initiating Google OAuth redirect...');
         
         // Check if Google API is available
         if (!(window as any).google?.accounts?.id) {
           throw new Error('Google Identity Services not loaded');
         }
         
-        // Try popup mode first
-        try {
-          (window as any).google.accounts.id.prompt((notification: any) => {
-            console.log('Google OAuth notification:', notification);
-            console.log('Notification type:', typeof notification);
-            console.log('Notification methods:', Object.getOwnPropertyNames(notification));
-            
-            if (notification.isNotDisplayed && notification.isNotDisplayed()) {
-              console.warn('Google OAuth prompt not displayed');
-              this.isResolved = true;
-              resolve({
-                success: false,
-                error: 'Google authentication prompt was blocked. Please try email/password login or allow popups.'
-              });
-            } else if (notification.isSkippedMoment && notification.isSkippedMoment()) {
-              console.warn('Google OAuth prompt was skipped - trying redirect mode as fallback');
-              // Don't resolve immediately, try redirect mode as fallback
-              try {
-                (window as any).google.accounts.id.prompt({
-                  ux_mode: 'redirect',
-                  redirect_uri: window.location.origin + '/auth/google/callback'
-                });
-                console.log('Fallback redirect mode initiated');
-              } catch (redirectError) {
-                console.error('Both popup and redirect modes failed:', redirectError);
-                this.isResolved = true;
-                resolve({
-                  success: false,
-                  error: 'Google authentication failed. Please try email/password login.'
-                });
-              }
-            } else {
-              console.log('Google OAuth prompt displayed successfully');
-            }
-          });
-          console.log('Google OAuth prompt initiated (popup mode), waiting for response...');
-        } catch (popupError) {
-          console.warn('Popup mode failed, trying redirect mode:', popupError);
-          // Fallback to redirect mode if popup fails
-          (window as any).google.accounts.id.prompt({
-            ux_mode: 'redirect',
-            redirect_uri: window.location.origin + '/auth/google/callback'
-          });
-          console.log('Google OAuth prompt initiated (redirect mode), waiting for response...');
-        }
+        // Use redirect mode only - no popups
+        (window as any).google.accounts.id.prompt({
+          ux_mode: 'redirect',
+          redirect_uri: window.location.origin + '/auth/google/callback'
+        });
         
-        // Set a timeout to handle cases where prompt doesn't respond
-        setTimeout(() => {
-          // If we haven't resolved yet, it means the prompt didn't work
-          if (!this.isResolved) {
-            console.warn('Google OAuth timeout - no response received');
-            this.isResolved = true;
-            resolve({
-              success: false,
-              error: 'Google authentication timed out. Please try email/password login.'
-            });
-          }
-        }, 30000); // 30 second timeout
+        console.log('Google OAuth redirect initiated - user will be redirected to Google');
+        
+        // For redirect mode, we don't need to wait for a response
+        // The user will be redirected to Google and then back to our callback
+        // The Promise will be resolved when the callback page processes the response
         
       } catch (error) {
         console.error('Google OAuth error:', error);
