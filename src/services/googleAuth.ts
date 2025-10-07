@@ -52,8 +52,10 @@ class GoogleAuthService {
         callback: this.handleCredentialResponse.bind(this),
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: true, // Enable FedCM as required by Google
-        ux_mode: 'popup' // Use popup mode to avoid callback URL issues
+        use_fedcm_for_prompt: false, // Disable FedCM temporarily to avoid issues
+        ux_mode: 'popup', // Use popup mode
+        context: 'signin', // Specify context
+        itp_support: true // Support Intelligent Tracking Prevention
       });
       
       this.isLoaded = true;
@@ -142,9 +144,24 @@ class GoogleAuthService {
           throw new Error('Google Identity Services not loaded');
         }
         
+        // Check if user is already signed in
+        const isSignedIn = (window as any).google.accounts.id.isSignedIn();
+        console.log('User signed in status:', isSignedIn);
+        
         // Try popup mode first
         try {
-          (window as any).google.accounts.id.prompt();
+          (window as any).google.accounts.id.prompt((notification: any) => {
+            console.log('Google OAuth notification:', notification);
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              console.warn('Google OAuth prompt not displayed or skipped');
+              // Try redirect mode as fallback
+              this.isResolved = true;
+              resolve({
+                success: false,
+                error: 'Google authentication prompt was blocked. Please try email/password login or allow popups.'
+              });
+            }
+          });
           console.log('Google OAuth prompt initiated (popup mode), waiting for response...');
         } catch (popupError) {
           console.warn('Popup mode failed, trying redirect mode:', popupError);
