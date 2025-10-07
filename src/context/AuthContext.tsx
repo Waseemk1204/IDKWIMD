@@ -182,59 +182,30 @@ export const AuthProvider: React.FC<{
   const loginWithGoogle = async (googleUser: GoogleUserInfo): Promise<User> => {
     setIsLoading(true);
     try {
-      // Since we don't have a backend API, we'll simulate the Google login
-      // In a real application, this would call the backend API
-      console.log('Simulating Google login for:', googleUser);
-      
-      // Create a mock user object based on Google user data
-      const mockUser: User = {
-        _id: `google_${googleUser.googleId}`,
-        fullName: googleUser.fullName,
-        displayName: googleUser.fullName,
-        username: googleUser.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, ''),
+      const response = await apiService.loginWithGoogle({
+        googleId: googleUser.googleId,
         email: googleUser.email,
-        role: 'employee', // Default role for Google users
-        isVerified: true, // Google users are considered verified
-        verificationStatus: 'verified',
+        fullName: googleUser.fullName,
         profilePhoto: googleUser.profilePhoto,
-        phone: '',
-        location: '',
-        headline: '',
-        about: '',
-        website: '',
-        socialLinks: {
-          linkedin: '',
-          twitter: '',
-          github: '',
-          portfolio: ''
-        },
-        skills: [],
-        experiences: [],
-        education: [],
-        companyInfo: undefined,
-        isActive: true,
-        lastLogin: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        givenName: googleUser.givenName,
+        familyName: googleUser.familyName
+      });
       
-      // Generate a mock token
-      const mockToken = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Set the user and token
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', mockToken);
-      apiService.setToken(mockToken);
-      
-      setIsLoading(false);
-      console.log('Google login successful:', mockUser);
-      return mockUser;
-      
+      if (response.success && response.data?.user) {
+        const userData = response.data.user;
+        const token = response.data.token;
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        apiService.setToken(token);
+        setIsLoading(false);
+        return userData;
+      } else {
+        throw new Error(response.message || 'Google login failed');
+      }
     } catch (error) {
       setIsLoading(false);
-      console.error('Google login error:', error);
-      throw new Error('Google login failed');
+      throw error;
     }
   };
 

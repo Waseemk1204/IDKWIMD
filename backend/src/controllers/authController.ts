@@ -442,30 +442,107 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Deactivate account
-export const deactivateAccount = async (req: AuthRequest, res: Response): Promise<void> => {
+// Google OAuth login
+export const loginWithGoogle = async (req: Request, res: Response): Promise<void> => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { isActive: false },
-      { new: true }
-    );
+    const { googleId, email, fullName, profilePhoto, givenName, familyName } = req.body;
 
-    if (!user) {
-      res.status(404).json({
+    if (!googleId || !email || !fullName) {
+      res.status(400).json({
         success: false,
-        message: 'User not found'
+        message: 'Missing required Google user data'
       });
       return;
     }
 
-    res.clearCookie('token');
+    // Check if user already exists with this Google ID
+    let user = await User.findOne({ googleId });
+    
+    if (!user) {
+      // Check if user exists with this email
+      user = await User.findOne({ email });
+      
+      if (user) {
+        // Link Google account to existing user
+        user.googleId = googleId;
+        user.profilePhoto = profilePhoto || user.profilePhoto;
+        await user.save();
+      } else {
+        // Create new user with Google data
+        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+        
+        // Ensure username is unique
+        let uniqueUsername = username;
+        let counter = 1;
+        while (await User.findOne({ username: uniqueUsername })) {
+          uniqueUsername = `${username}${counter}`;
+          counter++;
+        }
+
+        user = new User({
+          googleId,
+          email,
+          fullName,
+          username: uniqueUsername,
+          profilePhoto,
+          role: 'employee', // Default role for Google users
+          isVerified: true, // Google users are considered verified
+          verificationStatus: 'verified',
+          isActive: true
+        });
+
+        await user.save();
+      }
+    }
+
+    // Update last login
+    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() }, { runValidators: false });
+
+    // Generate tokens
+    const token = generateToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: config.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.json({
       success: true,
-      message: 'Account deactivated successfully'
+      message: 'Google login successful',
+      data: {
+        user: {
+          id: user._id,
+          fullName: user.fullName,
+          displayName: user.displayName,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          profilePhoto: user.profilePhoto,
+          phone: user.phone,
+          location: user.location,
+          headline: user.headline,
+          about: user.about,
+          website: user.website,
+          skills: user.skills,
+          experiences: user.experiences,
+          education: user.education,
+          socialLinks: user.socialLinks,
+          companyInfo: user.companyInfo,
+          isVerified: user.isVerified,
+          isActive: user.isActive,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt
+        },
+        token,
+        refreshToken
+      }
     });
   } catch (error) {
-    console.error('Deactivate account error:', error);
+    console.error('Google login error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

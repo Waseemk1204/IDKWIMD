@@ -7,7 +7,8 @@ import {
   updateProfile,
   changePassword,
   refreshToken,
-  deactivateAccount
+  deactivateAccount,
+  loginWithGoogle
 } from '../controllers/authController';
 import { authenticate, AuthRequest } from '../middlewares/auth';
 import { authLimiter, passwordResetLimiter } from '../middlewares/rateLimiter';
@@ -23,6 +24,7 @@ const router = express.Router();
 // Public routes
 router.post('/register', authLimiter, validateRegister, register);
 router.post('/login', authLimiter, validateLogin, login);
+router.post('/google', authLimiter, loginWithGoogle);
 router.post('/refresh-token', refreshToken);
 
 // Protected routes
