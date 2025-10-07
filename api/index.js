@@ -384,6 +384,74 @@ app.get('/api/debug/database', async (req, res) => {
   }
 });
 
+// Debug endpoint to test MongoDB connection with detailed error info
+app.get('/api/debug/mongodb', async (req, res) => {
+  try {
+    console.log('🔍 Testing MongoDB connection...');
+    console.log('MONGODB_URI set:', !!process.env.MONGODB_URI);
+    console.log('MONGODB_URI format:', process.env.MONGODB_URI ? 
+      (process.env.MONGODB_URI.startsWith('mongodb://') || process.env.MONGODB_URI.startsWith('mongodb+srv://') ? 'valid' : 'invalid') : 'not set');
+    
+    if (!process.env.MONGODB_URI) {
+      return res.status(500).json({
+        success: false,
+        message: 'MONGODB_URI environment variable is not set',
+        error: 'Missing environment variable'
+      });
+    }
+
+    // Test connection with detailed error handling
+    try {
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        connectTimeoutMS: 10000,
+        maxPoolSize: 1,
+        minPoolSize: 0,
+        maxIdleTimeMS: 10000,
+        retryWrites: true,
+        w: 'majority'
+      });
+      
+      console.log('✅ MongoDB connected successfully');
+      
+      res.json({
+        success: true,
+        message: 'MongoDB connected successfully',
+        data: {
+          connectionState: mongoose.connection.readyState,
+          host: mongoose.connection.host,
+          port: mongoose.connection.port,
+          name: mongoose.connection.name,
+          readyState: mongoose.connection.readyState
+        }
+      });
+      
+    } catch (connectionError) {
+      console.error('❌ MongoDB connection error:', connectionError);
+      
+      res.status(500).json({
+        success: false,
+        message: 'MongoDB connection failed',
+        error: {
+          name: connectionError.name,
+          message: connectionError.message,
+          code: connectionError.code,
+          codeName: connectionError.codeName
+        }
+      });
+    }
+    
+  } catch (error) {
+    console.error('Debug MongoDB error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+});
+
 // Debug endpoint to check community posts specifically
 app.get('/api/debug/community', async (req, res) => {
   try {
