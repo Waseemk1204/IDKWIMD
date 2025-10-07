@@ -57,9 +57,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Connection state
 let isConnected = false;
-let connectionPromise = null;
 
-// Connect to MongoDB with connection-per-request approach
+// Connect to MongoDB at startup for better performance
 const connectDB = async () => {
   try {
     if (!process.env.MONGODB_URI) {
@@ -69,12 +68,8 @@ const connectDB = async () => {
     
     // If already connected, return true
     if (mongoose.connection.readyState === 1) {
+      console.log('✅ MongoDB already connected');
       return true;
-    }
-    
-    // If connection is in progress, wait for it
-    if (connectionPromise) {
-      return await connectionPromise;
     }
     
     console.log('🔄 Attempting to connect to MongoDB...');
@@ -85,38 +80,37 @@ const connectDB = async () => {
       return false;
     }
     
-    // Create connection promise
-    connectionPromise = mongoose.connect(process.env.MONGODB_URI, {
+    // Connect with persistent connection
+    await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 10000, // 10 seconds timeout
       socketTimeoutMS: 45000,
       connectTimeoutMS: 10000,
-      maxPoolSize: 1,
-      minPoolSize: 0,
-      maxIdleTimeMS: 10000,
+      maxPoolSize: 10, // Increased pool size for better performance
+      minPoolSize: 1, // Keep at least 1 connection alive
+      maxIdleTimeMS: 30000, // Keep connections alive longer
       retryWrites: true,
       w: 'majority'
     });
     
-    await connectionPromise;
-    
     console.log('✅ MongoDB Connected successfully');
     isConnected = true;
-    connectionPromise = null;
     return true;
     
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    connectionPromise = null;
     return false;
   }
 };
 
-// Ensure connection for each request
+// Ensure connection is available (now just checks if connected)
 const ensureConnection = async () => {
-  if (mongoose.connection.readyState !== 1) {
-    return await connectDB();
+  if (mongoose.connection.readyState === 1) {
+    return true;
   }
-  return true;
+  
+  // If not connected, try to reconnect
+  console.log('🔄 MongoDB not connected, attempting to reconnect...');
+  return await connectDB();
 };
 
 // User Schema - Updated to match existing data structure
@@ -1492,9 +1486,20 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Server startup - connection will be established per request
+// Server startup - establish MongoDB connection immediately
 console.log('🚀 Server ready to handle requests');
-console.log('📡 MongoDB connection will be established per request');
+console.log('📡 Establishing MongoDB connection...');
+
+// Connect to MongoDB immediately on startup
+connectDB().then(connected => {
+  if (connected) {
+    console.log('✅ MongoDB connection established successfully');
+  } else {
+    console.error('❌ Failed to establish MongoDB connection');
+  }
+}).catch(error => {
+  console.error('❌ MongoDB connection error on startup:', error);
+});
 
 export default app;
 
