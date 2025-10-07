@@ -55,7 +55,7 @@ class GoogleAuthService {
         },
         auto_select: false,
         cancel_on_tap_outside: true,
-        use_fedcm_for_prompt: true, // Enable FedCM as required by Google
+        use_fedcm_for_prompt: false, // Disable FedCM to avoid AbortError issues
         ux_mode: 'popup', // Use popup mode
         context: 'signin', // Specify context
         itp_support: true // Support Intelligent Tracking Prevention
@@ -169,12 +169,22 @@ class GoogleAuthService {
                 error: 'Google authentication prompt was blocked. Please try email/password login or allow popups.'
               });
             } else if (notification.isSkippedMoment && notification.isSkippedMoment()) {
-              console.warn('Google OAuth prompt was skipped');
-              this.isResolved = true;
-              resolve({
-                success: false,
-                error: 'Google authentication was skipped. Please try again.'
-              });
+              console.warn('Google OAuth prompt was skipped - trying redirect mode as fallback');
+              // Don't resolve immediately, try redirect mode as fallback
+              try {
+                (window as any).google.accounts.id.prompt({
+                  ux_mode: 'redirect',
+                  redirect_uri: window.location.origin + '/auth/google/callback'
+                });
+                console.log('Fallback redirect mode initiated');
+              } catch (redirectError) {
+                console.error('Both popup and redirect modes failed:', redirectError);
+                this.isResolved = true;
+                resolve({
+                  success: false,
+                  error: 'Google authentication failed. Please try email/password login.'
+                });
+              }
             } else {
               console.log('Google OAuth prompt displayed successfully');
             }
