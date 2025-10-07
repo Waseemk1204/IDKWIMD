@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, Users, MessageSquare } from 'lucide-react';
 import { Button } from './Button';
 import { Card } from './Card';
+import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 
 interface DevelopmentNoticeProps {
   onDismiss?: () => void;
@@ -16,22 +17,28 @@ export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss 
     if (!hasDismissed) {
       setIsVisible(true);
     }
+    
+    // Add global function for testing (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      (window as any).showDevNotice = () => {
+        localStorage.removeItem('dev-notice-dismissed');
+        setIsVisible(true);
+      };
+    }
   }, []);
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isVisible) {
-      // Store original overflow style
-      const originalBodyOverflow = document.body.style.overflow;
-      
-      // Simple and safe scroll lock
-      document.body.style.overflow = 'hidden';
-      
-      // Cleanup function to restore scrolling
-      return () => {
-        document.body.style.overflow = originalBodyOverflow;
-      };
+      lockScroll();
+    } else {
+      unlockScroll();
     }
+    
+    // Cleanup function to ensure scroll is unlocked when component unmounts
+    return () => {
+      unlockScroll();
+    };
   }, [isVisible]);
 
   const handleDismiss = () => {

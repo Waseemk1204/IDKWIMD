@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Heart, Star, Sparkles, Users, Trophy } from 'lucide-react';
 import { Button } from './Button';
+import { lockScroll, unlockScroll } from '../../utils/scrollLock';
 
 interface SignupSuccessAnimationProps {
   userName?: string;
@@ -40,16 +41,15 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isVisible) {
-      // Store original overflow style
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      // Prevent scrolling
-      document.body.style.overflow = 'hidden';
-      
-      // Cleanup function to restore scrolling
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
+      lockScroll();
+    } else {
+      unlockScroll();
     }
+    
+    // Cleanup function to ensure scroll is unlocked when component unmounts
+    return () => {
+      unlockScroll();
+    };
   }, [isVisible]);
 
   // Generate confetti pieces
@@ -121,22 +121,6 @@ export const SignupSuccessAnimation: React.FC<SignupSuccessAnimationProps> = ({
   useEffect(() => {
     if (isVisible) {
       generateConfetti();
-    }
-  }, [isVisible]);
-
-  // Prevent background scrolling when modal is open
-  useEffect(() => {
-    if (isVisible) {
-      // Store original overflow style
-      const originalBodyOverflow = document.body.style.overflow;
-      
-      // Simple and safe scroll lock
-      document.body.style.overflow = 'hidden';
-      
-      // Cleanup function to restore scrolling
-      return () => {
-        document.body.style.overflow = originalBodyOverflow;
-      };
     }
   }, [isVisible]);
 
