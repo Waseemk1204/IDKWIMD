@@ -6,7 +6,6 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
 import { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { DevelopmentNotice } from './components/ui/DevelopmentNotice';
 import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 
 export function App() {
@@ -162,9 +161,6 @@ export function App() {
             <Toaster position="top-right" />
             <SpeedInsights />
             <Analytics />
-            
-            {/* Development Notice Dialog */}
-            <DevelopmentNotice />
             
             {/* Sticky Feedback Button */}
             <StickyFeedbackButton />
