@@ -144,10 +144,6 @@ class GoogleAuthService {
           throw new Error('Google Identity Services not loaded');
         }
         
-        // Check if user is already signed in
-        const isSignedIn = (window as any).google.accounts.id.isSignedIn();
-        console.log('User signed in status:', isSignedIn);
-        
         // Try popup mode first
         try {
           (window as any).google.accounts.id.prompt((notification: any) => {
