@@ -254,6 +254,37 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+// Simple test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ success: true, message: 'API is working', timestamp: new Date().toISOString() });
+});
+
+// Simple debug endpoint to check all users
+app.get('/api/debug/users', async (req, res) => {
+  try {
+    console.log('Debug: Getting all users');
+    
+    const users = await User.find({}).limit(10); // Limit to 10 users for debugging
+    console.log('Debug: Found users:', users.length);
+    
+    res.json({
+      success: true,
+      count: users.length,
+      users: users.map(user => ({
+        id: user._id,
+        email: user.email,
+        googleId: user.googleId,
+        role: user.role,
+        username: user.username,
+        createdAt: user.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Debug endpoint to check users by email
 app.get('/api/debug/users/:email', async (req, res) => {
   try {
