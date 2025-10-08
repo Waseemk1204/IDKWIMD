@@ -222,13 +222,20 @@ const CommunityPost = mongoose.model('CommunityPost', communityPostSchema);
 // Auth middleware
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    // Check for token in Authorization header (Bearer token)
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    // If no Bearer token, check for cookie
+    if (!token) {
+      token = req.cookies?.token;
+    }
+    
     if (!token) {
       return res.status(401).json({ success: false, message: 'No token, authorization denied' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
       return res.status(401).json({ success: false, message: 'Token is not valid' });
     }
@@ -236,6 +243,7 @@ const authenticate = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error('Authentication error:', error);
     res.status(401).json({ success: false, message: 'Token is not valid' });
   }
 };

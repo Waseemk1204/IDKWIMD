@@ -44,6 +44,7 @@ class ApiService {
         ...(this.token && { Authorization: `Bearer ${this.token}` }),
         ...options.headers,
       },
+      credentials: 'include', // Include cookies in requests
       ...options,
     };
 
