@@ -29,36 +29,24 @@
       "dest": "/index.html"
     },
     {
-      "src": "/((?!api|assets|sitemap.xml|robots.txt|favicon.*|apple-touch-icon.*|android-chrome.*|mstile.*|og-image.*|site.webmanifest|browserconfig.xml).*)",
-      "dest": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/sitemap.xml",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/xml; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=86400"
+      }
     },
     {
-      "source": "/robots.txt",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain; charset=utf-8"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
+      "src": "/robots.txt",
+      "dest": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/((?!api|assets|sitemap.xml|robots.txt|favicon.*|apple-touch-icon.*|android-chrome.*|mstile.*|og-image.*|site.webmanifest|browserconfig.xml).*)",
+      "dest": "/index.html"
     }
   ]
 }
