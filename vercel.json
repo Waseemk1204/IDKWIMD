@@ -19,7 +19,11 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/((?!api|assets|sitemap.xml|robots.txt|favicon.*|apple-touch-icon.*|android-chrome.*|mstile.*|og-image.*|site.webmanifest|browserconfig.xml).*)",
+      "source": "/login",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/((?!api|login|assets|sitemap.xml|robots.txt|favicon.*|apple-touch-icon.*|android-chrome.*|mstile.*|og-image.*|site.webmanifest|browserconfig.xml).*)",
       "destination": "/index.html"
     }
   ],
