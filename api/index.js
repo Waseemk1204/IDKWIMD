@@ -254,6 +254,34 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+// Debug endpoint to check users by email
+app.get('/api/debug/users/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    console.log('Debug: Looking for users with email:', email);
+    
+    const users = await User.find({ email: email });
+    console.log('Debug: Found users:', users.length);
+    
+    res.json({
+      success: true,
+      email: email,
+      count: users.length,
+      users: users.map(user => ({
+        id: user._id,
+        email: user.email,
+        googleId: user.googleId,
+        role: user.role,
+        username: user.username,
+        createdAt: user.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   const mongodbStatus = mongoose.connection.readyState;
@@ -396,6 +424,14 @@ app.post('/login', async (req, res) => {
         );
         
         console.log('Google OAuth successful, redirecting to dashboard with token');
+        console.log('Final user details:', {
+          id: user._id,
+          email: user.email,
+          googleId: user.googleId,
+          role: user.role,
+          username: user.username,
+          isNewUser: !user.googleId || user.googleId === googleUser.googleId
+        });
         
         // Redirect to frontend with token as URL parameter
         const redirectUrl = user.role === 'employer' ? '/employer' : 
