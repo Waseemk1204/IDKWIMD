@@ -334,6 +334,7 @@ app.post('/login', async (req, res) => {
           user = new User({
             googleId: googleUser.googleId,
             email: googleUser.email,
+            username: googleUser.email.split('@')[0], // Use email prefix as username
             fullName: googleUser.fullName,
             profilePhoto: googleUser.profilePhoto,
             givenName: googleUser.givenName,
