@@ -43,11 +43,17 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Allow Google OAuth requests
+    if (origin && origin.includes('accounts.google.com')) {
+      return callback(null, true);
+    }
+    
     // For development, allow any localhost origin
     if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
       return callback(null, true);
     }
     
+    console.log('CORS blocked origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true
