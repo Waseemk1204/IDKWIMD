@@ -222,6 +222,9 @@ const CommunityPost = mongoose.model('CommunityPost', communityPostSchema);
 // Auth middleware
 const authenticate = async (req, res, next) => {
   try {
+    console.log('Auth middleware - Headers:', req.headers);
+    console.log('Auth middleware - Cookies:', req.cookies);
+    
     // Check for token in Authorization header (Bearer token)
     let token = req.header('Authorization')?.replace('Bearer ', '');
     
@@ -229,6 +232,8 @@ const authenticate = async (req, res, next) => {
     if (!token) {
       token = req.cookies?.token;
     }
+    
+    console.log('Auth middleware - Token found:', !!token);
     
     if (!token) {
       return res.status(401).json({ success: false, message: 'No token, authorization denied' });
