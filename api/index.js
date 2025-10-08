@@ -36,8 +36,11 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    // Allow requests with no origin (like mobile apps, curl requests, and OAuth flows)
+    if (!origin) {
+      console.log('Allowing request with no origin (OAuth flow)');
+      return callback(null, true);
+    }
     
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -45,6 +48,7 @@ app.use(cors({
     
     // Allow Google OAuth requests
     if (origin && origin.includes('accounts.google.com')) {
+      console.log('Allowing Google OAuth request from:', origin);
       return callback(null, true);
     }
     
