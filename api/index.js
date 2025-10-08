@@ -295,10 +295,15 @@ app.post('/login', async (req, res) => {
       try {
         // Decode the JWT token to get user info
         const payload = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
-        console.log('Decoded JWT payload:', payload);
+        console.log('Decoded JWT payload:', JSON.stringify(payload, null, 2));
         
         // Validate required fields
         if (!payload.sub || !payload.email || !payload.name) {
+          console.error('Missing required fields in JWT payload:', {
+            sub: payload.sub,
+            email: payload.email,
+            name: payload.name
+          });
           throw new Error('Missing required fields in JWT payload');
         }
         
@@ -311,7 +316,7 @@ app.post('/login', async (req, res) => {
           familyName: payload.family_name
         };
         
-        console.log('Google user data:', googleUser);
+        console.log('Google user data:', JSON.stringify(googleUser, null, 2));
         
         // Ensure MongoDB connection
         const connected = await ensureConnection();
@@ -336,7 +341,7 @@ app.post('/login', async (req, res) => {
           }
         } else {
           // Create new user
-          user = new User({
+          const userData = {
             googleId: googleUser.googleId,
             email: googleUser.email,
             username: googleUser.email.split('@')[0], // Use email prefix as username
@@ -347,7 +352,11 @@ app.post('/login', async (req, res) => {
             role: 'employee', // Default role
             isVerified: true, // Google users are pre-verified
             isActive: true
-          });
+          };
+          
+          console.log('Creating new user with data:', JSON.stringify(userData, null, 2));
+          
+          user = new User(userData);
           await user.save();
         }
         
