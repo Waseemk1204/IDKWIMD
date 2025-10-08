@@ -133,8 +133,8 @@ const ensureConnection = async () => {
 // User Schema - Updated to match existing data structure
 const userSchema = new mongoose.Schema({
   name: { type: String, trim: true }, // Keep for compatibility with existing data
-  fullName: { type: String, required: true, trim: true }, // Primary field for new users
-  username: { type: String, required: true, unique: true, lowercase: true }, // Required for new users
+  fullName: { type: String, required: false, trim: true }, // Made optional temporarily for OAuth
+  username: { type: String, required: false, unique: true, sparse: true, lowercase: true }, // Made optional temporarily for OAuth
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: false }, // Make password optional for Google OAuth users
   googleId: { type: String, unique: true, sparse: true }, // Google OAuth ID
@@ -344,8 +344,8 @@ app.post('/login', async (req, res) => {
           const userData = {
             googleId: googleUser.googleId,
             email: googleUser.email,
-            username: googleUser.email.split('@')[0], // Use email prefix as username
-            fullName: googleUser.fullName,
+            username: googleUser.email ? googleUser.email.split('@')[0] : 'user_' + Date.now(), // Use email prefix as username
+            fullName: googleUser.fullName || googleUser.givenName || 'Google User', // Fallback values
             profilePhoto: googleUser.profilePhoto,
             givenName: googleUser.givenName,
             familyName: googleUser.familyName,
