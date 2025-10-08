@@ -91,7 +91,29 @@ export const AuthProvider: React.FC<{
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for authentication (either localStorage or cookie-based)
+    // Check for token in URL first (Google OAuth redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+    
+    if (tokenFromUrl) {
+      console.log('AuthContext - Token found in URL, handling authentication...');
+      handleTokenFromUrl(tokenFromUrl)
+        .then(() => {
+          console.log('AuthContext - Token authentication successful');
+          // Remove token from URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        })
+        .catch((error) => {
+          console.error('AuthContext - Token authentication failed:', error);
+          clearAuth();
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+      return; // Don't proceed with normal auth check
+    }
+    
+    // Normal authentication check (localStorage or cookie-based)
     const savedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { TrustBadge, VerifiedBadge } from '../../components/ui/TrustBadge';
@@ -21,29 +21,7 @@ import {
 } from 'lucide-react';
 
 export const EmployerDashboard: React.FC = () => {
-  const { user, handleTokenFromUrl } = useAuth();
-  const location = useLocation();
-  
-  // Handle token from URL (Google OAuth redirect)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const token = urlParams.get('token');
-    
-    if (token) {
-      console.log('Token found in URL, handling authentication...');
-      handleTokenFromUrl(token)
-        .then(() => {
-          console.log('Token authentication successful');
-          // Remove token from URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-        })
-        .catch((error) => {
-          console.error('Token authentication failed:', error);
-          // Redirect to login on failure
-          window.location.href = '/login';
-        });
-    }
-  }, [location.search, handleTokenFromUrl]);
+  const { user } = useAuth();
   
   // Real data will be loaded from API
   const [stats, _setStats] = useState({
