@@ -339,22 +339,34 @@ app.post('/login', async (req, res) => {
         }
         
         // Check if user exists by Google ID or email
-        let user = await User.findOne({
-          $or: [
-            { googleId: googleUser.googleId },
-            { email: googleUser.email }
-          ]
-        });
+        // Check for existing user by email first
+        let user = await User.findOne({ email: googleUser.email });
+        
+        console.log('Looking for existing user with email:', googleUser.email);
+        console.log('Existing user found:', !!user);
         
         if (user) {
+          console.log('Existing user details:', {
+            id: user._id,
+            email: user.email,
+            googleId: user.googleId,
+            role: user.role,
+            username: user.username
+          });
+          
           // Update existing user with Google info if needed
           if (!user.googleId) {
+            console.log('Linking Google account to existing user');
             user.googleId = googleUser.googleId;
             user.profilePhoto = googleUser.profilePhoto || user.profilePhoto;
             await user.save();
+            console.log('Google account linked successfully');
+          } else {
+            console.log('User already has Google account linked');
           }
         } else {
           // Create new user
+          console.log('No existing user found, creating new user');
           const userData = {
             googleId: googleUser.googleId,
             email: googleUser.email,
@@ -369,6 +381,7 @@ app.post('/login', async (req, res) => {
           
           user = new User(userData);
           await user.save();
+          console.log('New user created successfully');
         }
         
         // Generate JWT token
