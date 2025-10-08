@@ -89,36 +89,45 @@ export const AuthProvider: React.FC<{
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for saved user and token
+    // Check for authentication (either localStorage or cookie-based)
     const savedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     
-    if (savedUser && token) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        
-        // Verify token is still valid by fetching current user
-        apiService.getCurrentUser()
-          .then(response => {
-            if (response.success && response.data?.user) {
-              setUser(response.data.user);
-              localStorage.setItem('user', JSON.stringify(response.data.user));
-            } else {
-              // Token is invalid, clear everything
-              clearAuth();
-            }
-          })
-          .catch(() => {
-            // Token is invalid, clear everything
+    // Always try to get current user to check cookie-based auth
+    apiService.getCurrentUser()
+      .then(response => {
+        if (response.success && response.data?.user) {
+          setUser(response.data.user);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        } else if (savedUser && token) {
+          // Fallback to localStorage if cookie auth fails
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+          } catch (error) {
             clearAuth();
-          });
-      } catch (error) {
-        clearAuth();
-      }
-    }
-    
-    setIsLoading(false);
+          }
+        } else {
+          // No valid authentication found
+          clearAuth();
+        }
+      })
+      .catch(() => {
+        // If API call fails, try localStorage fallback
+        if (savedUser && token) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+          } catch (error) {
+            clearAuth();
+          }
+        } else {
+          clearAuth();
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const clearAuth = () => {
