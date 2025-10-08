@@ -165,8 +165,8 @@ class GoogleAuthService {
         
         // Use production redirect URI for deployed site
         const redirectUri = window.location.hostname === 'localhost' 
-          ? window.location.origin + '/auth/google/callback'  // Local development
-          : 'https://parttimepays.in/auth/google/callback';    // Production
+          ? window.location.origin + '/login'  // Local development
+          : 'https://parttimepays.in/login';    // Production
         
         console.log('Using redirect URI:', redirectUri);
         

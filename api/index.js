@@ -297,6 +297,11 @@ app.post('/login', async (req, res) => {
         const payload = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
         console.log('Decoded JWT payload:', payload);
         
+        // Validate required fields
+        if (!payload.sub || !payload.email || !payload.name) {
+          throw new Error('Missing required fields in JWT payload');
+        }
+        
         const googleUser = {
           googleId: payload.sub,
           email: payload.email,
