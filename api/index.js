@@ -134,7 +134,7 @@ const ensureConnection = async () => {
 const userSchema = new mongoose.Schema({
   name: { type: String, trim: true }, // Keep for compatibility with existing data
   fullName: { type: String, required: false, trim: true }, // Made optional temporarily for OAuth
-  username: { type: String, required: true, unique: true, lowercase: true }, // Use email as username
+  username: { type: String, required: false, unique: true, sparse: true, lowercase: true }, // Optional for Google OAuth
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: false }, // Make password optional for Google OAuth users
   googleId: { type: String, unique: true, sparse: true }, // Google OAuth ID
@@ -344,7 +344,7 @@ app.post('/login', async (req, res) => {
           const userData = {
             googleId: googleUser.googleId,
             email: googleUser.email,
-            username: googleUser.email, // Use email as username
+            // username: not set - user will set it manually later
             profilePhoto: googleUser.profilePhoto,
             role: 'employee', // Default role
             isVerified: true, // Google users are pre-verified
