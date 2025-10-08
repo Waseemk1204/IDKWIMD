@@ -65,6 +65,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<User>;
   signup: (email: string, password: string, role: UserRole) => Promise<void>;
   loginWithGoogle: (googleUser: GoogleUserInfo) => Promise<User>;
+  handleTokenFromUrl: (token: string) => Promise<User>;
   logout: () => void;
   completeOnboarding: (userData: Partial<User>) => Promise<void>;
   updateProfile: (userData: Partial<User>) => Promise<void>;
@@ -77,6 +78,7 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => null,
   signup: async () => {},
   loginWithGoogle: async () => null,
+  handleTokenFromUrl: async () => null,
   logout: () => {},
   completeOnboarding: async () => {},
   updateProfile: async () => {}
@@ -222,6 +224,38 @@ export const AuthProvider: React.FC<{
     }
   };
 
+  const handleTokenFromUrl = async (token: string): Promise<User> => {
+    setIsLoading(true);
+    try {
+      console.log('Handling token from URL:', token);
+      
+      // Store token in localStorage and set in API service
+      localStorage.setItem('token', token);
+      apiService.setToken(token);
+      
+      // Get user data using the token
+      const response = await apiService.getCurrentUser();
+      
+      if (response.success && response.data?.user) {
+        const userData = response.data.user;
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        setIsLoading(false);
+        console.log('Token authentication successful:', userData);
+        return userData;
+      } else {
+        throw new Error('Failed to get user data with token');
+      }
+    } catch (error) {
+      console.error('Token handling error:', error);
+      // Clear invalid token
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setIsLoading(false);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await apiService.logout();
@@ -285,6 +319,7 @@ export const AuthProvider: React.FC<{
         login,
         signup,
         loginWithGoogle,
+        handleTokenFromUrl,
         logout,
         completeOnboarding,
         updateProfile

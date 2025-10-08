@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -124,11 +125,33 @@ interface FinancialAnalytics {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export const EnhancedDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, handleTokenFromUrl } = useAuth();
+  const location = useLocation();
   const [dashboardData, setDashboardData] = useState<DashboardAnalytics | null>(null);
   const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null);
   const [jobAnalytics, setJobAnalytics] = useState<JobAnalytics | null>(null);
   const [financialAnalytics, setFinancialAnalytics] = useState<FinancialAnalytics | null>(null);
+
+  // Handle token from URL (Google OAuth redirect)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+      console.log('Token found in URL, handling authentication...');
+      handleTokenFromUrl(token)
+        .then(() => {
+          console.log('Token authentication successful');
+          // Remove token from URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        })
+        .catch((error) => {
+          console.error('Token authentication failed:', error);
+          // Redirect to login on failure
+          window.location.href = '/login';
+        });
+    }
+  }, [location.search, handleTokenFromUrl]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState(30);
   const [activeTab, setActiveTab] = useState('overview');

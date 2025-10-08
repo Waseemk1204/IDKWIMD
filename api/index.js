@@ -222,8 +222,9 @@ const CommunityPost = mongoose.model('CommunityPost', communityPostSchema);
 // Auth middleware
 const authenticate = async (req, res, next) => {
   try {
-    console.log('Auth middleware - Headers:', req.headers);
-    console.log('Auth middleware - Cookies:', req.cookies);
+    console.log('Auth middleware - Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Auth middleware - Cookies:', JSON.stringify(req.cookies, null, 2));
+    console.log('Auth middleware - Cookie header:', req.headers.cookie);
     
     // Check for token in Authorization header (Bearer token)
     let token = req.header('Authorization')?.replace('Bearer ', '');
@@ -381,24 +382,13 @@ app.post('/login', async (req, res) => {
           { expiresIn: '7d' }
         );
         
-        // Set cookie and redirect
-        res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          path: '/', // Make cookie available to all routes
-          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
+        console.log('Google OAuth successful, redirecting to dashboard with token');
         
-        console.log('Google OAuth successful, redirecting to dashboard');
+        // Redirect to frontend with token as URL parameter
+        const redirectUrl = user.role === 'employer' ? '/employer' : 
+                           user.role === 'admin' ? '/admin' : '/employee';
         
-        // Redirect based on user role
-        if (user.role === 'employer') {
-          return res.redirect('/employer');
-        } else if (user.role === 'admin') {
-          return res.redirect('/admin');
-        } else {
-          return res.redirect('/employee');
-        }
+        return res.redirect(`${redirectUrl}?token=${token}`);
         
       } catch (jwtError) {
         console.error('JWT processing error:', jwtError);
