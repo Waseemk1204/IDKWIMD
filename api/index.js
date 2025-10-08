@@ -256,6 +256,31 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Handle Google OAuth POST requests to /login
+app.post('/login', (req, res) => {
+  console.log('Google OAuth POST request received at /login');
+  console.log('Request body:', req.body);
+  console.log('Request headers:', req.headers);
+  
+  // Extract credential from POST body
+  const credential = req.body.credential;
+  const error = req.body.error;
+  
+  if (error) {
+    console.error('Google OAuth error:', error);
+    return res.redirect(`/login?google_auth=error&error=${encodeURIComponent(error)}`);
+  }
+  
+  if (credential) {
+    console.log('Google OAuth credential received, redirecting to frontend');
+    // Redirect to frontend with credential as URL parameter
+    return res.redirect(`/login?credential=${encodeURIComponent(credential)}`);
+  }
+  
+  // No credential or error, redirect to login page
+  res.redirect('/login?google_auth=no_credential');
+});
+
 // Simple test endpoint
 app.get('/api/test', (req, res) => {
   res.json({

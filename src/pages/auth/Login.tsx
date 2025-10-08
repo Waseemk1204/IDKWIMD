@@ -22,9 +22,23 @@ export const Login: React.FC = () => {
   // Handle Google OAuth callback
   useEffect(() => {
     const handleGoogleCallback = async () => {
-      const urlParams = new URLSearchParams(location.search);
-      const credential = urlParams.get('credential');
-      const error = urlParams.get('error');
+      // Check for POST data first (Google OAuth sends credential via POST)
+      let credential = null;
+      let error = null;
+      
+      // Try to get credential from POST data (if available)
+      if (window.location.search.includes('credential=')) {
+        const urlParams = new URLSearchParams(location.search);
+        credential = urlParams.get('credential');
+        error = urlParams.get('error');
+      }
+      
+      // Also check for credential in URL hash (fallback)
+      if (!credential && window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        credential = hashParams.get('credential');
+        error = hashParams.get('error');
+      }
       
       if (credential) {
         console.log('Processing Google OAuth callback on login page');
