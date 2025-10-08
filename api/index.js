@@ -257,28 +257,120 @@ app.get('/api/health', (req, res) => {
 });
 
 // Handle Google OAuth POST requests to /login
-app.post('/login', (req, res) => {
-  console.log('Google OAuth POST request received at /login');
-  console.log('Request body:', req.body);
-  console.log('Request headers:', req.headers);
-  
-  // Extract credential from POST body
-  const credential = req.body.credential;
-  const error = req.body.error;
-  
-  if (error) {
-    console.error('Google OAuth error:', error);
-    return res.redirect(`/login?google_auth=error&error=${encodeURIComponent(error)}`);
+app.post('/login', async (req, res) => {
+  try {
+    console.log('Google OAuth POST request received at /login');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
+    // Extract credential from POST body
+    const credential = req.body.credential;
+    const error = req.body.error;
+    
+    if (error) {
+      console.error('Google OAuth error:', error);
+      return res.redirect(`/login?google_auth=error&error=${encodeURIComponent(error)}`);
+    }
+    
+    if (credential) {
+      console.log('Google OAuth credential received, processing...');
+      
+      try {
+        // Decode the JWT token to get user info
+        const payload = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
+        console.log('Decoded JWT payload:', payload);
+        
+        const googleUser = {
+          googleId: payload.sub,
+          email: payload.email,
+          fullName: payload.name,
+          profilePhoto: payload.picture,
+          givenName: payload.given_name,
+          familyName: payload.family_name
+        };
+        
+        console.log('Google user data:', googleUser);
+        
+        // Ensure MongoDB connection
+        const connected = await ensureConnection();
+        if (!connected) {
+          return res.redirect('/login?google_auth=error&error=database_unavailable');
+        }
+        
+        // Check if user exists by Google ID or email
+        let user = await User.findOne({
+          $or: [
+            { googleId: googleUser.googleId },
+            { email: googleUser.email }
+          ]
+        });
+        
+        if (user) {
+          // Update existing user with Google info if needed
+          if (!user.googleId) {
+            user.googleId = googleUser.googleId;
+            user.profilePhoto = googleUser.profilePhoto || user.profilePhoto;
+            await user.save();
+          }
+        } else {
+          // Create new user
+          user = new User({
+            googleId: googleUser.googleId,
+            email: googleUser.email,
+            fullName: googleUser.fullName,
+            profilePhoto: googleUser.profilePhoto,
+            givenName: googleUser.givenName,
+            familyName: googleUser.familyName,
+            role: 'employee', // Default role
+            isVerified: true, // Google users are pre-verified
+            isActive: true
+          });
+          await user.save();
+        }
+        
+        // Generate JWT token
+        const token = jwt.sign(
+          { 
+            userId: user._id, 
+            email: user.email, 
+            role: user.role 
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        );
+        
+        // Set cookie and redirect
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+        
+        console.log('Google OAuth successful, redirecting to dashboard');
+        
+        // Redirect based on user role
+        if (user.role === 'employer') {
+          return res.redirect('/employer');
+        } else if (user.role === 'admin') {
+          return res.redirect('/admin');
+        } else {
+          return res.redirect('/employee');
+        }
+        
+      } catch (jwtError) {
+        console.error('JWT processing error:', jwtError);
+        return res.redirect('/login?google_auth=error&error=jwt_invalid');
+      }
+    }
+    
+    // No credential or error, redirect to login page
+    res.redirect('/login?google_auth=no_credential');
+    
+  } catch (error) {
+    console.error('Google OAuth POST handler error:', error);
+    res.redirect('/login?google_auth=error&error=server_error');
   }
-  
-  if (credential) {
-    console.log('Google OAuth credential received, redirecting to frontend');
-    // Redirect to frontend with credential as URL parameter
-    return res.redirect(`/login?credential=${encodeURIComponent(credential)}`);
-  }
-  
-  // No credential or error, redirect to login page
-  res.redirect('/login?google_auth=no_credential');
 });
 
 // Simple test endpoint
