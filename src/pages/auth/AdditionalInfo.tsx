@@ -4,17 +4,32 @@ import { useAuth } from '../../hooks/useAuth';
 
 export const AdditionalInfo: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [searchParams] = useSearchParams();
   
   useEffect(() => {
     console.log('AdditionalInfo page loaded');
     console.log('User:', user);
     console.log('User role:', user?.role);
+    console.log('Is loading:', isLoading);
+    console.log('Token in URL:', searchParams.get('token'));
     
-    // If no user, redirect to login
+    // Wait for auth to finish loading
+    if (isLoading) {
+      console.log('Auth is still loading, waiting...');
+      return;
+    }
+    
+    // Check for token in URL - if present, AuthContext will process it
+    const tokenInUrl = searchParams.get('token');
+    if (tokenInUrl && !user) {
+      console.log('Token in URL but user not loaded yet, waiting for AuthContext...');
+      return;
+    }
+    
+    // If no user and no token, redirect to login
     if (!user) {
-      console.log('No user found, redirecting to login');
+      console.log('No user found and no token, redirecting to login');
       navigate('/login');
       return;
     }
@@ -34,7 +49,7 @@ export const AdditionalInfo: React.FC = () => {
       console.log('Redirecting to employee onboarding with user data');
       navigate('/onboarding/employee', { replace: true, state: userState });
     }
-  }, [user, navigate]);
+  }, [user, isLoading, navigate, searchParams]);
   
   return (
     <div className="min-h-screen flex items-center justify-center">
