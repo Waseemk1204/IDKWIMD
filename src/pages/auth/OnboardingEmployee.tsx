@@ -106,6 +106,11 @@ export const OnboardingEmployee: React.FC = () => {
     }
   };
 
+  const handleSkip = () => {
+    console.log('User skipped onboarding');
+    navigate('/employee');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -263,8 +268,8 @@ export const OnboardingEmployee: React.FC = () => {
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="pt-4">
+              {/* Submit and Skip Buttons */}
+              <div className="pt-4 space-y-3">
                 <Button
                   type="submit"
                   variant="gradient"
@@ -276,6 +281,21 @@ export const OnboardingEmployee: React.FC = () => {
                 >
                   Complete Profile & Get Started
                 </Button>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={handleSkip}
+                  disabled={isLoading}
+                >
+                  Skip for Now
+                </Button>
+                
+                <p className="text-xs text-center text-neutral-500 dark:text-neutral-400 mt-2">
+                  You can complete your profile anytime from your dashboard
+                </p>
               </div>
             </form>
           </CardContent>

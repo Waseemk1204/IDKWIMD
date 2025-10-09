@@ -352,14 +352,19 @@ app.post('/login', async (req, res) => {
     console.log('Google OAuth POST request received at /login');
     console.log('Request body:', req.body);
     console.log('Request headers:', req.headers);
+    console.log('Referer:', req.headers.referer);
     
     // Extract credential from POST body
     const credential = req.body.credential;
     const error = req.body.error;
+    const isSignup = req.body.signup === 'true' || req.headers.referer?.includes('/signup');
+    
+    console.log('Is signup request:', isSignup);
     
     if (error) {
       console.error('Google OAuth error:', error);
-      return res.redirect(`/login?google_auth=error&error=${encodeURIComponent(error)}`);
+      const redirectPath = isSignup ? '/signup' : '/login';
+      return res.redirect(`${redirectPath}?google_auth=error&error=${encodeURIComponent(error)}`);
     }
     
     if (credential) {
@@ -394,7 +399,8 @@ app.post('/login', async (req, res) => {
         // Ensure MongoDB connection
         const connected = await ensureConnection();
         if (!connected) {
-          return res.redirect('/login?google_auth=error&error=database_unavailable');
+          const redirectPath = isSignup ? '/signup' : '/login';
+          return res.redirect(`${redirectPath}?google_auth=error&error=database_unavailable`);
         }
         
         // Check if user exists by Google ID or email
@@ -403,30 +409,53 @@ app.post('/login', async (req, res) => {
         
         console.log('Looking for existing user with email:', googleUser.email);
         console.log('Existing user found:', !!user);
+        let isNewUser = false;
         
         if (!user) {
-          // User doesn't exist - reject Google OAuth login
-          console.log('User not found in database, rejecting Google OAuth login');
-          return res.redirect('/login?google_auth=error&error=user_not_found&message=Account not found. Please sign up first.');
-        }
-        
-        console.log('Existing user details:', {
-          id: user._id,
-          email: user.email,
-          googleId: user.googleId,
-          role: user.role,
-          username: user.username
-        });
-        
-        // Update existing user with Google info if needed
-        if (!user.googleId) {
-          console.log('Linking Google account to existing user');
-          user.googleId = googleUser.googleId;
-          user.profilePhoto = googleUser.profilePhoto || user.profilePhoto;
-          await user.save();
-          console.log('Google account linked successfully');
+          if (isSignup) {
+            // Create new user for signup
+            console.log('Creating new user from Google OAuth signup');
+            user = new User({
+              googleId: googleUser.googleId,
+              email: googleUser.email,
+              fullName: googleUser.fullName,
+              profilePhoto: googleUser.profilePhoto,
+              role: 'employee', // Default role
+              isVerified: true, // Google accounts are pre-verified
+              isActive: true
+            });
+            await user.save();
+            isNewUser = true;
+            console.log('New user created:', {
+              id: user._id,
+              email: user.email,
+              googleId: user.googleId,
+              role: user.role
+            });
+          } else {
+            // User doesn't exist - reject Google OAuth login
+            console.log('User not found in database, rejecting Google OAuth login');
+            return res.redirect('/login?google_auth=error&error=user_not_found&message=Account not found. Please sign up first.');
+          }
         } else {
-          console.log('User already has Google account linked');
+          console.log('Existing user details:', {
+            id: user._id,
+            email: user.email,
+            googleId: user.googleId,
+            role: user.role,
+            username: user.username
+          });
+          
+          // Update existing user with Google info if needed
+          if (!user.googleId) {
+            console.log('Linking Google account to existing user');
+            user.googleId = googleUser.googleId;
+            user.profilePhoto = googleUser.profilePhoto || user.profilePhoto;
+            await user.save();
+            console.log('Google account linked successfully');
+          } else {
+            console.log('User already has Google account linked');
+          }
         }
         
         // Generate JWT token
@@ -440,19 +469,27 @@ app.post('/login', async (req, res) => {
           { expiresIn: '7d' }
         );
         
-        console.log('Google OAuth successful, redirecting to dashboard with token');
+        console.log('Google OAuth successful, redirecting with token');
         console.log('Final user details:', {
           id: user._id,
           email: user.email,
           googleId: user.googleId,
           role: user.role,
           username: user.username,
-          isNewUser: !user.googleId || user.googleId === googleUser.googleId
+          isNewUser: isNewUser
         });
         
         // Redirect to frontend with token as URL parameter
-        const redirectUrl = user.role === 'employer' ? '/employer' : 
-                           user.role === 'admin' ? '/admin' : '/employee';
+        // New users go to additional info page, existing users go to dashboard
+        let redirectUrl;
+        if (isNewUser) {
+          console.log('Redirecting new user to additional info page');
+          redirectUrl = '/additional-info';
+        } else {
+          console.log('Redirecting existing user to dashboard');
+          redirectUrl = user.role === 'employer' ? '/employer' : 
+                        user.role === 'admin' ? '/admin' : '/employee';
+        }
         
         return res.redirect(`${redirectUrl}?token=${token}`);
         

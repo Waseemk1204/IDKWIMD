@@ -163,12 +163,9 @@ export const Signup: React.FC = () => {
     setShowSuccessAnimation(false);
     setIsLoading(false);
     
-    // Navigate based on user role
-    if (role === 'employer') {
-      navigate('/employer');
-    } else {
-      navigate('/employee');
-    }
+    // Navigate to additional info page for onboarding
+    console.log('Signup animation complete, navigating to additional info page');
+    navigate('/additional-info');
   };
 
   const roleBenefits = {

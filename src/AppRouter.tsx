@@ -9,6 +9,7 @@ import { Login } from './pages/auth/Login';
 import { Signup } from './pages/auth/Signup';
 import { OnboardingEmployer } from './pages/auth/OnboardingEmployer';
 import { OnboardingEmployee } from './pages/auth/OnboardingEmployee';
+import { AdditionalInfo } from './pages/auth/AdditionalInfo';
 // Employer pages
 import { EmployerDashboard } from './pages/employer/Dashboard';
 import { PostJob } from './pages/employer/PostJob';
@@ -110,6 +111,7 @@ export function AppRouter() {
         <Route path="/" element={<PublicLanding />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/additional-info" element={<AdditionalInfo />} />
         <Route path="/onboarding/employer" element={<OnboardingEmployer />} />
         <Route path="/onboarding/employee" element={<OnboardingEmployee />} />
         <Route path="/auth/success" element={<OAuthCallback />} />
