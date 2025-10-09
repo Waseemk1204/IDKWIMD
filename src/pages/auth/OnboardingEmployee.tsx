@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -26,18 +26,28 @@ interface FormErrors {
 
 export const OnboardingEmployee: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { completeOnboarding } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   
+  // Get pre-filled data from location state (from Google OAuth)
+  const prefillData = location.state as { fullName?: string; email?: string; profilePhoto?: string } | null;
+  
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
+    name: prefillData?.fullName || '',
+    email: prefillData?.email || '',
     phone: '',
     primarySkill: '',
     experienceLevel: '',
     bio: ''
   });
+  
+  useEffect(() => {
+    if (prefillData) {
+      console.log('Pre-filling form with Google OAuth data:', prefillData);
+    }
+  }, [prefillData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

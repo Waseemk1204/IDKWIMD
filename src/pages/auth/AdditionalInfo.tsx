@@ -20,12 +20,19 @@ export const AdditionalInfo: React.FC = () => {
     }
     
     // Redirect to appropriate onboarding page based on role
+    // Pass user data via state so onboarding can pre-fill fields
+    const userState = {
+      fullName: user.fullName || user.name || '',
+      email: user.email || '',
+      profilePhoto: user.profilePhoto || user.profileImage || ''
+    };
+    
     if (user.role === 'employer') {
-      console.log('Redirecting to employer onboarding');
-      navigate('/onboarding/employer', { replace: true });
+      console.log('Redirecting to employer onboarding with user data');
+      navigate('/onboarding/employer', { replace: true, state: userState });
     } else {
-      console.log('Redirecting to employee onboarding');
-      navigate('/onboarding/employee', { replace: true });
+      console.log('Redirecting to employee onboarding with user data');
+      navigate('/onboarding/employee', { replace: true, state: userState });
     }
   }, [user, navigate]);
   
