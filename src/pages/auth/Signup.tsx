@@ -121,6 +121,23 @@ export const Signup: React.FC = () => {
     
     console.log('Signup form submitted with:', { email, password, role });
     
+    // Basic validation
+    if (!email || !password || !role) {
+      console.error('Validation failed:', { email: !!email, password: !!password, role: !!role });
+      setError('Please fill in all required fields.');
+      setIsLoading(false);
+      return;
+    }
+    
+    if (password.length < 6) {
+      console.error('Password too short:', password.length);
+      setError('Password must be at least 6 characters long.');
+      setIsLoading(false);
+      return;
+    }
+    
+    console.log('Validation passed, proceeding with signup...');
+    
     try {
       await signup(email, password, role);
       
@@ -389,7 +406,12 @@ export const Signup: React.FC = () => {
                     isLoading={isLoading}
                     loadingText="Creating account..."
                     trustIndicator
-                    onClick={handleSubmit}
+                    onClick={(e) => {
+                      console.log('=== BUTTON CLICKED ===');
+                      console.log('Button click event:', e);
+                      console.log('Current form state:', { email, password, role, isLoading });
+                      handleSubmit(e);
+                    }}
                   >
                     Create {role === 'employee' ? 'Student' : 'Employer'} Account
                   </Button>
