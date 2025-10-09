@@ -22,6 +22,31 @@ import {
 export const Signup: React.FC = () => {
   const [searchParams] = useSearchParams();
   
+  // Debug: Intercept all fetch requests
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      console.log('Fetch intercepted:', args);
+      return originalFetch.apply(this, args);
+    };
+    
+    const originalXHR = window.XMLHttpRequest;
+    window.XMLHttpRequest = function() {
+      const xhr = new originalXHR();
+      const originalOpen = xhr.open;
+      xhr.open = function(method, url, ...rest) {
+        console.log('XHR intercepted:', method, url);
+        return originalOpen.apply(this, [method, url, ...rest]);
+      };
+      return xhr;
+    };
+    
+    return () => {
+      window.fetch = originalFetch;
+      window.XMLHttpRequest = originalXHR;
+    };
+  }, []);
+  
   // Read role from URL parameters, default to 'employee' if not specified
   const urlRole = searchParams.get('role') as 'employer' | 'employee' | null;
   const initialRole = urlRole && ['employer', 'employee'].includes(urlRole) ? urlRole : 'employee';
