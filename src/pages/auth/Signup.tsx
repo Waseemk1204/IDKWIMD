@@ -83,8 +83,12 @@ export const Signup: React.FC = () => {
     setError('');
     setIsLoading(true);
     
+    console.log('Signup form submitted with:', { email, password, role });
+    
     try {
       await signup(email, password, role);
+      
+      console.log('Signup successful, showing animation');
       
       // Extract name from email for personalization
       const nameFromEmail = email.split('@')[0];
@@ -93,6 +97,7 @@ export const Signup: React.FC = () => {
       // Show success animation
       setShowSuccessAnimation(true);
     } catch (err) {
+      console.error('Signup error:', err);
       setError('Failed to create an account. Please try again.');
       setIsLoading(false);
     }

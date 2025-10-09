@@ -187,6 +187,8 @@ export const AuthProvider: React.FC<{
   const signup = async (email: string, password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
     try {
+      console.log('AuthContext signup called with:', { email, password, role });
+      
       const response = await apiService.register({
         fullName: email.split('@')[0], // Default name from email
         username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, ''), // Generate username from email
@@ -195,6 +197,8 @@ export const AuthProvider: React.FC<{
         role: role || 'employee'
       });
       
+      console.log('Signup API response:', response);
+      
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
@@ -202,10 +206,13 @@ export const AuthProvider: React.FC<{
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         apiService.setToken(token);
+        console.log('Signup successful, user logged in automatically');
       } else {
+        console.error('Signup failed:', response.message);
         throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
+      console.error('Signup error in AuthContext:', error);
       throw error;
     } finally {
       setIsLoading(false);
