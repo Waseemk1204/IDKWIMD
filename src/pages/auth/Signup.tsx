@@ -20,35 +20,7 @@ import {
 } from 'lucide-react';
 
 export const Signup: React.FC = () => {
-  console.log('=== SIGNUP COMPONENT LOADED ===');
-  console.log('Signup component is rendering with new code');
-  
   const [searchParams] = useSearchParams();
-  
-  // Debug: Intercept all fetch requests
-  useEffect(() => {
-    const originalFetch = window.fetch;
-    window.fetch = function(...args) {
-      console.log('Fetch intercepted:', args);
-      return originalFetch.apply(this, args);
-    };
-    
-    const originalXHR = window.XMLHttpRequest;
-    window.XMLHttpRequest = function() {
-      const xhr = new originalXHR();
-      const originalOpen = xhr.open;
-      xhr.open = function(method, url, ...rest) {
-        console.log('XHR intercepted:', method, url);
-        return originalOpen.apply(this, [method, url, ...rest]);
-      };
-      return xhr;
-    };
-    
-    return () => {
-      window.fetch = originalFetch;
-      window.XMLHttpRequest = originalXHR;
-    };
-  }, []);
   
   // Read role from URL parameters, default to 'employee' if not specified
   const urlRole = searchParams.get('role') as 'employer' | 'employee' | null;
@@ -70,8 +42,6 @@ export const Signup: React.FC = () => {
     setError('');
     
     try {
-      // Force cache bust - v2
-      console.log('Initiating Google OAuth signup with role:', role);
       
       // Get the Google user data from the service with signup mode and role
       const result = await googleAuthService.signIn('signup', role);
@@ -108,9 +78,6 @@ export const Signup: React.FC = () => {
     const token = searchParams.get('token');
     
     if (googleAuth === 'success' && newUser === 'true' && token) {
-      console.log('Google OAuth signup successful, showing animation');
-      
-      // Get user name from localStorage (stored by googleAuth service)
       const storedRole = localStorage.getItem('signup_role') || 'employee';
       setRole(storedRole as 'employee' | 'employer');
       
@@ -133,13 +100,6 @@ export const Signup: React.FC = () => {
   }, [searchParams]);
 
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
-    console.log('=== SIGNUP FORM SUBMISSION START ===');
-    console.log('handleSubmit called!', e);
-    console.log('Event type:', e?.type);
-    console.log('Event target:', e?.target);
-    console.log('Form data:', { email, password, role });
-    console.log('Is loading:', isLoading);
-    
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -148,29 +108,21 @@ export const Signup: React.FC = () => {
     setError('');
     setIsLoading(true);
     
-    console.log('Signup form submitted with:', { email, password, role });
-    
     // Basic validation
     if (!email || !password || !role) {
-      console.error('Validation failed:', { email: !!email, password: !!password, role: !!role });
       setError('Please fill in all required fields.');
       setIsLoading(false);
       return;
     }
     
     if (password.length < 6) {
-      console.error('Password too short:', password.length);
       setError('Password must be at least 6 characters long.');
       setIsLoading(false);
       return;
     }
     
-    console.log('Validation passed, proceeding with signup...');
-    
     try {
       await signup(email, password, role);
-      
-      console.log('Signup successful, showing animation');
       
       // Extract name from email for personalization
       const nameFromEmail = email.split('@')[0];
@@ -179,7 +131,6 @@ export const Signup: React.FC = () => {
       // Show success animation
       setShowSuccessAnimation(true);
     } catch (err) {
-      console.error('Signup error:', err);
       setError('Failed to create an account. Please try again.');
       setIsLoading(false);
     }
@@ -188,9 +139,6 @@ export const Signup: React.FC = () => {
   const handleAnimationComplete = () => {
     setShowSuccessAnimation(false);
     setIsLoading(false);
-    
-    // Navigate to additional info page for onboarding
-    console.log('Signup animation complete, navigating to additional info page');
     navigate('/additional-info');
   };
 
@@ -432,28 +380,9 @@ export const Signup: React.FC = () => {
                     isLoading={isLoading}
                     loadingText="Creating account..."
                     trustIndicator
-                    onClick={(e) => {
-                      console.log('=== BUTTON CLICKED ===');
-                      console.log('Button click event:', e);
-                      console.log('Current form state:', { email, password, role, isLoading });
-                      handleSubmit(e);
-                    }}
+                    onClick={handleSubmit}
                   >
                     Create {role === 'employee' ? 'Student' : 'Employer'} Account
-                  </Button>
-                  
-                  {/* Debug button */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      console.log('=== DEBUG BUTTON CLICKED ===');
-                      console.log('This proves the component is working');
-                      alert('Debug button clicked! Check console for logs.');
-                    }}
-                  >
-                    Debug Test Button
                   </Button>
                 </div>
 

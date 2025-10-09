@@ -170,20 +170,14 @@ class GoogleAuthService {
             : 'https://parttimepays.in/login';    // Production
         }
         
-        console.log('🔵 Using login URI:', loginUri);
-        console.log('🔵 Auth mode:', mode);
-        console.log('🔵 Auth role:', role);
-        
         // Store mode and role in localStorage for frontend callback handling
         localStorage.setItem('google_auth_mode', mode);
         if (role) {
           localStorage.setItem('signup_role', role);
-          console.log('Stored signup role in localStorage:', role);
         }
         
         // CRITICAL: Reinitialize Google Auth with the specific login_uri
         // The login_uri parameter tells Google where to POST the credential
-        console.log('🔵 Reinitializing Google Auth with login_uri:', loginUri);
         (window as any).google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           ux_mode: 'redirect',

@@ -24,7 +24,6 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 }) => {
   const handleGoogleAuth = async () => {
     try {
-      console.log('🟢 GoogleAuthButton clicked - Mode:', mode, 'Role:', role);
       const result = await googleAuthService.signIn(mode, role);
       
       if (result.success && result.user) {

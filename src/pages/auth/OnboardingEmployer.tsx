@@ -53,9 +53,7 @@ export const OnboardingEmployer: React.FC = () => {
   });
   
   useEffect(() => {
-    if (prefillData) {
-      console.log('Pre-filling form with Google OAuth data:', prefillData);
-    }
+    // Prefill data is already set in useState
   }, [prefillData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -108,7 +106,6 @@ export const OnboardingEmployer: React.FC = () => {
   };
 
   const handleSkip = () => {
-    console.log('User skipped onboarding');
     navigate('/employer');
   };
 

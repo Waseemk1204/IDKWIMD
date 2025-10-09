@@ -36,25 +36,18 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests, and OAuth flows)
+    // Allow requests with no origin (like mobile apps, curl requests, and OAuth POST flows from Google)
     if (!origin) {
-      console.log('Allowing request with no origin (OAuth flow)');
       return callback(null, true);
     }
     
-    // Allow all origins for now to fix OAuth issues
-    console.log('Allowing request from origin:', origin);
-    return callback(null, true);
-    
-    // Original restrictive logic (commented out for debugging)
-    /*
+    // Allow whitelisted origins
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     
     // Allow Google OAuth requests
-    if (origin && origin.includes('accounts.google.com')) {
-      console.log('Allowing Google OAuth request from:', origin);
+    if (origin && (origin.includes('accounts.google.com') || origin.includes('google.com'))) {
       return callback(null, true);
     }
     
@@ -63,9 +56,8 @@ app.use(cors({
       return callback(null, true);
     }
     
-    console.log('CORS blocked origin:', origin);
+    // Block all other origins
     callback(new Error('Not allowed by CORS'));
-    */
   },
   credentials: true
 }));
@@ -349,15 +341,6 @@ app.get('/api/health', (req, res) => {
 // Handle Google OAuth POST requests to /login and /signup
 const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole = null) => {
   try {
-    const endpoint = isSignupEndpoint ? '/signup' : '/login';
-    console.log('=== GOOGLE OAUTH POST REQUEST ===');
-    console.log(`Endpoint: ${endpoint}`);
-    console.log('Request URL:', req.url);
-    console.log('Request path:', req.path);
-    console.log('Signup role from parameter:', signupRole);
-    console.log('Request body:', req.body);
-    console.log('Request headers:', req.headers);
-    console.log('Referer:', req.headers.referer);
     
     // Extract credential and state from POST body
     const credential = req.body.credential;

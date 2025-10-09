@@ -8,28 +8,19 @@ export const AdditionalInfo: React.FC = () => {
   const [searchParams] = useSearchParams();
   
   useEffect(() => {
-    console.log('AdditionalInfo page loaded');
-    console.log('User:', user);
-    console.log('User role:', user?.role);
-    console.log('Is loading:', isLoading);
-    console.log('Token in URL:', searchParams.get('token'));
-    
     // Wait for auth to finish loading
     if (isLoading) {
-      console.log('Auth is still loading, waiting...');
       return;
     }
     
     // Check for token in URL - if present, AuthContext will process it
     const tokenInUrl = searchParams.get('token');
     if (tokenInUrl && !user) {
-      console.log('Token in URL but user not loaded yet, waiting for AuthContext...');
       return;
     }
     
     // If no user and no token, redirect to login
     if (!user) {
-      console.log('No user found and no token, redirecting to login');
       navigate('/login');
       return;
     }
@@ -43,10 +34,8 @@ export const AdditionalInfo: React.FC = () => {
     };
     
     if (user.role === 'employer') {
-      console.log('Redirecting to employer onboarding with user data');
       navigate('/onboarding/employer', { replace: true, state: userState });
     } else {
-      console.log('Redirecting to employee onboarding with user data');
       navigate('/onboarding/employee', { replace: true, state: userState });
     }
   }, [user, isLoading, navigate, searchParams]);
