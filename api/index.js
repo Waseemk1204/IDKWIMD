@@ -1980,6 +1980,399 @@ app.get('/api/community/:id/comments', async (req, res) => {
   }
 });
 
+// ===== WALLET ROUTES =====
+
+// Get wallet information
+app.get('/api/wallet', authenticate, async (req, res) => {
+  try {
+    let wallet = await Wallet.findOne({ user: req.user._id });
+    
+    if (!wallet) {
+      // Create wallet if it doesn't exist
+      wallet = new Wallet({
+        user: req.user._id,
+        balance: 0,
+        currency: 'INR'
+      });
+      await wallet.save();
+    }
+    
+    res.json({
+      success: true,
+      data: wallet
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch wallet information'
+    });
+  }
+});
+
+// Get wallet transactions
+app.get('/api/wallet/transactions', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, type, status } = req.query;
+    const query = { user: req.user._id };
+    
+    if (type) {
+      query.type = type;
+    }
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    const transactions = await Transaction.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Transaction.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        transactions,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch wallet transactions'
+    });
+  }
+});
+
+// Get wallet statistics
+app.get('/api/wallet/stats', authenticate, async (req, res) => {
+  try {
+    const { period = 30 } = req.query; // days
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(period));
+    
+    const stats = await Transaction.aggregate([
+      {
+        $match: {
+          user: req.user._id,
+          createdAt: { $gte: startDate },
+          status: 'completed'
+        }
+      },
+      {
+        $group: {
+          _id: '$type',
+          totalAmount: { $sum: '$amount' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const totalEarnings = stats.find(s => s._id === 'earning')?.totalAmount || 0;
+    const totalSpent = stats.find(s => s._id === 'expense')?.totalAmount || 0;
+    const totalWithdrawn = stats.find(s => s._id === 'withdrawal')?.totalAmount || 0;
+    
+    res.json({
+      success: true,
+      data: {
+        totalEarnings,
+        totalSpent,
+        totalWithdrawn,
+        netBalance: totalEarnings - totalSpent - totalWithdrawn,
+        transactionCount: stats.reduce((sum, s) => sum + s.count, 0),
+        period: parseInt(period)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch wallet statistics'
+    });
+  }
+});
+
+// Create top-up order
+app.post('/api/wallet/topup', authenticate, [
+  body('amount').isNumeric().isFloat({ min: 100, max: 100000 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { amount } = req.body;
+    
+    // Create transaction record
+    const transaction = new Transaction({
+      user: req.user._id,
+      type: 'topup',
+      amount: parseFloat(amount),
+      status: 'pending',
+      description: 'Wallet top-up',
+      metadata: {
+        orderId: `topup_${Date.now()}_${req.user._id}`
+      }
+    });
+    
+    await transaction.save();
+    
+    res.json({
+      success: true,
+      message: 'Top-up order created successfully',
+      data: {
+        transactionId: transaction._id,
+        amount: transaction.amount,
+        orderId: transaction.metadata.orderId
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create top-up order'
+    });
+  }
+});
+
+// Verify payment (Razorpay integration)
+app.post('/api/wallet/verify-payment', authenticate, [
+  body('razorpay_order_id').notEmpty(),
+  body('razorpay_payment_id').notEmpty(),
+  body('razorpay_signature').notEmpty()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    
+    // Find the transaction
+    const transaction = await Transaction.findOne({
+      'metadata.orderId': razorpay_order_id,
+      user: req.user._id,
+      status: 'pending'
+    });
+    
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found'
+      });
+    }
+    
+    // In a real implementation, you would verify the signature with Razorpay
+    // For now, we'll simulate successful verification
+    
+    // Update transaction status
+    transaction.status = 'completed';
+    transaction.metadata.paymentId = razorpay_payment_id;
+    transaction.metadata.signature = razorpay_signature;
+    await transaction.save();
+    
+    // Update wallet balance
+    const wallet = await Wallet.findOne({ user: req.user._id });
+    if (wallet) {
+      wallet.balance += transaction.amount;
+      await wallet.save();
+    } else {
+      // Create wallet if it doesn't exist
+      const newWallet = new Wallet({
+        user: req.user._id,
+        balance: transaction.amount,
+        currency: 'INR'
+      });
+      await newWallet.save();
+    }
+    
+    res.json({
+      success: true,
+      message: 'Payment verified successfully',
+      data: transaction
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify payment'
+    });
+  }
+});
+
+// Withdraw funds
+app.post('/api/wallet/withdraw', authenticate, [
+  body('amount').isNumeric().isFloat({ min: 100, max: 50000 }),
+  body('bankDetails.accountNumber').notEmpty().isLength({ min: 9, max: 18 }),
+  body('bankDetails.ifscCode').notEmpty().isLength({ min: 11, max: 11 }),
+  body('bankDetails.accountHolderName').notEmpty().trim().isLength({ min: 2, max: 50 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { amount, bankDetails } = req.body;
+    
+    // Check wallet balance
+    const wallet = await Wallet.findOne({ user: req.user._id });
+    if (!wallet || wallet.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient wallet balance'
+      });
+    }
+    
+    // Create withdrawal transaction
+    const transaction = new Transaction({
+      user: req.user._id,
+      type: 'withdrawal',
+      amount: parseFloat(amount),
+      status: 'pending',
+      description: 'Fund withdrawal',
+      metadata: {
+        bankDetails,
+        withdrawalId: `withdraw_${Date.now()}_${req.user._id}`
+      }
+    });
+    
+    await transaction.save();
+    
+    // Deduct from wallet balance
+    wallet.balance -= amount;
+    await wallet.save();
+    
+    res.json({
+      success: true,
+      message: 'Withdrawal request submitted successfully',
+      data: transaction
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process withdrawal request'
+    });
+  }
+});
+
+// Transfer funds
+app.post('/api/wallet/transfer', authenticate, [
+  body('recipientId').notEmpty().isMongoId(),
+  body('amount').isNumeric().isFloat({ min: 10, max: 10000 }),
+  body('description').optional().trim().isLength({ max: 200 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { recipientId, amount, description, relatedJobId, relatedApplicationId } = req.body;
+    
+    // Check if recipient exists
+    const recipient = await User.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recipient not found'
+      });
+    }
+    
+    // Check sender's wallet balance
+    const senderWallet = await Wallet.findOne({ user: req.user._id });
+    if (!senderWallet || senderWallet.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient wallet balance'
+      });
+    }
+    
+    // Create transfer transactions (debit for sender, credit for recipient)
+    const debitTransaction = new Transaction({
+      user: req.user._id,
+      type: 'transfer_out',
+      amount: parseFloat(amount),
+      status: 'completed',
+      description: description || `Transfer to ${recipient.fullName}`,
+      metadata: {
+        recipientId,
+        relatedJobId,
+        relatedApplicationId,
+        transferId: `transfer_${Date.now()}_${req.user._id}`
+      }
+    });
+    
+    const creditTransaction = new Transaction({
+      user: recipientId,
+      type: 'transfer_in',
+      amount: parseFloat(amount),
+      status: 'completed',
+      description: description || `Transfer from ${req.user.fullName}`,
+      metadata: {
+        senderId: req.user._id,
+        relatedJobId,
+        relatedApplicationId,
+        transferId: `transfer_${Date.now()}_${req.user._id}`
+      }
+    });
+    
+    await Promise.all([debitTransaction.save(), creditTransaction.save()]);
+    
+    // Update wallet balances
+    senderWallet.balance -= amount;
+    await senderWallet.save();
+    
+    let recipientWallet = await Wallet.findOne({ user: recipientId });
+    if (!recipientWallet) {
+      recipientWallet = new Wallet({
+        user: recipientId,
+        balance: amount,
+        currency: 'INR'
+      });
+    } else {
+      recipientWallet.balance += amount;
+    }
+    await recipientWallet.save();
+    
+    res.json({
+      success: true,
+      message: 'Transfer completed successfully',
+      data: {
+        debitTransaction,
+        creditTransaction,
+        newBalance: senderWallet.balance
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process transfer'
+    });
+  }
+});
+
 // User profile routes
 app.get('/api/users/profile', authenticate, async (req, res) => {
   try {
