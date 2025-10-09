@@ -121,8 +121,9 @@ class GoogleAuthService {
   /**
    * Trigger Google OAuth flow
    * @param mode - 'login' or 'signup' to indicate the auth mode
+   * @param role - 'employee' or 'employer' for signup
    */
-  async signIn(mode: 'login' | 'signup' = 'login'): Promise<GoogleAuthResponse> {
+  async signIn(mode: 'login' | 'signup' = 'login', role?: 'employee' | 'employer'): Promise<GoogleAuthResponse> {
     return new Promise((resolve) => {
       if (!this.isLoaded) {
         resolve({
@@ -178,9 +179,18 @@ class GoogleAuthService {
         
         console.log('Using redirect URI:', redirectUri);
         console.log('Auth mode:', mode);
+        console.log('Auth role:', role);
         
-        // Store mode in sessionStorage so the callback can access it
-        sessionStorage.setItem('google_auth_mode', mode);
+        // Store mode and role in localStorage for frontend callback handling
+        localStorage.setItem('google_auth_mode', mode);
+        if (role) {
+          localStorage.setItem('signup_role', role);
+          console.log('Stored signup role in localStorage:', role);
+          
+          // Also set as cookie so backend can read it
+          document.cookie = `signup_role=${role}; path=/; max-age=600; SameSite=Lax`;
+          console.log('Set signup role cookie:', role);
+        }
         
         // Render the Google Sign-In button
         (window as any).google.accounts.id.renderButton(tempDiv, {

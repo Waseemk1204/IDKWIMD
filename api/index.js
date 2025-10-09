@@ -417,18 +417,25 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
         if (!user) {
           if (isSignup) {
             // Create new user for signup
-            console.log('Creating new user from Google OAuth signup');
+            // Read role from cookie (set by frontend before OAuth redirect)
+            const signupRole = req.cookies?.signup_role || 'employee';
+            console.log('Creating new user from Google OAuth signup with role:', signupRole);
+            
             user = new User({
               googleId: googleUser.googleId,
               email: googleUser.email,
               fullName: googleUser.fullName,
               profilePhoto: googleUser.profilePhoto,
-              role: 'employee', // Default role
+              role: signupRole, // Use role from cookie
               isVerified: true, // Google accounts are pre-verified
               isActive: true
             });
             await user.save();
             isNewUser = true;
+            
+            // Clear the signup role cookie
+            res.clearCookie('signup_role', { path: '/' });
+            
             console.log('New user created:', {
               id: user._id,
               email: user.email,
@@ -483,9 +490,13 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
         });
         
         // Redirect to frontend with token as URL parameter
-        // New users go to additional info page, existing users go to dashboard
+        // New signup users go back to signup page to show animation
+        // Existing users go directly to dashboard
         let redirectUrl;
-        if (isNewUser) {
+        if (isNewUser && isSignup) {
+          console.log('Redirecting new signup user back to signup page for animation');
+          redirectUrl = '/signup';
+        } else if (isNewUser) {
           console.log('Redirecting new user to additional info page');
           redirectUrl = '/additional-info';
         } else {
@@ -494,7 +505,7 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
                         user.role === 'admin' ? '/admin' : '/employee';
         }
         
-        return res.redirect(`${redirectUrl}?token=${token}`);
+        return res.redirect(`${redirectUrl}?token=${token}&google_auth=success&new_user=${isNewUser}`);
         
       } catch (jwtError) {
         console.error('JWT processing error:', jwtError);

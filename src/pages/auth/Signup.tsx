@@ -70,10 +70,10 @@ export const Signup: React.FC = () => {
     setError('');
     
     try {
-      console.log('Initiating Google OAuth signup');
+      console.log('Initiating Google OAuth signup with role:', role);
       
-      // Get the Google user data from the service with signup mode
-      const result = await googleAuthService.signIn('signup');
+      // Get the Google user data from the service with signup mode and role
+      const result = await googleAuthService.signIn('signup', role);
       
       if (result.success && result.user) {
         // Login with Google user data
@@ -100,6 +100,29 @@ export const Signup: React.FC = () => {
     setError(error);
   };
 
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const googleAuth = searchParams.get('google_auth');
+    const newUser = searchParams.get('new_user');
+    const token = searchParams.get('token');
+    
+    if (googleAuth === 'success' && newUser === 'true' && token) {
+      console.log('Google OAuth signup successful, showing animation');
+      
+      // Get user name from localStorage (stored by googleAuth service)
+      const storedRole = localStorage.getItem('signup_role') || 'employee';
+      setRole(storedRole as 'employee' | 'employer');
+      
+      // Set loading and show animation
+      setIsLoading(true);
+      setShowSuccessAnimation(true);
+      
+      // User name will be set by AuthContext when it processes the token
+      // For now, use a placeholder
+      setUserName('there');
+    }
+  }, [searchParams]);
+  
   // Update role if URL parameters change
   useEffect(() => {
     const urlRole = searchParams.get('role') as 'employer' | 'employee' | null;
