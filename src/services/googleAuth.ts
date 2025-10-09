@@ -156,32 +156,23 @@ class GoogleAuthService {
           throw new Error('Google Identity Services not loaded');
         }
         
-        // Use Google Identity Services with redirect mode
-        // Create a temporary button element and trigger it
-        const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'fixed';
-        tempDiv.style.top = '-1000px';
-        tempDiv.style.left = '-1000px';
-        tempDiv.style.visibility = 'hidden';
-        document.body.appendChild(tempDiv);
-        
         // Use different redirect URIs for signup and login
         // For signup, encode role in the URI path so backend can read it
-        let redirectUri;
+        let loginUri;
         if (mode === 'signup') {
           const rolePath = role || 'employee';
-          redirectUri = window.location.hostname === 'localhost' 
+          loginUri = window.location.hostname === 'localhost' 
             ? `${window.location.origin}/signup/${rolePath}`  // Local development
             : `https://parttimepays.in/signup/${rolePath}`;    // Production
         } else {
-          redirectUri = window.location.hostname === 'localhost' 
+          loginUri = window.location.hostname === 'localhost' 
             ? window.location.origin + '/login'  // Local development
             : 'https://parttimepays.in/login';    // Production
         }
         
-        console.log('Using redirect URI:', redirectUri);
-        console.log('Auth mode:', mode);
-        console.log('Auth role:', role);
+        console.log('🔵 Using login URI:', loginUri);
+        console.log('🔵 Auth mode:', mode);
+        console.log('🔵 Auth role:', role);
         
         // Store mode and role in localStorage for frontend callback handling
         localStorage.setItem('google_auth_mode', mode);
@@ -190,13 +181,31 @@ class GoogleAuthService {
           console.log('Stored signup role in localStorage:', role);
         }
         
-        // Render the Google Sign-In button
+        // CRITICAL: Reinitialize Google Auth with the specific login_uri
+        // The login_uri parameter tells Google where to POST the credential
+        console.log('🔵 Reinitializing Google Auth with login_uri:', loginUri);
+        (window as any).google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          ux_mode: 'redirect',
+          login_uri: loginUri, // This is where Google will POST the credential
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          use_fedcm_for_prompt: false
+        });
+        
+        // Create a temporary button element and trigger it
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'fixed';
+        tempDiv.style.top = '-1000px';
+        tempDiv.style.left = '-1000px';
+        tempDiv.style.visibility = 'hidden';
+        document.body.appendChild(tempDiv);
+        
+        // Render the Google Sign-In button (no redirect_uri needed here)
         (window as any).google.accounts.id.renderButton(tempDiv, {
           theme: 'outline',
           size: 'large',
-          type: 'standard',
-          ux_mode: 'redirect',
-          redirect_uri: redirectUri
+          type: 'standard'
         });
         
         // Wait for the button to render and then click it
