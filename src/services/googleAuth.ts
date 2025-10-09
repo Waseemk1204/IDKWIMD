@@ -164,10 +164,17 @@ class GoogleAuthService {
         tempDiv.style.visibility = 'hidden';
         document.body.appendChild(tempDiv);
         
-        // Use production redirect URI for deployed site
-        const redirectUri = window.location.hostname === 'localhost' 
-          ? window.location.origin + '/login'  // Local development
-          : 'https://parttimepays.in/login';    // Production
+        // Use different redirect URIs for signup and login
+        let redirectUri;
+        if (mode === 'signup') {
+          redirectUri = window.location.hostname === 'localhost' 
+            ? window.location.origin + '/signup'  // Local development
+            : 'https://parttimepays.in/signup';    // Production
+        } else {
+          redirectUri = window.location.hostname === 'localhost' 
+            ? window.location.origin + '/login'  // Local development
+            : 'https://parttimepays.in/login';    // Production
+        }
         
         console.log('Using redirect URI:', redirectUri);
         console.log('Auth mode:', mode);
@@ -181,8 +188,7 @@ class GoogleAuthService {
           size: 'large',
           type: 'standard',
           ux_mode: 'redirect',
-          redirect_uri: redirectUri,
-          state: mode // Pass mode as state parameter
+          redirect_uri: redirectUri
         });
         
         // Wait for the button to render and then click it

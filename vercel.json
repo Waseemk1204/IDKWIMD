@@ -29,6 +29,16 @@
       "dest": "/index.html"
     },
     {
+      "src": "/signup",
+      "methods": ["POST"],
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/signup",
+      "methods": ["GET"],
+      "dest": "/index.html"
+    },
+    {
       "src": "/sitemap.xml",
       "dest": "/sitemap.xml",
       "headers": {

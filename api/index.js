@@ -346,10 +346,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Handle Google OAuth POST requests to /login
-app.post('/login', async (req, res) => {
+// Handle Google OAuth POST requests to /login and /signup
+const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
   try {
-    console.log('Google OAuth POST request received at /login');
+    const endpoint = isSignupEndpoint ? '/signup' : '/login';
+    console.log(`Google OAuth POST request received at ${endpoint}`);
     console.log('Request body:', req.body);
     console.log('Request headers:', req.headers);
     console.log('Referer:', req.headers.referer);
@@ -357,14 +358,10 @@ app.post('/login', async (req, res) => {
     // Extract credential and state from POST body
     const credential = req.body.credential;
     const error = req.body.error;
-    const state = req.body.state; // Google OAuth state parameter
     
-    // Check if this is a signup or login based on state parameter
-    const mode = state || (req.headers.referer?.includes('/signup') ? 'signup' : 'login');
-    const isSignup = mode === 'signup';
+    // Determine if this is signup based on the endpoint
+    const isSignup = isSignupEndpoint;
     
-    console.log('Google auth state:', state);
-    console.log('Google auth mode:', mode);
     console.log('Is signup request:', isSignup);
     
     if (error) {
@@ -505,14 +502,20 @@ app.post('/login', async (req, res) => {
       }
     }
     
-    // No credential or error, redirect to login page
-    res.redirect('/login?google_auth=no_credential');
+    // No credential or error, redirect based on signup/login
+    const redirectPath = isSignup ? '/signup' : '/login';
+    res.redirect(`${redirectPath}?google_auth=no_credential`);
     
   } catch (error) {
     console.error('Google OAuth POST handler error:', error);
-    res.redirect('/login?google_auth=error&error=server_error');
+    const redirectPath = isSignup ? '/signup' : '/login';
+    res.redirect(`${redirectPath}?google_auth=error&error=server_error`);
   }
-});
+};
+
+// Register routes for both /login and /signup
+app.post('/login', (req, res) => handleGoogleOAuth(req, res, false));
+app.post('/signup', (req, res) => handleGoogleOAuth(req, res, true));
 
 // Simple test endpoint
 app.get('/api/test', (req, res) => {
