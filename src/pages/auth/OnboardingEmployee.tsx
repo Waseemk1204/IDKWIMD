@@ -142,6 +142,20 @@ export const OnboardingEmployee: React.FC = () => {
           </div>
         </div>
 
+        {/* Skip link */}
+        <div className="text-right mb-4 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+          <button
+            onClick={handleSkip}
+            className="inline-flex items-center text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors group"
+            disabled={isLoading}
+          >
+            <span>Skip for now</span>
+            <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
         {/* Form */}
         <Card className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <CardHeader>
@@ -278,8 +292,8 @@ export const OnboardingEmployee: React.FC = () => {
                 </div>
               </div>
 
-              {/* Submit and Skip Buttons */}
-              <div className="pt-4 space-y-3">
+              {/* Submit Button */}
+              <div className="pt-4">
                 <Button
                   type="submit"
                   variant="gradient"
@@ -291,21 +305,6 @@ export const OnboardingEmployee: React.FC = () => {
                 >
                   Complete Profile & Get Started
                 </Button>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleSkip}
-                  disabled={isLoading}
-                >
-                  Skip for Now
-                </Button>
-                
-                <p className="text-xs text-center text-neutral-500 dark:text-neutral-400 mt-2">
-                  You can complete your profile anytime from your dashboard
-                </p>
               </div>
             </form>
           </CardContent>

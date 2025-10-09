@@ -104,6 +104,10 @@ export const Login: React.FC = () => {
     setError('');
     
     try {
+      // Mark this as a login attempt in a cookie that the backend can read
+      document.cookie = 'google_auth_mode=login; path=/; max-age=300; SameSite=Lax';
+      console.log('Marked Google OAuth as login in cookie');
+      
       // Get the Google user data from the service
       const result = await googleAuthService.signIn();
       
