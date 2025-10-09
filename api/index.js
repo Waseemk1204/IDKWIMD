@@ -347,13 +347,14 @@ app.get('/api/health', (req, res) => {
 });
 
 // Handle Google OAuth POST requests to /login and /signup
-const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
+const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole = null) => {
   try {
     const endpoint = isSignupEndpoint ? '/signup' : '/login';
     console.log(`Google OAuth POST request received at ${endpoint}`);
     console.log('Request body:', req.body);
     console.log('Request headers:', req.headers);
     console.log('Referer:', req.headers.referer);
+    console.log('Signup role from URL:', signupRole);
     
     // Extract credential and state from POST body
     const credential = req.body.credential;
@@ -417,24 +418,21 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
         if (!user) {
           if (isSignup) {
             // Create new user for signup
-            // Read role from cookie (set by frontend before OAuth redirect)
-            const signupRole = req.cookies?.signup_role || 'employee';
-            console.log('Creating new user from Google OAuth signup with role:', signupRole);
+            // Use role from URL parameter (passed from frontend)
+            const userRole = signupRole || 'employee';
+            console.log('Creating new user from Google OAuth signup with role:', userRole);
             
             user = new User({
               googleId: googleUser.googleId,
               email: googleUser.email,
               fullName: googleUser.fullName,
               profilePhoto: googleUser.profilePhoto,
-              role: signupRole, // Use role from cookie
+              role: userRole, // Use role from URL parameter
               isVerified: true, // Google accounts are pre-verified
               isActive: true
             });
             await user.save();
             isNewUser = true;
-            
-            // Clear the signup role cookie
-            res.clearCookie('signup_role', { path: '/' });
             
             console.log('New user created:', {
               id: user._id,
@@ -527,6 +525,8 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false) => {
 // Register routes for both /login and /signup
 app.post('/login', (req, res) => handleGoogleOAuth(req, res, false));
 app.post('/signup', (req, res) => handleGoogleOAuth(req, res, true));
+app.post('/signup/employee', (req, res) => handleGoogleOAuth(req, res, true, 'employee'));
+app.post('/signup/employer', (req, res) => handleGoogleOAuth(req, res, true, 'employer'));
 
 // Simple test endpoint
 app.get('/api/test', (req, res) => {

@@ -166,11 +166,13 @@ class GoogleAuthService {
         document.body.appendChild(tempDiv);
         
         // Use different redirect URIs for signup and login
+        // For signup, encode role in the URI path so backend can read it
         let redirectUri;
         if (mode === 'signup') {
+          const rolePath = role || 'employee';
           redirectUri = window.location.hostname === 'localhost' 
-            ? window.location.origin + '/signup'  // Local development
-            : 'https://parttimepays.in/signup';    // Production
+            ? `${window.location.origin}/signup/${rolePath}`  // Local development
+            : `https://parttimepays.in/signup/${rolePath}`;    // Production
         } else {
           redirectUri = window.location.hostname === 'localhost' 
             ? window.location.origin + '/login'  // Local development
@@ -186,10 +188,6 @@ class GoogleAuthService {
         if (role) {
           localStorage.setItem('signup_role', role);
           console.log('Stored signup role in localStorage:', role);
-          
-          // Also set as cookie so backend can read it
-          document.cookie = `signup_role=${role}; path=/; max-age=600; SameSite=Lax`;
-          console.log('Set signup role cookie:', role);
         }
         
         // Render the Google Sign-In button
