@@ -1012,6 +1012,308 @@ app.post('/api/auth/google', [
   }
 });
 
+// ===== APPLICATIONS ROUTES =====
+
+// Get user's applications
+app.get('/api/applications/user', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status } = req.query;
+    const query = { applicant: req.user._id };
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    const applications = await Application.find(query)
+      .populate('job', 'title company location salary')
+      .populate('applicant', 'fullName email')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Application.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        applications,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch applications'
+    });
+  }
+});
+
+// Submit job application
+app.post('/api/applications/job/:jobId', authenticate, [
+  body('coverLetter').optional().trim().isLength({ max: 2000 }),
+  body('resume').optional().trim(),
+  body('additionalInfo').optional().trim().isLength({ max: 1000 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { jobId } = req.params;
+    const { coverLetter, resume, additionalInfo } = req.body;
+    
+    // Check if job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found'
+      });
+    }
+    
+    // Check if user already applied
+    const existingApplication = await Application.findOne({
+      job: jobId,
+      applicant: req.user._id
+    });
+    
+    if (existingApplication) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already applied for this job'
+      });
+    }
+    
+    // Create application
+    const application = new Application({
+      job: jobId,
+      applicant: req.user._id,
+      coverLetter,
+      resume,
+      additionalInfo,
+      status: 'pending'
+    });
+    
+    await application.save();
+    
+    // Populate the response
+    await application.populate('job', 'title company location salary');
+    await application.populate('applicant', 'fullName email');
+    
+    res.status(201).json({
+      success: true,
+      message: 'Application submitted successfully',
+      data: application
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit application'
+    });
+  }
+});
+
+// Get application by ID
+app.get('/api/applications/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const application = await Application.findById(id)
+      .populate('job', 'title company location salary description requirements')
+      .populate('applicant', 'fullName email profilePhoto');
+    
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+    
+    // Check if user has permission to view this application
+    if (application.applicant._id.toString() !== req.user._id.toString() && 
+        application.job.employer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: application
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch application'
+    });
+  }
+});
+
+// Update application status (employer only)
+app.put('/api/applications/:id/status', authenticate, [
+  body('status').isIn(['pending', 'reviewed', 'shortlisted', 'rejected', 'hired']),
+  body('notes').optional().trim().isLength({ max: 500 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { id } = req.params;
+    const { status, notes } = req.body;
+    
+    const application = await Application.findById(id).populate('job');
+    
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+    
+    // Check if user is the employer
+    if (application.job.employer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    application.status = status;
+    if (notes) {
+      application.employerNotes = notes;
+    }
+    
+    await application.save();
+    
+    res.json({
+      success: true,
+      message: 'Application status updated successfully',
+      data: application
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update application status'
+    });
+  }
+});
+
+// Withdraw application
+app.delete('/api/applications/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const application = await Application.findById(id);
+    
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
+      });
+    }
+    
+    // Check if user is the applicant
+    if (application.applicant.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Only allow withdrawal if status is pending or reviewed
+    if (!['pending', 'reviewed'].includes(application.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot withdraw application at this stage'
+      });
+    }
+    
+    await Application.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Application withdrawn successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to withdraw application'
+    });
+  }
+});
+
+// Get job applications (employer only)
+app.get('/api/applications/job/:jobId', authenticate, async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { page = 1, limit = 20, status } = req.query;
+    
+    // Check if job exists and user is the employer
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found'
+      });
+    }
+    
+    if (job.employer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const query = { job: jobId };
+    if (status) {
+      query.status = status;
+    }
+    
+    const applications = await Application.find(query)
+      .populate('applicant', 'fullName email profilePhoto')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Application.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        applications,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch job applications'
+    });
+  }
+});
+
 // Jobs routes
 app.get('/api/jobs', async (req, res) => {
   try {
