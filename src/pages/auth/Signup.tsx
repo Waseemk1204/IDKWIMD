@@ -78,8 +78,11 @@ export const Signup: React.FC = () => {
     }
   }, [searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    console.log('handleSubmit called!', e);
+    if (e) {
+      e.preventDefault();
+    }
     setError('');
     setIsLoading(true);
     
@@ -346,13 +349,14 @@ export const Signup: React.FC = () => {
                   </div>
 
                   <Button
-                    type="submit"
+                    type="button"
                     variant="gradient"
                     size="lg"
                     isFullWidth
                     isLoading={isLoading}
                     loadingText="Creating account..."
                     trustIndicator
+                    onClick={handleSubmit}
                   >
                     Create {role === 'employee' ? 'Student' : 'Employer'} Account
                   </Button>
