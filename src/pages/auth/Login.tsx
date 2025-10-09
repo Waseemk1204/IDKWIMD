@@ -387,6 +387,7 @@ export const Login: React.FC = () => {
                     <GoogleAuthButton 
                       text="Continue with Google"
                       className="w-full"
+                      mode="login"
                       onSuccess={handleGoogleSuccess}
                       onError={handleGoogleError}
                     />

@@ -70,6 +70,7 @@ export const Signup: React.FC = () => {
     setError('');
     
     try {
+      // Force cache bust - v2
       console.log('Initiating Google OAuth signup with role:', role);
       
       // Get the Google user data from the service with signup mode and role
@@ -473,6 +474,8 @@ export const Signup: React.FC = () => {
                     <GoogleAuthButton 
                       text="Continue with Google"
                       className="w-full"
+                      mode="signup"
+                      role={role}
                       onSuccess={handleGoogleSuccess}
                       onError={handleGoogleError}
                     />

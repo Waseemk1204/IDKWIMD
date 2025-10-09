@@ -6,6 +6,8 @@ interface GoogleAuthButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  mode?: 'login' | 'signup';
+  role?: 'employee' | 'employer';
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
@@ -15,12 +17,15 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   variant = 'default',
   size = 'md',
   className = '',
+  mode = 'login',
+  role,
   onSuccess,
   onError
 }) => {
   const handleGoogleAuth = async () => {
     try {
-      const result = await googleAuthService.signIn();
+      console.log('🟢 GoogleAuthButton clicked - Mode:', mode, 'Role:', role);
+      const result = await googleAuthService.signIn(mode, role);
       
       if (result.success && result.user) {
         onSuccess?.();
