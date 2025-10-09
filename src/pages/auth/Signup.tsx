@@ -80,9 +80,14 @@ export const Signup: React.FC = () => {
 
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     console.log('handleSubmit called!', e);
+    console.log('Event type:', e?.type);
+    console.log('Event target:', e?.target);
+    
     if (e) {
       e.preventDefault();
+      e.stopPropagation();
     }
+    
     setError('');
     setIsLoading(true);
     
@@ -291,7 +296,7 @@ export const Signup: React.FC = () => {
             </div>
           )}
           
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-6">
                   <div className="space-y-4">
             <div>
                       <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
@@ -360,7 +365,7 @@ export const Signup: React.FC = () => {
                   >
                     Create {role === 'employee' ? 'Student' : 'Employer'} Account
                   </Button>
-                </form>
+                </div>
 
                 {/* Social Sign-In Options */}
                 <div className="mt-6">
