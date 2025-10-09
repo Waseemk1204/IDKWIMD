@@ -2454,5 +2454,574 @@ connectDB().then(connected => {
   console.error('❌ MongoDB connection error on startup:', error);
 });
 
+// ===== CONNECTIONS/GANG MEMBERS ROUTES =====
+
+// Send connection request
+app.post('/api/connections/request', authenticate, [
+  body('recipientId').notEmpty().isMongoId()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { recipientId } = req.body;
+    
+    // Check if recipient exists
+    const recipient = await User.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Check if trying to connect to self
+    if (recipientId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot connect to yourself'
+      });
+    }
+    
+    // Check if connection already exists
+    const existingConnection = await Connection.findOne({
+      $or: [
+        { requester: req.user._id, recipient: recipientId },
+        { requester: recipientId, recipient: req.user._id }
+      ]
+    });
+    
+    if (existingConnection) {
+      return res.status(400).json({
+        success: false,
+        message: 'Connection already exists'
+      });
+    }
+    
+    // Create connection request
+    const connection = new Connection({
+      requester: req.user._id,
+      recipient: recipientId,
+      status: 'pending'
+    });
+    
+    await connection.save();
+    
+    // Populate the response
+    await connection.populate('requester', 'fullName email profilePhoto');
+    await connection.populate('recipient', 'fullName email profilePhoto');
+    
+    res.status(201).json({
+      success: true,
+      message: 'Connection request sent successfully',
+      data: connection
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send connection request'
+    });
+  }
+});
+
+// Accept connection request
+app.post('/api/connections/accept/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const connection = await Connection.findById(id);
+    
+    if (!connection) {
+      return res.status(404).json({
+        success: false,
+        message: 'Connection request not found'
+      });
+    }
+    
+    // Check if user is the recipient
+    if (connection.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Check if already accepted
+    if (connection.status === 'accepted') {
+      return res.status(400).json({
+        success: false,
+        message: 'Connection already accepted'
+      });
+    }
+    
+    connection.status = 'accepted';
+    connection.acceptedAt = new Date();
+    await connection.save();
+    
+    res.json({
+      success: true,
+      message: 'Connection request accepted',
+      data: connection
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to accept connection request'
+    });
+  }
+});
+
+// Reject connection request
+app.post('/api/connections/reject/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const connection = await Connection.findById(id);
+    
+    if (!connection) {
+      return res.status(404).json({
+        success: false,
+        message: 'Connection request not found'
+      });
+    }
+    
+    // Check if user is the recipient
+    if (connection.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    connection.status = 'rejected';
+    await connection.save();
+    
+    res.json({
+      success: true,
+      message: 'Connection request rejected',
+      data: connection
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject connection request'
+    });
+  }
+});
+
+// Cancel connection request
+app.post('/api/connections/cancel/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const connection = await Connection.findById(id);
+    
+    if (!connection) {
+      return res.status(404).json({
+        success: false,
+        message: 'Connection request not found'
+      });
+    }
+    
+    // Check if user is the requester
+    if (connection.requester.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Only allow cancellation if status is pending
+    if (connection.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot cancel this connection request'
+      });
+    }
+    
+    await Connection.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Connection request cancelled'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel connection request'
+    });
+  }
+});
+
+// Remove connection
+app.delete('/api/connections/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const connection = await Connection.findById(id);
+    
+    if (!connection) {
+      return res.status(404).json({
+        success: false,
+        message: 'Connection not found'
+      });
+    }
+    
+    // Check if user is part of this connection
+    if (connection.requester.toString() !== req.user._id.toString() && 
+        connection.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    await Connection.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Connection removed successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to remove connection'
+    });
+  }
+});
+
+// Get user connections
+app.get('/api/connections/my-connections', authenticate, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 20 } = req.query;
+    
+    const query = {
+      $or: [
+        { requester: req.user._id },
+        { recipient: req.user._id }
+      ]
+    };
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    const connections = await Connection.find(query)
+      .populate('requester', 'fullName email profilePhoto role')
+      .populate('recipient', 'fullName email profilePhoto role')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Connection.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        connections,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch connections'
+    });
+  }
+});
+
+// Get pending requests
+app.get('/api/connections/pending-requests', authenticate, async (req, res) => {
+  try {
+    const { type = 'received', page = 1, limit = 20 } = req.query;
+    
+    let query;
+    if (type === 'sent') {
+      query = { requester: req.user._id, status: 'pending' };
+    } else {
+      query = { recipient: req.user._id, status: 'pending' };
+    }
+    
+    const requests = await Connection.find(query)
+      .populate('requester', 'fullName email profilePhoto role')
+      .populate('recipient', 'fullName email profilePhoto role')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Connection.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        requests,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pending requests'
+    });
+  }
+});
+
+// Follow employer
+app.post('/api/connections/follow', authenticate, [
+  body('employerId').notEmpty().isMongoId()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { employerId } = req.body;
+    
+    // Check if employer exists and has employer role
+    const employer = await User.findById(employerId);
+    if (!employer || employer.role !== 'employer') {
+      return res.status(404).json({
+        success: false,
+        message: 'Employer not found'
+      });
+    }
+    
+    // Check if trying to follow self
+    if (employerId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot follow yourself'
+      });
+    }
+    
+    // Check if already following
+    const existingFollow = await Follow.findOne({
+      follower: req.user._id,
+      following: employerId
+    });
+    
+    if (existingFollow) {
+      return res.status(400).json({
+        success: false,
+        message: 'Already following this employer'
+      });
+    }
+    
+    // Create follow relationship
+    const follow = new Follow({
+      follower: req.user._id,
+      following: employerId
+    });
+    
+    await follow.save();
+    
+    // Populate the response
+    await follow.populate('follower', 'fullName email profilePhoto');
+    await follow.populate('following', 'fullName email profilePhoto company');
+    
+    res.status(201).json({
+      success: true,
+      message: 'Successfully following employer',
+      data: follow
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to follow employer'
+    });
+  }
+});
+
+// Unfollow employer
+app.delete('/api/connections/follow/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const follow = await Follow.findById(id);
+    
+    if (!follow) {
+      return res.status(404).json({
+        success: false,
+        message: 'Follow relationship not found'
+      });
+    }
+    
+    // Check if user is the follower
+    if (follow.follower.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    await Follow.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Successfully unfollowed employer'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to unfollow employer'
+    });
+  }
+});
+
+// Get user follows
+app.get('/api/connections/my-follows', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    
+    const follows = await Follow.find({ follower: req.user._id })
+      .populate('following', 'fullName email profilePhoto company')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Follow.countDocuments({ follower: req.user._id });
+    
+    res.json({
+      success: true,
+      data: {
+        follows,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch follows'
+    });
+  }
+});
+
+// Get connection status with another user
+app.get('/api/connections/status/:userId', authenticate, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Check connection status
+    const connection = await Connection.findOne({
+      $or: [
+        { requester: req.user._id, recipient: userId },
+        { requester: userId, recipient: req.user._id }
+      ]
+    });
+    
+    // Check follow status
+    const follow = await Follow.findOne({
+      follower: req.user._id,
+      following: userId
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        connection: connection ? {
+          id: connection._id,
+          status: connection.status,
+          isRequester: connection.requester.toString() === req.user._id.toString()
+        } : null,
+        follow: follow ? {
+          id: follow._id,
+          isFollowing: true
+        } : { isFollowing: false }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get connection status'
+    });
+  }
+});
+
+// Discover available employees
+app.get('/api/connections/discover', authenticate, async (req, res) => {
+  try {
+    const { search, page = 1, limit = 20 } = req.query;
+    
+    // Build search query
+    const query = { role: 'employee' };
+    
+    if (search) {
+      query.$or = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { skills: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
+    
+    // Exclude current user and already connected users
+    const existingConnections = await Connection.find({
+      $or: [
+        { requester: req.user._id },
+        { recipient: req.user._id }
+      ]
+    });
+    
+    const connectedUserIds = existingConnections.map(conn => 
+      conn.requester.toString() === req.user._id.toString() 
+        ? conn.recipient.toString() 
+        : conn.requester.toString()
+    );
+    
+    query._id = { $nin: [req.user._id, ...connectedUserIds] };
+    
+    const users = await User.find(query)
+      .select('fullName email profilePhoto skills location bio')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await User.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to discover users'
+    });
+  }
+});
+
 export default app;
 
