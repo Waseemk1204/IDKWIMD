@@ -350,11 +350,14 @@ app.get('/api/health', (req, res) => {
 const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole = null) => {
   try {
     const endpoint = isSignupEndpoint ? '/signup' : '/login';
-    console.log(`Google OAuth POST request received at ${endpoint}`);
+    console.log('=== GOOGLE OAUTH POST REQUEST ===');
+    console.log(`Endpoint: ${endpoint}`);
+    console.log('Request URL:', req.url);
+    console.log('Request path:', req.path);
+    console.log('Signup role from parameter:', signupRole);
     console.log('Request body:', req.body);
     console.log('Request headers:', req.headers);
     console.log('Referer:', req.headers.referer);
-    console.log('Signup role from URL:', signupRole);
     
     // Extract credential and state from POST body
     const credential = req.body.credential;
