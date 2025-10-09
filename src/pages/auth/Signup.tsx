@@ -20,6 +20,9 @@ import {
 } from 'lucide-react';
 
 export const Signup: React.FC = () => {
+  console.log('=== SIGNUP COMPONENT LOADED ===');
+  console.log('Signup component is rendering with new code');
+  
   const [searchParams] = useSearchParams();
   
   // Debug: Intercept all fetch requests
@@ -414,6 +417,20 @@ export const Signup: React.FC = () => {
                     }}
                   >
                     Create {role === 'employee' ? 'Student' : 'Employer'} Account
+                  </Button>
+                  
+                  {/* Debug button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      console.log('=== DEBUG BUTTON CLICKED ===');
+                      console.log('This proves the component is working');
+                      alert('Debug button clicked! Check console for logs.');
+                    }}
+                  >
+                    Debug Test Button
                   </Button>
                 </div>
 
