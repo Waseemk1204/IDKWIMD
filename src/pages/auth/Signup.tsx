@@ -70,12 +70,10 @@ export const Signup: React.FC = () => {
     setError('');
     
     try {
-      // Mark this as a signup attempt in a cookie that the backend can read
-      document.cookie = 'google_auth_mode=signup; path=/; max-age=300; SameSite=Lax';
-      console.log('Marked Google OAuth as signup in cookie');
+      console.log('Initiating Google OAuth signup');
       
-      // Get the Google user data from the service
-      const result = await googleAuthService.signIn();
+      // Get the Google user data from the service with signup mode
+      const result = await googleAuthService.signIn('signup');
       
       if (result.success && result.user) {
         // Login with Google user data

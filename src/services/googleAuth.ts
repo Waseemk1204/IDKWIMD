@@ -120,8 +120,9 @@ class GoogleAuthService {
 
   /**
    * Trigger Google OAuth flow
+   * @param mode - 'login' or 'signup' to indicate the auth mode
    */
-  async signIn(): Promise<GoogleAuthResponse> {
+  async signIn(mode: 'login' | 'signup' = 'login'): Promise<GoogleAuthResponse> {
     return new Promise((resolve) => {
       if (!this.isLoaded) {
         resolve({
@@ -169,6 +170,10 @@ class GoogleAuthService {
           : 'https://parttimepays.in/login';    // Production
         
         console.log('Using redirect URI:', redirectUri);
+        console.log('Auth mode:', mode);
+        
+        // Store mode in sessionStorage so the callback can access it
+        sessionStorage.setItem('google_auth_mode', mode);
         
         // Render the Google Sign-In button
         (window as any).google.accounts.id.renderButton(tempDiv, {
@@ -176,7 +181,8 @@ class GoogleAuthService {
           size: 'large',
           type: 'standard',
           ux_mode: 'redirect',
-          redirect_uri: redirectUri
+          redirect_uri: redirectUri,
+          state: mode // Pass mode as state parameter
         });
         
         // Wait for the button to render and then click it

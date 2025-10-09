@@ -354,15 +354,17 @@ app.post('/login', async (req, res) => {
     console.log('Request headers:', req.headers);
     console.log('Referer:', req.headers.referer);
     
-    // Extract credential from POST body
+    // Extract credential and state from POST body
     const credential = req.body.credential;
     const error = req.body.error;
+    const state = req.body.state; // Google OAuth state parameter
     
-    // Check if this is a signup or login based on cookie
-    const googleAuthMode = req.cookies?.google_auth_mode;
-    const isSignup = googleAuthMode === 'signup' || req.headers.referer?.includes('/signup');
+    // Check if this is a signup or login based on state parameter
+    const mode = state || (req.headers.referer?.includes('/signup') ? 'signup' : 'login');
+    const isSignup = mode === 'signup';
     
-    console.log('Google auth mode cookie:', googleAuthMode);
+    console.log('Google auth state:', state);
+    console.log('Google auth mode:', mode);
     console.log('Is signup request:', isSignup);
     
     if (error) {
@@ -482,9 +484,6 @@ app.post('/login', async (req, res) => {
           username: user.username,
           isNewUser: isNewUser
         });
-        
-        // Clear the google_auth_mode cookie
-        res.clearCookie('google_auth_mode', { path: '/' });
         
         // Redirect to frontend with token as URL parameter
         // New users go to additional info page, existing users go to dashboard
