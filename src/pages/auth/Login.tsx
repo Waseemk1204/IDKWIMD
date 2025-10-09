@@ -87,7 +87,12 @@ export const Login: React.FC = () => {
         }
       } else if (error) {
         console.error('Google OAuth error:', error);
-        setError('Google authentication failed. Please try again.');
+        const message = urlParams.get('message');
+        if (error === 'user_not_found' && message) {
+          setError(message);
+        } else {
+          setError('Google authentication failed. Please try again.');
+        }
       }
     };
 
@@ -257,6 +262,17 @@ export const Login: React.FC = () => {
                 {error && (
                   <div className="mb-6 p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
                     <p className="text-sm text-error-700 dark:text-error-300">{error}</p>
+                    {error.includes('Account not found') && (
+                      <div className="mt-3">
+                        <Link 
+                          to="/signup" 
+                          className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+                        >
+                          <Users className="w-4 h-4 mr-2" />
+                          Create a new account
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
 

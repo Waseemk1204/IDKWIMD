@@ -407,7 +407,7 @@ app.post('/login', async (req, res) => {
         if (!user) {
           // User doesn't exist - reject Google OAuth login
           console.log('User not found in database, rejecting Google OAuth login');
-          return res.redirect('/login?google_auth=error&error=user_not_found');
+          return res.redirect('/login?google_auth=error&error=user_not_found&message=Account not found. Please sign up first.');
         }
         
         console.log('Existing user details:', {
