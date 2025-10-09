@@ -404,43 +404,29 @@ app.post('/login', async (req, res) => {
         console.log('Looking for existing user with email:', googleUser.email);
         console.log('Existing user found:', !!user);
         
-        if (user) {
-          console.log('Existing user details:', {
-            id: user._id,
-            email: user.email,
-            googleId: user.googleId,
-            role: user.role,
-            username: user.username
-          });
-          
-          // Update existing user with Google info if needed
-          if (!user.googleId) {
-            console.log('Linking Google account to existing user');
-            user.googleId = googleUser.googleId;
-            user.profilePhoto = googleUser.profilePhoto || user.profilePhoto;
-            await user.save();
-            console.log('Google account linked successfully');
-          } else {
-            console.log('User already has Google account linked');
-          }
-        } else {
-          // Create new user
-          console.log('No existing user found, creating new user');
-          const userData = {
-            googleId: googleUser.googleId,
-            email: googleUser.email,
-            // username: not set - user will set it manually later
-            profilePhoto: googleUser.profilePhoto,
-            role: 'employee', // Default role
-            isVerified: true, // Google users are pre-verified
-            isActive: true
-          };
-          
-          console.log('Creating new user with data:', JSON.stringify(userData, null, 2));
-          
-          user = new User(userData);
+        if (!user) {
+          // User doesn't exist - reject Google OAuth login
+          console.log('User not found in database, rejecting Google OAuth login');
+          return res.redirect('/login?google_auth=error&error=user_not_found');
+        }
+        
+        console.log('Existing user details:', {
+          id: user._id,
+          email: user.email,
+          googleId: user.googleId,
+          role: user.role,
+          username: user.username
+        });
+        
+        // Update existing user with Google info if needed
+        if (!user.googleId) {
+          console.log('Linking Google account to existing user');
+          user.googleId = googleUser.googleId;
+          user.profilePhoto = googleUser.profilePhoto || user.profilePhoto;
           await user.save();
-          console.log('New user created successfully');
+          console.log('Google account linked successfully');
+        } else {
+          console.log('User already has Google account linked');
         }
         
         // Generate JWT token
