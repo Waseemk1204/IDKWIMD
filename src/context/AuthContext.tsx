@@ -187,8 +187,9 @@ export const AuthProvider: React.FC<{
   const signup = async (email: string, password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
     try {
+      console.log('=== AUTHCONTEXT SIGNUP START ===');
       console.log('AuthContext signup called with:', { email, password, role });
-      
+
       const response = await apiService.register({
         fullName: email.split('@')[0], // Default name from email
         username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, ''), // Generate username from email
@@ -196,7 +197,7 @@ export const AuthProvider: React.FC<{
         password,
         role: role || 'employee'
       });
-      
+
       console.log('Signup API response:', response);
       
       if (response.success && response.data?.user) {

@@ -104,9 +104,12 @@ export const Signup: React.FC = () => {
   }, [searchParams]);
 
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    console.log('=== SIGNUP FORM SUBMISSION START ===');
     console.log('handleSubmit called!', e);
     console.log('Event type:', e?.type);
     console.log('Event target:', e?.target);
+    console.log('Form data:', { email, password, role });
+    console.log('Is loading:', isLoading);
     
     if (e) {
       e.preventDefault();
