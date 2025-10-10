@@ -29,6 +29,8 @@ if (!process.env.JWT_SECRET) {
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'https://parttimepays.vercel.app',
+  'https://parttimepays.in',
+  'https://www.parttimepays.in',
   'https://parttimepays-git-main-waseemk1204s-projects.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000'
@@ -36,7 +38,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests, and OAuth POST flows from Google)
+    console.log('CORS - Request origin:', origin);
+    
+    // Allow requests with no origin (OAuth POST from Google)
     if (!origin) {
       return callback(null, true);
     }
@@ -46,17 +50,23 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Allow any parttimepays domain
+    if (origin && origin.includes('parttimepays')) {
+      return callback(null, true);
+    }
+    
     // Allow Google OAuth requests
-    if (origin && (origin.includes('accounts.google.com') || origin.includes('google.com'))) {
+    if (origin && origin.includes('google')) {
       return callback(null, true);
     }
     
     // For development, allow any localhost origin
-    if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
+    if (process.env.NODE_ENV === 'development' && origin && origin.includes('localhost')) {
       return callback(null, true);
     }
     
-    // Block all other origins
+    // Log and block all other origins
+    console.log('CORS - Blocking origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true
