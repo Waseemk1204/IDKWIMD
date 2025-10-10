@@ -211,6 +211,103 @@ const communityPostSchema = new mongoose.Schema({
 
 const CommunityPost = mongoose.model('CommunityPost', communityPostSchema);
 
+// Additional model schemas
+const walletSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  balance: { type: Number, default: 0 },
+  currency: { type: String, default: 'USD' },
+  isActive: { type: Boolean, default: true }
+}, { timestamps: true });
+
+const transactionSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  amount: { type: Number, required: true },
+  type: { type: String, enum: ['credit', 'debit', 'payment', 'refund'], required: true },
+  description: { type: String, required: true },
+  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+  reference: { type: String },
+  metadata: { type: Object }
+}, { timestamps: true });
+
+const connectionSchema = new mongoose.Schema({
+  requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+  message: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const conversationSchema = new mongoose.Schema({
+  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  title: { type: String },
+  conversationType: { type: String, enum: ['direct', 'group', 'job_related'], default: 'direct' },
+  job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' },
+  lastMessage: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: true });
+
+const messageSchema = new mongoose.Schema({
+  conversation: { type: mongoose.Schema.Types.ObjectId, ref: 'Conversation', required: true },
+  sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  content: { type: String, required: true },
+  messageType: { type: String, enum: ['text', 'image', 'file', 'system'], default: 'text' },
+  attachments: [{ type: String }],
+  replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  editedAt: { type: Date }
+}, { timestamps: true });
+
+const notificationSchema = new mongoose.Schema({
+  recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  type: { type: String, enum: ['job_application', 'connection_request', 'message', 'system', 'job_alert'], required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  isRead: { type: Boolean, default: false },
+  readAt: { type: Date },
+  relatedEntity: { type: mongoose.Schema.Types.ObjectId },
+  metadata: { type: Object }
+}, { timestamps: true });
+
+const verificationSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type: { type: String, enum: ['identity', 'employment', 'education', 'company'], required: true },
+  documents: [{
+    type: { type: String, required: true },
+    url: { type: String, required: true },
+    filename: { type: String, required: true }
+  }],
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  submittedAt: { type: Date, default: Date.now },
+  reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  reviewedAt: { type: Date },
+  rejectionReason: { type: String },
+  adminNotes: { type: String },
+  additionalData: { type: Object }
+}, { timestamps: true });
+
+const applicationSchema = new mongoose.Schema({
+  job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
+  applicant: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  coverLetter: { type: String },
+  resume: { type: String },
+  status: { type: String, enum: ['pending', 'reviewed', 'accepted', 'rejected'], default: 'pending' },
+  appliedAt: { type: Date, default: Date.now },
+  reviewedAt: { type: Date },
+  notes: { type: String }
+}, { timestamps: true });
+
+// Create models
+const Wallet = mongoose.model('Wallet', walletSchema);
+const Transaction = mongoose.model('Transaction', transactionSchema);
+const Connection = mongoose.model('Connection', connectionSchema);
+const Conversation = mongoose.model('Conversation', conversationSchema);
+const Message = mongoose.model('Message', messageSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
+const Verification = mongoose.model('Verification', verificationSchema);
+const Application = mongoose.model('Application', applicationSchema);
+
 // Auth middleware
 const authenticate = async (req, res, next) => {
   try {
