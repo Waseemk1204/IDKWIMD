@@ -3023,5 +3023,1731 @@ app.get('/api/connections/discover', authenticate, async (req, res) => {
   }
 });
 
+// ===== MESSAGING SYSTEM ROUTES =====
+
+// Get conversations
+app.get('/api/v1/messages/conversations', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    
+    const conversations = await Conversation.find({
+      participants: req.user._id
+    })
+    .populate('participants', 'fullName email profilePhoto role')
+    .populate('lastMessage')
+    .sort({ updatedAt: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+    
+    const total = await Conversation.countDocuments({
+      participants: req.user._id
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        conversations,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch conversations'
+    });
+  }
+});
+
+// Create conversation
+app.post('/api/v1/messages/conversations', authenticate, [
+  body('participants').isArray({ min: 1 }),
+  body('title').optional().trim().isLength({ max: 100 }),
+  body('conversationType').optional().isIn(['direct', 'group', 'job_related']),
+  body('job').optional().isMongoId()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { participants, title, conversationType = 'direct', job } = req.body;
+    
+    // Add current user to participants if not already included
+    const allParticipants = [...new Set([req.user._id, ...participants])];
+    
+    // Check if direct conversation already exists
+    if (conversationType === 'direct' && allParticipants.length === 2) {
+      const existingConversation = await Conversation.findOne({
+        participants: { $all: allParticipants },
+        conversationType: 'direct'
+      });
+      
+      if (existingConversation) {
+        return res.json({
+          success: true,
+          message: 'Conversation already exists',
+          data: existingConversation
+        });
+      }
+    }
+    
+    // Validate all participants exist
+    const participantUsers = await User.find({
+      _id: { $in: allParticipants }
+    });
+    
+    if (participantUsers.length !== allParticipants.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'One or more participants not found'
+      });
+    }
+    
+    // Create conversation
+    const conversation = new Conversation({
+      participants: allParticipants,
+      title: title || (conversationType === 'direct' ? null : 'Group Chat'),
+      conversationType,
+      job: job || null,
+      createdBy: req.user._id
+    });
+    
+    await conversation.save();
+    
+    // Populate the response
+    await conversation.populate('participants', 'fullName email profilePhoto role');
+    
+    res.status(201).json({
+      success: true,
+      message: 'Conversation created successfully',
+      data: conversation
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create conversation'
+    });
+  }
+});
+
+// Get messages for a conversation
+app.get('/api/v1/messages/conversations/:id/messages', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 50 } = req.query;
+    
+    // Check if user is part of the conversation
+    const conversation = await Conversation.findById(id);
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+    
+    if (!conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const messages = await Message.find({ conversation: id })
+      .populate('sender', 'fullName email profilePhoto role')
+      .populate('replyTo')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Message.countDocuments({ conversation: id });
+    
+    res.json({
+      success: true,
+      data: {
+        messages: messages.reverse(), // Reverse to show oldest first
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch messages'
+    });
+  }
+});
+
+// Send message
+app.post('/api/v1/messages/conversations/:id/messages', authenticate, [
+  body('content').trim().isLength({ min: 1, max: 2000 }),
+  body('messageType').optional().isIn(['text', 'image', 'file', 'system']),
+  body('attachments').optional().isArray(),
+  body('replyTo').optional().isMongoId()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { id } = req.params;
+    const { content, messageType = 'text', attachments, replyTo } = req.body;
+    
+    // Check if user is part of the conversation
+    const conversation = await Conversation.findById(id);
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+    
+    if (!conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Create message
+    const message = new Message({
+      conversation: id,
+      sender: req.user._id,
+      content,
+      messageType,
+      attachments: attachments || [],
+      replyTo: replyTo || null
+    });
+    
+    await message.save();
+    
+    // Update conversation's last message and timestamp
+    conversation.lastMessage = message._id;
+    conversation.updatedAt = new Date();
+    await conversation.save();
+    
+    // Populate the response
+    await message.populate('sender', 'fullName email profilePhoto role');
+    if (replyTo) {
+      await message.populate('replyTo');
+    }
+    
+    res.status(201).json({
+      success: true,
+      message: 'Message sent successfully',
+      data: message
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send message'
+    });
+  }
+});
+
+// Mark messages as read
+app.put('/api/v1/messages/conversations/:id/read', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if user is part of the conversation
+    const conversation = await Conversation.findById(id);
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+    
+    if (!conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Mark all messages in this conversation as read for the current user
+    await Message.updateMany(
+      { 
+        conversation: id,
+        sender: { $ne: req.user._id } // Don't mark own messages as read
+      },
+      { 
+        $addToSet: { readBy: req.user._id }
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Messages marked as read'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark messages as read'
+    });
+  }
+});
+
+// Edit message
+app.put('/api/v1/messages/messages/:id', authenticate, [
+  body('content').trim().isLength({ min: 1, max: 2000 })
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { id } = req.params;
+    const { content } = req.body;
+    
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+    
+    // Check if user is the sender
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Check if message is too old to edit (e.g., 24 hours)
+    const hoursSinceCreation = (new Date() - message.createdAt) / (1000 * 60 * 60);
+    if (hoursSinceCreation > 24) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message is too old to edit'
+      });
+    }
+    
+    message.content = content;
+    message.editedAt = new Date();
+    await message.save();
+    
+    res.json({
+      success: true,
+      message: 'Message updated successfully',
+      data: message
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update message'
+    });
+  }
+});
+
+// Delete message
+app.delete('/api/v1/messages/messages/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const message = await Message.findById(id);
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message not found'
+      });
+    }
+    
+    // Check if user is the sender
+    if (message.sender.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    await Message.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Message deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete message'
+    });
+  }
+});
+
+// Get conversation participants
+app.get('/api/v1/messages/conversations/:id/participants', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const conversation = await Conversation.findById(id)
+      .populate('participants', 'fullName email profilePhoto role');
+    
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+    
+    if (!conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: conversation.participants
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch participants'
+    });
+  }
+});
+
+// Delete conversation
+app.delete('/api/v1/messages/conversations/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const conversation = await Conversation.findById(id);
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+    
+    // Check if user is part of the conversation
+    if (!conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Delete all messages in the conversation
+    await Message.deleteMany({ conversation: id });
+    
+    // Delete the conversation
+    await Conversation.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Conversation deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete conversation'
+    });
+  }
+});
+
+// Get unread message count
+app.get('/api/v1/messages/unread-count', authenticate, async (req, res) => {
+  try {
+    const conversations = await Conversation.find({
+      participants: req.user._id
+    });
+    
+    const conversationIds = conversations.map(conv => conv._id);
+    
+    const unreadCount = await Message.countDocuments({
+      conversation: { $in: conversationIds },
+      sender: { $ne: req.user._id },
+      readBy: { $ne: req.user._id }
+    });
+    
+    res.json({
+      success: true,
+      data: { unreadCount }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get unread count'
+    });
+  }
+});
+
+// ===== NOTIFICATIONS ROUTES =====
+
+// Get notifications
+app.get('/api/notifications', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, unreadOnly } = req.query;
+    
+    const query = { recipient: req.user._id };
+    
+    if (unreadOnly === 'true') {
+      query.readAt = { $exists: false };
+    }
+    
+    const notifications = await Notification.find(query)
+      .populate('sender', 'fullName email profilePhoto')
+      .populate('relatedEntity')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Notification.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        notifications,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notifications'
+    });
+  }
+});
+
+// Get notification statistics
+app.get('/api/notifications/stats', authenticate, async (req, res) => {
+  try {
+    const total = await Notification.countDocuments({ recipient: req.user._id });
+    const unread = await Notification.countDocuments({ 
+      recipient: req.user._id,
+      readAt: { $exists: false }
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        total,
+        unread,
+        read: total - unread
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notification stats'
+    });
+  }
+});
+
+// Mark notification as read
+app.put('/api/notifications/:id/read', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const notification = await Notification.findById(id);
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+    
+    if (notification.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    notification.readAt = new Date();
+    await notification.save();
+    
+    res.json({
+      success: true,
+      message: 'Notification marked as read',
+      data: notification
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark notification as read'
+    });
+  }
+});
+
+// Mark all notifications as read
+app.put('/api/notifications/read-all', authenticate, async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { 
+        recipient: req.user._id,
+        readAt: { $exists: false }
+      },
+      { 
+        readAt: new Date()
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: 'All notifications marked as read'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark all notifications as read'
+    });
+  }
+});
+
+// Delete notification
+app.delete('/api/notifications/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const notification = await Notification.findById(id);
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+    
+    if (notification.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    await Notification.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Notification deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete notification'
+    });
+  }
+});
+
+// Clear all notifications
+app.delete('/api/notifications', authenticate, async (req, res) => {
+  try {
+    await Notification.deleteMany({ recipient: req.user._id });
+    
+    res.json({
+      success: true,
+      message: 'All notifications cleared'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear notifications'
+    });
+  }
+});
+
+// Get notification settings
+app.get('/api/notifications/settings', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('notificationSettings');
+    
+    res.json({
+      success: true,
+      data: user.notificationSettings || {
+        email: true,
+        push: true,
+        inApp: true,
+        jobAlerts: true,
+        connectionRequests: true,
+        messages: true,
+        communityUpdates: true
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notification settings'
+    });
+  }
+});
+
+// Update notification settings
+app.put('/api/notifications/settings', authenticate, [
+  body('settings').isObject()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { settings } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { notificationSettings: settings },
+      { new: true }
+    ).select('notificationSettings');
+    
+    res.json({
+      success: true,
+      message: 'Notification settings updated successfully',
+      data: user.notificationSettings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update notification settings'
+    });
+  }
+});
+
+// ===== VERIFICATION SYSTEM ROUTES =====
+
+// Get user's verifications
+app.get('/api/verification/my-verifications', authenticate, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status } = req.query;
+    
+    const query = { user: req.user._id };
+    if (status) {
+      query.status = status;
+    }
+    
+    const verifications = await Verification.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Verification.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        verifications,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch verifications'
+    });
+  }
+});
+
+// Submit verification
+app.post('/api/verification/submit', authenticate, [
+  body('type').isIn(['identity', 'employment', 'education', 'company']),
+  body('documents').isArray({ min: 1 }),
+  body('documents.*.type').notEmpty(),
+  body('documents.*.url').notEmpty(),
+  body('documents.*.filename').notEmpty(),
+  body('additionalData').optional().isObject()
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { type, documents, additionalData } = req.body;
+    
+    // Check if user already has a pending verification of this type
+    const existingVerification = await Verification.findOne({
+      user: req.user._id,
+      type,
+      status: 'pending'
+    });
+    
+    if (existingVerification) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have a pending verification of this type'
+      });
+    }
+    
+    // Create verification
+    const verification = new Verification({
+      user: req.user._id,
+      type,
+      documents,
+      additionalData: additionalData || {},
+      status: 'pending',
+      submittedAt: new Date()
+    });
+    
+    await verification.save();
+    
+    res.status(201).json({
+      success: true,
+      message: 'Verification submitted successfully',
+      data: verification
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit verification'
+    });
+  }
+});
+
+// Get verification by ID
+app.get('/api/verification/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const verification = await Verification.findById(id);
+    if (!verification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verification not found'
+      });
+    }
+    
+    // Check if user owns this verification or is admin
+    if (verification.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: verification
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch verification'
+    });
+  }
+});
+
+// Delete verification
+app.delete('/api/verification/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const verification = await Verification.findById(id);
+    if (!verification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verification not found'
+      });
+    }
+    
+    // Check if user owns this verification
+    if (verification.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    // Only allow deletion if status is pending
+    if (verification.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete verification that has been processed'
+      });
+    }
+    
+    await Verification.findByIdAndDelete(id);
+    
+    res.json({
+      success: true,
+      message: 'Verification deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete verification'
+    });
+  }
+});
+
+// ===== ADMIN VERIFICATION ROUTES =====
+
+// Get all verifications (admin only)
+app.get('/api/verification/admin/all', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const { page = 1, limit = 20, status, type } = req.query;
+    
+    const query = {};
+    if (status) {
+      query.status = status;
+    }
+    if (type) {
+      query.type = type;
+    }
+    
+    const verifications = await Verification.find(query)
+      .populate('user', 'fullName email profilePhoto role')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+    
+    const total = await Verification.countDocuments(query);
+    
+    res.json({
+      success: true,
+      data: {
+        verifications,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch verifications'
+    });
+  }
+});
+
+// Update verification (admin only)
+app.put('/api/verification/admin/:id', authenticate, [
+  body('status').isIn(['pending', 'approved', 'rejected']),
+  body('rejectionReason').optional().trim().isLength({ max: 500 }),
+  body('notes').optional().trim().isLength({ max: 1000 })
+], async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { id } = req.params;
+    const { status, rejectionReason, notes } = req.body;
+    
+    const verification = await Verification.findById(id);
+    if (!verification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verification not found'
+      });
+    }
+    
+    verification.status = status;
+    verification.reviewedBy = req.user._id;
+    verification.reviewedAt = new Date();
+    
+    if (rejectionReason) {
+      verification.rejectionReason = rejectionReason;
+    }
+    
+    if (notes) {
+      verification.adminNotes = notes;
+    }
+    
+    await verification.save();
+    
+    res.json({
+      success: true,
+      message: 'Verification updated successfully',
+      data: verification
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update verification'
+    });
+  }
+});
+
+// Get verification statistics (admin only)
+app.get('/api/verification/admin/stats', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const stats = await Verification.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const typeStats = await Verification.aggregate([
+      {
+        $group: {
+          _id: '$type',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        statusStats: stats,
+        typeStats: typeStats,
+        total: stats.reduce((sum, stat) => sum + stat.count, 0)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch verification stats'
+    });
+  }
+});
+
+// ===== ADMIN SYSTEM ROUTES =====
+
+// Get dashboard analytics (admin only)
+app.get('/api/admin/analytics/dashboard', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const { period = 30 } = req.query; // days
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(period));
+    
+    const [
+      totalUsers,
+      totalJobs,
+      totalApplications,
+      totalTransactions,
+      newUsers,
+      newJobs,
+      newApplications,
+      newTransactions
+    ] = await Promise.all([
+      User.countDocuments(),
+      Job.countDocuments(),
+      Application.countDocuments(),
+      Transaction.countDocuments(),
+      User.countDocuments({ createdAt: { $gte: startDate } }),
+      Job.countDocuments({ createdAt: { $gte: startDate } }),
+      Application.countDocuments({ createdAt: { $gte: startDate } }),
+      Transaction.countDocuments({ createdAt: { $gte: startDate } })
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        total: {
+          users: totalUsers,
+          jobs: totalJobs,
+          applications: totalApplications,
+          transactions: totalTransactions
+        },
+        recent: {
+          users: newUsers,
+          jobs: newJobs,
+          applications: newApplications,
+          transactions: newTransactions
+        },
+        period: parseInt(period)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch dashboard analytics'
+    });
+  }
+});
+
+// Get user analytics (admin only)
+app.get('/api/admin/analytics/users', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const { period = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(period));
+    
+    const userStats = await User.aggregate([
+      {
+        $group: {
+          _id: '$role',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const recentUsers = await User.find({
+      createdAt: { $gte: startDate }
+    }).select('fullName email role createdAt');
+    
+    res.json({
+      success: true,
+      data: {
+        roleStats: userStats,
+        recentUsers,
+        period: parseInt(period)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user analytics'
+    });
+  }
+});
+
+// Get job analytics (admin only)
+app.get('/api/admin/analytics/jobs', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const { period = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(period));
+    
+    const jobStats = await Job.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const categoryStats = await Job.aggregate([
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        statusStats: jobStats,
+        categoryStats: categoryStats,
+        period: parseInt(period)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch job analytics'
+    });
+  }
+});
+
+// Get financial analytics (admin only)
+app.get('/api/admin/analytics/financial', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const { period = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(period));
+    
+    const financialStats = await Transaction.aggregate([
+      {
+        $match: {
+          status: 'completed',
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: '$type',
+          totalAmount: { $sum: '$amount' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const totalRevenue = financialStats.reduce((sum, stat) => sum + stat.totalAmount, 0);
+    
+    res.json({
+      success: true,
+      data: {
+        transactionStats: financialStats,
+        totalRevenue,
+        period: parseInt(period)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch financial analytics'
+    });
+  }
+});
+
+// Get moderation data (admin only)
+app.get('/api/admin/moderation', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const [
+      pendingJobs,
+      pendingVerifications,
+      reportedPosts,
+      reportedUsers
+    ] = await Promise.all([
+      Job.countDocuments({ status: 'pending' }),
+      Verification.countDocuments({ status: 'pending' }),
+      CommunityPost.countDocuments({ status: 'reported' }),
+      User.countDocuments({ status: 'reported' })
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        pendingJobs,
+        pendingVerifications,
+        reportedPosts,
+        reportedUsers
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch moderation data'
+    });
+  }
+});
+
+// Approve user verification (admin only)
+app.put('/api/admin/verification/:userId', authenticate, [
+  body('status').isIn(['approved', 'rejected']),
+  body('reason').optional().trim().isLength({ max: 500 })
+], async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { userId } = req.params;
+    const { status, reason } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    user.verificationStatus = status;
+    if (reason) {
+      user.verificationNotes = reason;
+    }
+    
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: `User verification ${status} successfully`,
+      data: user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user verification'
+    });
+  }
+});
+
+// Approve job (admin only)
+app.put('/api/admin/jobs/:jobId', authenticate, [
+  body('status').isIn(['approved', 'rejected']),
+  body('reason').optional().trim().isLength({ max: 500 })
+], async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { jobId } = req.params;
+    const { status, reason } = req.body;
+    
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found'
+      });
+    }
+    
+    job.status = status;
+    if (reason) {
+      job.adminNotes = reason;
+    }
+    
+    await job.save();
+    
+    res.json({
+      success: true,
+      message: `Job ${status} successfully`,
+      data: job
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update job status'
+    });
+  }
+});
+
+// Moderate community content (admin only)
+app.put('/api/admin/moderate/:contentType/:contentId', authenticate, [
+  body('action').isIn(['approve', 'reject', 'delete']),
+  body('reason').optional().trim().isLength({ max: 500 })
+], async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const { contentType, contentId } = req.params;
+    const { action, reason } = req.body;
+    
+    let Model;
+    if (contentType === 'post') {
+      Model = CommunityPost;
+    } else if (contentType === 'comment') {
+      Model = CommunityComment;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid content type'
+      });
+    }
+    
+    const content = await Model.findById(contentId);
+    if (!content) {
+      return res.status(404).json({
+        success: false,
+        message: 'Content not found'
+      });
+    }
+    
+    if (action === 'delete') {
+      await Model.findByIdAndDelete(contentId);
+    } else {
+      content.status = action === 'approve' ? 'active' : 'rejected';
+      if (reason) {
+        content.moderatorNotes = reason;
+      }
+      await content.save();
+    }
+    
+    res.json({
+      success: true,
+      message: `Content ${action}d successfully`,
+      data: content
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to moderate content'
+    });
+  }
+});
+
+// ===== SEARCH SYSTEM ROUTES =====
+
+// Global search
+app.get('/api/search', async (req, res) => {
+  try {
+    const { 
+      q, 
+      type = 'all', 
+      page = 1, 
+      limit = 20,
+      location,
+      category,
+      skills,
+      minRate,
+      maxRate,
+      experienceLevel,
+      isRemote,
+      userRole
+    } = req.query;
+    
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const searchQuery = q.trim();
+    const results = {
+      jobs: [],
+      users: [],
+      blogs: [],
+      community: []
+    };
+    
+    // Search jobs
+    if (type === 'all' || type === 'jobs') {
+      const jobQuery = {
+        $or: [
+          { title: { $regex: searchQuery, $options: 'i' } },
+          { description: { $regex: searchQuery, $options: 'i' } },
+          { company: { $regex: searchQuery, $options: 'i' } },
+          { skills: { $in: [new RegExp(searchQuery, 'i')] } }
+        ],
+        status: 'active'
+      };
+      
+      if (location) jobQuery.location = { $regex: location, $options: 'i' };
+      if (category) jobQuery.category = category;
+      if (skills) jobQuery.skills = { $in: skills.split(',') };
+      if (minRate) jobQuery.salary = { $gte: parseInt(minRate) };
+      if (maxRate) jobQuery.salary = { ...jobQuery.salary, $lte: parseInt(maxRate) };
+      if (experienceLevel) jobQuery.experienceLevel = experienceLevel;
+      if (isRemote) jobQuery.isRemote = isRemote === 'true';
+      
+      results.jobs = await Job.find(jobQuery)
+        .populate('employer', 'fullName company profilePhoto')
+        .limit(parseInt(limit))
+        .skip((parseInt(page) - 1) * parseInt(limit));
+    }
+    
+    // Search users
+    if (type === 'all' || type === 'users') {
+      const userQuery = {
+        $or: [
+          { fullName: { $regex: searchQuery, $options: 'i' } },
+          { email: { $regex: searchQuery, $options: 'i' } },
+          { skills: { $in: [new RegExp(searchQuery, 'i')] } },
+          { bio: { $regex: searchQuery, $options: 'i' } }
+        ]
+      };
+      
+      if (userRole) userQuery.role = userRole;
+      
+      results.users = await User.find(userQuery)
+        .select('fullName email profilePhoto role skills location bio')
+        .limit(parseInt(limit))
+        .skip((parseInt(page) - 1) * parseInt(limit));
+    }
+    
+    // Search blogs
+    if (type === 'all' || type === 'blogs') {
+      const blogQuery = {
+        $or: [
+          { title: { $regex: searchQuery, $options: 'i' } },
+          { content: { $regex: searchQuery, $options: 'i' } },
+          { tags: { $in: [new RegExp(searchQuery, 'i')] } }
+        ],
+        status: 'published'
+      };
+      
+      if (category) blogQuery.category = category;
+      
+      results.blogs = await Blog.find(blogQuery)
+        .populate('author', 'fullName profilePhoto')
+        .limit(parseInt(limit))
+        .skip((parseInt(page) - 1) * parseInt(limit));
+    }
+    
+    // Search community posts
+    if (type === 'all' || type === 'community') {
+      const communityQuery = {
+        $or: [
+          { title: { $regex: searchQuery, $options: 'i' } },
+          { content: { $regex: searchQuery, $options: 'i' } },
+          { tags: { $in: [new RegExp(searchQuery, 'i')] } }
+        ],
+        status: 'active'
+      };
+      
+      if (category) communityQuery.category = category;
+      
+      results.community = await CommunityPost.find(communityQuery)
+        .populate('author', 'fullName profilePhoto')
+        .limit(parseInt(limit))
+        .skip((parseInt(page) - 1) * parseInt(limit));
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        query: searchQuery,
+        type,
+        results,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to perform search'
+    });
+  }
+});
+
+// Get search suggestions
+app.get('/api/search/suggestions', async (req, res) => {
+  try {
+    const { q, type } = req.query;
+    
+    if (!q || q.trim().length < 2) {
+      return res.json({
+        success: true,
+        data: { suggestions: [] }
+      });
+    }
+    
+    const searchQuery = q.trim();
+    const suggestions = [];
+    
+    // Get job title suggestions
+    if (!type || type === 'jobs') {
+      const jobTitles = await Job.distinct('title', {
+        title: { $regex: searchQuery, $options: 'i' },
+        status: 'active'
+      }).limit(5);
+      
+      suggestions.push(...jobTitles.map(title => ({ text: title, type: 'job' })));
+    }
+    
+    // Get skill suggestions
+    if (!type || type === 'skills') {
+      const skills = await User.distinct('skills', {
+        skills: { $regex: searchQuery, $options: 'i' }
+      }).limit(5);
+      
+      suggestions.push(...skills.map(skill => ({ text: skill, type: 'skill' })));
+    }
+    
+    // Get company suggestions
+    if (!type || type === 'companies') {
+      const companies = await Job.distinct('company', {
+        company: { $regex: searchQuery, $options: 'i' },
+        status: 'active'
+      }).limit(5);
+      
+      suggestions.push(...companies.map(company => ({ text: company, type: 'company' })));
+    }
+    
+    res.json({
+      success: true,
+      data: { suggestions: suggestions.slice(0, 10) }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get search suggestions'
+    });
+  }
+});
+
+// Get trending searches
+app.get('/api/search/trending', async (req, res) => {
+  try {
+    // This would typically be implemented with a search analytics system
+    // For now, we'll return some mock trending searches
+    const trendingSearches = [
+      'React Developer',
+      'Python',
+      'Remote Jobs',
+      'Frontend Developer',
+      'Data Science',
+      'UI/UX Designer',
+      'Full Stack Developer',
+      'Machine Learning'
+    ];
+    
+    res.json({
+      success: true,
+      data: { trendingSearches }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get trending searches'
+    });
+  }
+});
+
+// Get search filters
+app.get('/api/search/filters', async (req, res) => {
+  try {
+    const [
+      jobCategories,
+      skills,
+      locations,
+      experienceLevels
+    ] = await Promise.all([
+      Job.distinct('category'),
+      User.distinct('skills'),
+      Job.distinct('location'),
+      Job.distinct('experienceLevel')
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        jobCategories: jobCategories.filter(Boolean),
+        skills: skills.filter(Boolean).slice(0, 50), // Limit to top 50 skills
+        locations: locations.filter(Boolean),
+        experienceLevels: experienceLevels.filter(Boolean)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get search filters'
+    });
+  }
+});
+
 export default app;
 
