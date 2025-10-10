@@ -1109,6 +1109,81 @@ app.post('/api/auth/google', [
   }
 });
 
+// Create job (employer only)
+app.post('/api/jobs', authenticate, [
+  body('title').trim().isLength({ min: 3, max: 100 }),
+  body('description').trim().isLength({ min: 10, max: 2000 }),
+  body('category').notEmpty(),
+  body('location').notEmpty(),
+  body('salary').isNumeric(),
+  body('skills').isArray({ min: 1 }),
+  body('experienceLevel').isIn(['entry', 'mid', 'senior']),
+  body('isRemote').isBoolean()
+], async (req, res) => {
+  try {
+    // Check if user is employer
+    if (req.user.role !== 'employer') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only employers can create jobs'
+      });
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const {
+      title,
+      description,
+      category,
+      location,
+      salary,
+      skills,
+      experienceLevel,
+      isRemote,
+      company,
+      requirements,
+      benefits
+    } = req.body;
+
+    const job = new Job({
+      title,
+      description,
+      category,
+      location,
+      salary: parseInt(salary),
+      skills,
+      experienceLevel,
+      isRemote,
+      company: company || req.user.company || req.user.fullName,
+      requirements: requirements || [],
+      benefits: benefits || [],
+      employer: req.user._id,
+      status: 'pending' // Jobs need admin approval
+    });
+
+    await job.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Job created successfully',
+      data: job
+    });
+  } catch (error) {
+    console.error('Create job error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create job'
+    });
+  }
+});
+
 // ===== APPLICATIONS ROUTES =====
 
 // Get user's applications
