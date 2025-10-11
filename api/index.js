@@ -70,16 +70,6 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // TEMPORARY DEBUG: Log the exact origin and allow it
-    console.log('CORS - DEBUG: Exact origin being blocked:', JSON.stringify(origin));
-    console.log('CORS - DEBUG: Origin type:', typeof origin);
-    console.log('CORS - DEBUG: Origin length:', origin ? origin.length : 'null');
-    console.log('CORS - DEBUG: Allowed origins:', JSON.stringify(allowedOrigins));
-    
-    // TEMPORARY: Allow all origins for debugging
-    console.log('CORS - TEMPORARILY ALLOWING ORIGIN:', origin);
-    return callback(null, true);
-    
     // Log and block all other origins
     console.log('CORS - Blocking origin:', origin);
     callback(new Error('Not allowed by CORS'));
@@ -355,7 +345,6 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Auth middleware - Decoded token:', decoded);
     const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
       return res.status(401).json({ success: false, message: 'Token is not valid' });
