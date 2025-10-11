@@ -42,28 +42,37 @@ app.use(cors({
     
     // Allow requests with no origin (OAuth POST from Google)
     if (!origin) {
+      console.log('CORS - Allowing request with no origin');
       return callback(null, true);
     }
     
     // Allow whitelisted origins
     if (allowedOrigins.includes(origin)) {
+      console.log('CORS - Allowing whitelisted origin:', origin);
       return callback(null, true);
     }
     
     // Allow any parttimepays domain
     if (origin && origin.includes('parttimepays')) {
+      console.log('CORS - Allowing parttimepays domain:', origin);
       return callback(null, true);
     }
     
-    // Allow Google OAuth requests
-    if (origin && origin.includes('google')) {
+    // Allow Google OAuth requests (more permissive)
+    if (origin && (origin.includes('google') || origin.includes('accounts.google.com') || origin.includes('googleusercontent.com'))) {
+      console.log('CORS - Allowing Google OAuth origin:', origin);
       return callback(null, true);
     }
     
     // For development, allow any localhost origin
     if (process.env.NODE_ENV === 'development' && origin && origin.includes('localhost')) {
+      console.log('CORS - Allowing localhost origin:', origin);
       return callback(null, true);
     }
+    
+    // TEMPORARY: Allow all origins for debugging
+    console.log('CORS - TEMPORARILY ALLOWING ALL ORIGINS:', origin);
+    return callback(null, true);
     
     // Log and block all other origins
     console.log('CORS - Blocking origin:', origin);
