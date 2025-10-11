@@ -70,6 +70,11 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // TEMPORARY: Allow all origins to debug Google OAuth
+    console.log('CORS - DEBUG: Blocking origin:', origin);
+    console.log('CORS - DEBUG: Temporarily allowing all origins for Google OAuth');
+    return callback(null, true);
+    
     // Log and block all other origins
     console.log('CORS - Blocking origin:', origin);
     callback(new Error('Not allowed by CORS'));
