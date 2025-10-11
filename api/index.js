@@ -70,10 +70,6 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // TEMPORARY: Allow all origins for debugging
-    console.log('CORS - TEMPORARILY ALLOWING ALL ORIGINS:', origin);
-    return callback(null, true);
-    
     // Log and block all other origins
     console.log('CORS - Blocking origin:', origin);
     callback(new Error('Not allowed by CORS'));
@@ -349,7 +345,8 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
+    console.log('Auth middleware - Decoded token:', decoded);
+    const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
       return res.status(401).json({ success: false, message: 'Token is not valid' });
     }
