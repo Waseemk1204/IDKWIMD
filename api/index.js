@@ -59,20 +59,24 @@ app.use(cors({
     }
     
     // Allow Google OAuth requests (more permissive)
-    if (origin && (origin.includes('google') || origin.includes('accounts.google.com') || origin.includes('googleusercontent.com'))) {
+    if (origin && (origin.includes('google') || origin.includes('accounts.google.com') || origin.includes('googleusercontent.com') || origin.includes('googleapis.com'))) {
       console.log('CORS - Allowing Google OAuth origin:', origin);
       return callback(null, true);
     }
     
-    // For development, allow any localhost origin
-    if (process.env.NODE_ENV === 'development' && origin && origin.includes('localhost')) {
-      console.log('CORS - Allowing localhost origin:', origin);
-      return callback(null, true);
-    }
+    // DEBUG: Log all origins for Google OAuth debugging
+    console.log('CORS - DEBUG: Origin details:', {
+      origin: origin,
+      type: typeof origin,
+      includesGoogle: origin && origin.includes('google'),
+      includesAccounts: origin && origin.includes('accounts'),
+      includesGoogleapis: origin && origin.includes('googleapis'),
+      includesGoogleusercontent: origin && origin.includes('googleusercontent')
+    });
     
-    // Log and block all other origins
-    console.log('CORS - Blocking origin:', origin);
-    callback(new Error('Not allowed by CORS'));
+    // TEMPORARY: Allow all origins for Google OAuth debugging
+    console.log('CORS - DEBUG: Temporarily allowing all origins for Google OAuth debugging');
+    return callback(null, true);
   },
   credentials: true
 }));
