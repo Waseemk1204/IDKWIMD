@@ -12,6 +12,12 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
   const buttonRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
+  // Test if component is mounting
+  useEffect(() => {
+    console.log('StickyFeedbackButton mounted');
+    return () => console.log('StickyFeedbackButton unmounted');
+  }, []);
+
   // Helper function to get human-readable page name from route
   const getPageName = (pathname: string): string => {
     const pathSegments = pathname.split('/').filter(Boolean);
@@ -169,13 +175,29 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
   };
 
   return (
-    <div ref={buttonRef} className={`fixed bottom-6 right-6 z-50 ${className}`}>
+    <div ref={buttonRef} className={`fixed bottom-6 right-6 z-[9999] ${className}`}>
+      {/* Test Button */}
+      <div className="mb-2">
+        <button
+          onClick={() => console.log('Test button clicked!')}
+          className="bg-red-500 text-white px-2 py-1 text-xs rounded"
+        >
+          TEST
+        </button>
+      </div>
+      
       {/* Main Feedback Button */}
       <div className="relative">
         <button
-          onClick={toggleExpanded}
-          className="w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Button clicked!');
+            toggleExpanded();
+          }}
+          className="w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group cursor-pointer"
           aria-label="Open feedback options"
+          style={{ pointerEvents: 'auto' }}
         >
           <MessageSquare className="w-6 h-6 group-hover:rotate-12 transition-transform duration-200" />
         </button>
