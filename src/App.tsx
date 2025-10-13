@@ -161,9 +161,6 @@ export function App() {
             <Toaster position="top-right" />
             <SpeedInsights />
             <Analytics />
-            
-            {/* Sticky Feedback Button */}
-            <StickyFeedbackButton />
           </div>
         </AuthProvider>
       </ThemeProvider>
