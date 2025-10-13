@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Mail, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { Button } from './Button';
 
 interface StickyFeedbackButtonProps {
@@ -9,6 +10,95 @@ interface StickyFeedbackButtonProps {
 export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ className = '' }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  // Helper function to get human-readable page name from route
+  const getPageName = (pathname: string): string => {
+    const pathSegments = pathname.split('/').filter(Boolean);
+    
+    // Handle root path
+    if (pathSegments.length === 0) {
+      return 'Home';
+    }
+
+    // Handle specific routes
+    const routeMap: { [key: string]: string } = {
+      'login': 'Login',
+      'signup': 'Sign Up',
+      'additional-info': 'Additional Info',
+      'onboarding': 'Onboarding',
+      'blogs': 'Blogs',
+      'about': 'About Us',
+      'contact': 'Contact Us',
+      'help': 'Customer Support',
+      'search': 'Search',
+      'privacy-policy': 'Privacy Policy',
+      'messaging': 'Messaging',
+      'notifications': 'Notifications',
+      'profile': 'Profile',
+      'unified-dashboard': 'Unified Dashboard',
+      'community': 'Community Hub',
+      'post-job': 'Post Job',
+      'wallet': 'Wallet',
+      'timesheets': 'Timesheet Approval',
+      'timesheet': 'Timesheet Submission',
+      'jobs': 'Jobs',
+      'applications': 'My Applications',
+      'gang-members': 'Gang Members',
+      'verification': 'Verification Requests',
+      'job-approval': 'Job Approval',
+      'disputes': 'Dispute Management',
+      'create': 'Create Post'
+    };
+
+    // Handle nested routes
+    if (pathSegments.length === 1) {
+      const segment = pathSegments[0];
+      if (routeMap[segment]) {
+        return routeMap[segment];
+      }
+      // Capitalize single segments
+      return segment.charAt(0).toUpperCase() + segment.slice(1);
+    }
+
+    // Handle multi-segment routes
+    if (pathSegments.length === 2) {
+      const [parent, child] = pathSegments;
+      
+      // Handle specific parent-child combinations
+      if (parent === 'employer') {
+        return `Employer ${routeMap[child] || child.charAt(0).toUpperCase() + child.slice(1)}`;
+      }
+      if (parent === 'employee') {
+        return `Employee ${routeMap[child] || child.charAt(0).toUpperCase() + child.slice(1)}`;
+      }
+      if (parent === 'admin') {
+        return `Admin ${routeMap[child] || child.charAt(0).toUpperCase() + child.slice(1)}`;
+      }
+      if (parent === 'community') {
+        return `Community ${routeMap[child] || child.charAt(0).toUpperCase() + child.slice(1)}`;
+      }
+      if (parent === 'blogs' && child) {
+        return 'Blog Post';
+      }
+      if (parent === 'onboarding') {
+        return `Onboarding ${child.charAt(0).toUpperCase() + child.slice(1)}`;
+      }
+    }
+
+    // Handle routes with IDs (like /jobs/:id)
+    if (pathSegments.length === 3 && pathSegments[2] === 'edit') {
+      return `${pathSegments[1].charAt(0).toUpperCase() + pathSegments[1].slice(1)} Edit`;
+    }
+    if (pathSegments.length === 3 && pathSegments[2] === 'applicants') {
+      return 'Job Applicants';
+    }
+
+    // Default fallback - capitalize each segment
+    return pathSegments.map(segment => 
+      segment.charAt(0).toUpperCase() + segment.slice(1)
+    ).join(' ');
+  };
 
   // Close expanded panel when clicking outside
   useEffect(() => {
@@ -29,14 +119,27 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
 
   const handleFeedbackClick = () => {
     console.log('Feedback button clicked'); // Debug log
-    const subject = encodeURIComponent('Part-Time Pays Site Feedback');
+    
+    const pageName = getPageName(location.pathname);
+    const currentUrl = window.location.href;
+    const currentDateTime = new Date().toLocaleString();
+    
+    const subject = encodeURIComponent(`Feedback for ParttimePays - ${pageName}`);
     const body = encodeURIComponent(
-      `Hi ParttimePays Team,\n\nI'd like to share some feedback about the website:\n\n` +
-      `Page: ${window.location.href}\n` +
-      `Date: ${new Date().toLocaleDateString()}\n\n` +
-      `Feedback:\n\n` +
-      `[Please share your thoughts, suggestions, or report any issues you encountered]\n\n` +
-      `Thank you!\n\n` +
+      `Hi ParttimePays Team,\n\n` +
+      `I'd like to share feedback about your website.\n\n` +
+      `Page: ${pageName}\n` +
+      `URL: ${currentUrl}\n` +
+      `Date: ${currentDateTime}\n\n` +
+      `=== FEEDBACK ===\n\n` +
+      `What I was trying to do:\n` +
+      `[Your response here]\n\n` +
+      `What happened / Issue encountered:\n` +
+      `[Your response here]\n\n` +
+      `Suggestions for improvement:\n` +
+      `[Your response here]\n\n` +
+      `=== END FEEDBACK ===\n\n` +
+      `Thank you for building this platform!\n\n` +
       `Best regards,\n` +
       `[Your Name]`
     );
