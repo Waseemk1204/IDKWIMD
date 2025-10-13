@@ -164,11 +164,17 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
 
   const toggleExpanded = () => {
     console.log('Toggle expanded clicked, current state:', isExpanded); // Debug log
+    console.log('Button clicked - toggling expanded state'); // Additional debug log
     setIsExpanded(!isExpanded);
   };
 
   return (
     <div ref={buttonRef} className={`fixed bottom-6 right-6 z-50 ${className}`}>
+      {/* Debug info */}
+      <div className="absolute -top-8 right-0 text-xs text-gray-500 bg-white p-1 rounded shadow">
+        Feedback Button Active
+      </div>
+      
       {/* Main Feedback Button */}
       <div className="relative">
         <Button
