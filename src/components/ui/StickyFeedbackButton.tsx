@@ -182,7 +182,10 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
         bottom: '24px',
         right: '24px',
         zIndex: 99999,
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        backgroundColor: 'yellow', // Make it very visible
+        padding: '10px',
+        border: '3px solid red'
       }}
       className={className}
     >
@@ -193,15 +196,16 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
           style={{
             backgroundColor: 'red',
             color: 'white',
-            padding: '4px 8px',
-            fontSize: '12px',
+            padding: '8px 16px',
+            fontSize: '14px',
             borderRadius: '4px',
             border: 'none',
             cursor: 'pointer',
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            display: 'block'
           }}
         >
-          TEST
+          TEST BUTTON
         </button>
       </div>
       
@@ -215,12 +219,12 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
             toggleExpanded();
           }}
           style={{
-            width: '56px',
-            height: '56px',
-            background: 'linear-gradient(to right, #2563eb, #9333ea)',
+            width: '60px',
+            height: '60px',
+            backgroundColor: 'blue',
             color: 'white',
             borderRadius: '50%',
-            border: 'none',
+            border: '3px solid green',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -228,11 +232,12 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
             pointerEvents: 'auto',
             position: 'relative',
-            zIndex: 100000
+            zIndex: 100000,
+            fontSize: '20px'
           }}
           aria-label="Open feedback options"
         >
-          <MessageSquare className="w-6 h-6" />
+          💬
         </button>
 
         {/* Expanded Options */}
