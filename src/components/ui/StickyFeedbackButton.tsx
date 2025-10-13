@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Mail, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Button } from './Button';
+import { createPortal } from 'react-dom';
 
 interface StickyFeedbackButtonProps {
   className?: string;
@@ -10,7 +11,7 @@ interface StickyFeedbackButtonProps {
 export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ className = '' }) => {
   console.log('StickyFeedbackButton rendering...');
   
-  return (
+  const buttonElement = (
     <div 
       style={{
         position: 'fixed',
@@ -21,7 +22,9 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
         padding: '20px',
         border: '5px solid red',
         fontSize: '20px',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        width: '300px',
+        height: '200px'
       }}
     >
       <div>FEEDBACK BUTTON TEST</div>
@@ -41,4 +44,7 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
       </button>
     </div>
   );
+
+  // Try to render directly to body
+  return createPortal(buttonElement, document.body);
 };
