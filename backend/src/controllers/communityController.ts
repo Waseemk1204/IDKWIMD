@@ -462,6 +462,7 @@ export const getPostComments = async (req: Request, res: Response) => {
       .populate('author', 'name email profileImage role')
       .populate({
         path: 'replies',
+        model: 'CommunityComment',
         match: { isDeleted: false },
         populate: {
           path: 'author',
