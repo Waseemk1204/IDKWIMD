@@ -170,20 +170,15 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
 
   return (
     <div ref={buttonRef} className={`fixed bottom-6 right-6 z-50 ${className}`}>
-      {/* Debug info */}
-      <div className="absolute -top-8 right-0 text-xs text-gray-500 bg-white p-1 rounded shadow">
-        Feedback Button Active
-      </div>
-      
       {/* Main Feedback Button */}
       <div className="relative">
-        <Button
+        <button
           onClick={toggleExpanded}
           className="w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group"
           aria-label="Open feedback options"
         >
           <MessageSquare className="w-6 h-6 group-hover:rotate-12 transition-transform duration-200" />
-        </Button>
+        </button>
 
         {/* Expanded Options */}
         {isExpanded && (
@@ -206,13 +201,13 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
               </p>
 
               {/* Feedback Button */}
-              <Button
+              <button
                 onClick={handleFeedbackClick}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4" />
                 Send Feedback Email
-              </Button>
+              </button>
 
               {/* Additional Info */}
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
