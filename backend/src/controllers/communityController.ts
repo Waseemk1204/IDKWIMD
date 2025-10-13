@@ -460,20 +460,29 @@ export const getPostComments = async (req: Request, res: Response) => {
       isApproved: true 
     })
       .populate('author', 'name email profileImage role')
-      .populate({
-        path: 'replies',
-        model: 'CommunityComment',
-        match: { isDeleted: false },
-        populate: {
-          path: 'author',
-          select: 'name email profileImage role'
-        },
-        options: { sort: { createdAt: 1 } }
-      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)
       .lean();
+
+    // Fetch replies for each comment separately to avoid populate issues
+    const commentsWithReplies = await Promise.all(
+      comments.map(async (comment) => {
+        const replies = await CommunityComment.find({
+          parentComment: comment._id,
+          isDeleted: false,
+          isApproved: true
+        })
+          .populate('author', 'name email profileImage role')
+          .sort({ createdAt: 1 })
+          .lean();
+        
+        return {
+          ...comment,
+          replies
+        };
+      })
+    );
 
     const total = await CommunityComment.countDocuments({ 
       post: id, 
@@ -484,7 +493,7 @@ export const getPostComments = async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: {
-        comments,
+        comments: commentsWithReplies,
         pagination: {
           currentPage: pageNum,
           totalPages: Math.ceil(total / limitNum),
