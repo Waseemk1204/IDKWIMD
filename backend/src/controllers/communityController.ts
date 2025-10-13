@@ -131,9 +131,16 @@ export const getCommunityPostById = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error fetching community post:', error);
+    console.error('Error details:', {
+      postId: id,
+      userId: (req as any).user?._id,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch community post'
+      message: 'Failed to fetch community post',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 };
@@ -179,9 +186,16 @@ export const createCommunityPost = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Error creating community post:', error);
+    console.error('Error details:', {
+      userId: req.user?._id,
+      title: req.body.title,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return res.status(500).json({
       success: false,
-      message: 'Failed to create post'
+      message: 'Failed to create post',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 };
@@ -389,9 +403,17 @@ export const addComment = async (req: AuthRequest, res: Response) => {
 
     await comment.save();
 
-    // Add comment to post
-    post.comments.push(comment._id as any);
-    await post.save();
+    // If this is a reply, add it to parent comment's replies array
+    if (parentComment) {
+      await CommunityComment.findByIdAndUpdate(
+        parentComment,
+        { $push: { replies: comment._id } }
+      );
+    } else {
+      // Only add top-level comments to post
+      post.comments.push(comment._id as any);
+      await post.save();
+    }
 
     // Populate author information
     await comment.populate('author', 'name email profileImage role');
@@ -403,9 +425,16 @@ export const addComment = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Error adding comment:', error);
+    console.error('Error details:', {
+      postId: id,
+      userId: req.user?._id,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return res.status(500).json({
       success: false,
-      message: 'Failed to add comment'
+      message: 'Failed to add comment',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 };
@@ -433,10 +462,12 @@ export const getPostComments = async (req: Request, res: Response) => {
       .populate('author', 'name email profileImage role')
       .populate({
         path: 'replies',
+        match: { isDeleted: false },
         populate: {
           path: 'author',
           select: 'name email profileImage role'
-        }
+        },
+        options: { sort: { createdAt: 1 } }
       })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -464,9 +495,15 @@ export const getPostComments = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error fetching comments:', error);
+    console.error('Error details:', {
+      postId: id,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch comments'
+      message: 'Failed to fetch comments',
+      error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 };

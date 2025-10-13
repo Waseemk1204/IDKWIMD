@@ -58,7 +58,7 @@ const communityPostSchema = new Schema<ICommunityPost>({
   category: {
     type: Schema.Types.ObjectId,
     ref: 'CommunityCategory',
-    required: true
+    required: false
   },
   type: {
     type: String,
