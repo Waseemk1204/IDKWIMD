@@ -439,7 +439,7 @@ export const addComment = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Get comments for a community post
+// Get comments for a community post - Fixed version
 export const getPostComments = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
