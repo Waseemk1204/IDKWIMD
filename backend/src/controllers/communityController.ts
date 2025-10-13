@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { CommunityPost, ICommunityPost } from '../models/CommunityPost';
 import { CommunityComment, ICommunityComment } from '../models/CommunityComment';
 import { IUser } from '../models/User';
@@ -454,35 +455,56 @@ export const getPostComments = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
+    // Get comments without any populate to avoid model registration issues
     const comments = await CommunityComment.find({ 
       post: id, 
       parentComment: null,
       isApproved: true 
     })
-      .populate('author', 'name email profileImage role')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)
       .lean();
 
-    // Fetch replies for each comment separately to avoid populate issues
-    const commentsWithReplies = await Promise.all(
-      comments.map(async (comment) => {
-        const replies = await CommunityComment.find({
-          parentComment: comment._id,
-          isDeleted: false,
-          isApproved: true
-        })
-          .populate('author', 'name email profileImage role')
-          .sort({ createdAt: 1 })
-          .lean();
-        
-        return {
-          ...comment,
-          replies
-        };
-      })
-    );
+    // Get all comment IDs to fetch authors separately
+    const commentIds = comments.map(comment => comment.author);
+    const authorIds = [...new Set(commentIds)]; // Remove duplicates
+    
+    // Fetch authors separately
+    const authors = await mongoose.model('User').find(
+      { _id: { $in: authorIds } },
+      'name email profileImage role'
+    ).lean();
+    
+    // Create author lookup map
+    const authorMap = new Map(authors.map(author => [author._id.toString(), author]));
+    
+    // Get all reply IDs
+    const replyIds = comments.flatMap(comment => comment.replies || []);
+    const uniqueReplyIds = [...new Set(replyIds)];
+    
+    // Fetch replies separately
+    const replies = await CommunityComment.find({
+      _id: { $in: uniqueReplyIds },
+      isDeleted: false,
+      isApproved: true
+    }).lean();
+    
+    // Create reply lookup map
+    const replyMap = new Map(replies.map(reply => [reply._id.toString(), reply]));
+    
+    // Combine comments with authors and replies
+    const commentsWithReplies = comments.map(comment => ({
+      ...comment,
+      author: authorMap.get(comment.author.toString()) || { name: 'Unknown', email: '', profileImage: '', role: 'user' },
+      replies: (comment.replies || []).map(replyId => {
+        const reply = replyMap.get(replyId.toString());
+        return reply ? {
+          ...reply,
+          author: authorMap.get(reply.author.toString()) || { name: 'Unknown', email: '', profileImage: '', role: 'user' }
+        } : null;
+      }).filter(Boolean)
+    }));
 
     const total = await CommunityComment.countDocuments({ 
       post: id, 
