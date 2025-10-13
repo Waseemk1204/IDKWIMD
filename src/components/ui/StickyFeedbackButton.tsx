@@ -175,19 +175,38 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
   };
 
   return (
-    <div ref={buttonRef} className={`fixed bottom-6 right-6 z-[9999] ${className}`}>
+    <div 
+      ref={buttonRef} 
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        zIndex: 99999,
+        pointerEvents: 'auto'
+      }}
+      className={className}
+    >
       {/* Test Button */}
-      <div className="mb-2">
+      <div style={{ marginBottom: '8px' }}>
         <button
           onClick={() => console.log('Test button clicked!')}
-          className="bg-red-500 text-white px-2 py-1 text-xs rounded"
+          style={{
+            backgroundColor: 'red',
+            color: 'white',
+            padding: '4px 8px',
+            fontSize: '12px',
+            borderRadius: '4px',
+            border: 'none',
+            cursor: 'pointer',
+            pointerEvents: 'auto'
+          }}
         >
           TEST
         </button>
       </div>
       
       {/* Main Feedback Button */}
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -195,11 +214,25 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
             console.log('Button clicked!');
             toggleExpanded();
           }}
-          className="w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group cursor-pointer"
+          style={{
+            width: '56px',
+            height: '56px',
+            background: 'linear-gradient(to right, #2563eb, #9333ea)',
+            color: 'white',
+            borderRadius: '50%',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+            pointerEvents: 'auto',
+            position: 'relative',
+            zIndex: 100000
+          }}
           aria-label="Open feedback options"
-          style={{ pointerEvents: 'auto' }}
         >
-          <MessageSquare className="w-6 h-6 group-hover:rotate-12 transition-transform duration-200" />
+          <MessageSquare className="w-6 h-6" />
         </button>
 
         {/* Expanded Options */}
