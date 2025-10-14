@@ -2154,7 +2154,7 @@ app.get('/api/community/:id/comments', async (req, res) => {
       });
     }
 
-    const post = await CommunityPost.findById(id).populate('comments');
+    const post = await CommunityPost.findById(id);
     if (!post) {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
