@@ -6,9 +6,9 @@ import { UnifiedUserContext, IUnifiedUserContext } from '../models/UnifiedUserCo
 import { ConnectionAnalytics } from '../models/ConnectionAnalytics';
 import { Connection } from '../models/Connection';
 import { CommunityPost } from '../models/CommunityPost';
-import { Job } from '../models/Job';
-import { Message } from '../models/Message';
-import { User } from '../models/User';
+import Job from '../models/Job';
+import Message from '../models/Message';
+import User from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
 
 export class UnifiedIntegrationService {

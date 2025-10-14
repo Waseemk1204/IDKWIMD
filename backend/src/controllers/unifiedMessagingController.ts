@@ -5,7 +5,7 @@ import Message from '../models/Message';
 import User from '../models/User';
 import { Connection } from '../models/Connection';
 import { CommunityPost } from '../models/CommunityPost';
-import { Application } from '../models/Application';
+import Application from '../models/Application';
 import { sendMessageToConversation } from '../services/socketService';
 import mongoose from 'mongoose';
 
@@ -500,14 +500,5 @@ export const getMessagingAnalytics = async (req: AuthRequest, res: Response): Pr
       message: 'Internal server error'
     });
   }
-};
-
-export {
-  createJobConversation,
-  createCommunityConversation,
-  createGangConversation,
-  getConversationSuggestions,
-  updateConnectionStrength,
-  getMessagingAnalytics
 };
 

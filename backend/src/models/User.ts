@@ -10,6 +10,7 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   phone?: string;
+  phoneNumber?: string; // Alternative field name for notifications
   profilePhoto?: string;
   
   // Role & Status
@@ -74,6 +75,17 @@ export interface IUser extends Document {
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
   lastLogin?: Date;
+  
+  // Notification preferences
+  pushSubscriptions?: Array<{
+    endpoint: string;
+    keys: {
+      p256dh: string;
+      auth: string;
+    };
+    userAgent?: string;
+    createdAt: Date;
+  }>;
   
   // Timestamps
   createdAt: Date;
@@ -335,7 +347,37 @@ const userSchema = new Schema<IUser>({
   },
   lastLogin: {
     type: Date
-  }
+  },
+  
+  // Notification preferences
+  phoneNumber: {
+    type: String,
+    trim: true,
+    match: [/^\+?[\d\s\-\(\)]+$/, 'Please enter a valid phone number']
+  },
+  pushSubscriptions: [{
+    endpoint: {
+      type: String,
+      required: true
+    },
+    keys: {
+      p256dh: {
+        type: String,
+        required: true
+      },
+      auth: {
+        type: String,
+        required: true
+      }
+    },
+    userAgent: {
+      type: String
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

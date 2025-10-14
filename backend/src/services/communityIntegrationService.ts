@@ -1,11 +1,11 @@
 import { CommunityPost } from '../models/CommunityPost';
-import { Conversation } from '../models/Conversation';
-import { Message } from '../models/Message';
+import Conversation from '../models/Conversation';
+import Message from '../models/Message';
 import { UnifiedNotification } from '../models/UnifiedNotification';
 import { UnifiedUserContext } from '../models/UnifiedUserContext';
 import { Connection } from '../models/Connection';
 import { CrossModuleActivity } from '../models/CrossModuleActivity';
-import { User } from '../models/User';
+import User from '../models/User';
 import mongoose from 'mongoose';
 
 export class CommunityIntegrationService {

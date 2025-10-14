@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import User from '../models/User';
 import { getNotificationService } from './notificationService';
+import { EnhancedNotificationService } from './EnhancedNotificationService';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -10,8 +11,9 @@ interface AuthenticatedSocket extends Socket {
 }
 
 export const setupSocketHandlers = (io: SocketIOServer): void => {
-  // Initialize notification service
+  // Initialize notification services
   getNotificationService(io);
+  EnhancedNotificationService.getInstance(io);
   // Authentication middleware for socket connections
   io.use(async (socket: AuthenticatedSocket, next) => {
     try {

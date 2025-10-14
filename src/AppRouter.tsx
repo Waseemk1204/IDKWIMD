@@ -35,6 +35,8 @@ import { JobApproval } from './pages/admin/JobApproval';
 import { DisputeManagement } from './pages/admin/DisputeManagement';
 // Shared pages
 import { Notifications } from './pages/shared/Notifications';
+import { EnhancedNotifications } from './pages/shared/EnhancedNotifications';
+import { NotificationPreferences } from './pages/shared/NotificationPreferences';
 import { EnhancedProfile } from './pages/shared/EnhancedProfile';
 import { AboutUs } from './pages/shared/AboutUs';
 import { Blogs } from './pages/shared/Blogs';
@@ -187,7 +189,8 @@ export function AppRouter() {
         <Route path="/notifications" element={<ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>}>
-          <Route index element={<Notifications />} />
+          <Route index element={<EnhancedNotifications />} />
+          <Route path="settings" element={<NotificationPreferences />} />
         </Route>
         <Route path="/profile" element={<ProtectedRoute>
               <DashboardLayout />

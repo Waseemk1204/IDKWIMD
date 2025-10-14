@@ -4,8 +4,8 @@ import { UnifiedUserContext } from '../models/UnifiedUserContext';
 import { CrossModuleActivity } from '../models/CrossModuleActivity';
 import { ConnectionAnalytics } from '../models/ConnectionAnalytics';
 import { CommunityPost } from '../models/CommunityPost';
-import { Application } from '../models/Application';
-import { Message } from '../models/Message';
+import Application from '../models/Application';
+import Message from '../models/Message';
 import User from '../models/User';
 import mongoose from 'mongoose';
 
@@ -430,10 +430,3 @@ export const getEcosystemIntegrationStatus = async (req: AuthRequest, res: Respo
   }
 };
 
-export {
-  getUnifiedUserContext,
-  getCrossModuleActivitySummary,
-  getUserNetworkInsights,
-  updateUserPreferences,
-  getEcosystemIntegrationStatus
-};

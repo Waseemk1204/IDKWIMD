@@ -22,6 +22,7 @@ import applicationRoutes from './routes/applications';
 import blogRoutes from './routes/blogs';
 import messageRoutes from './routes/messages';
 import notificationRoutes from './routes/notifications';
+import enhancedNotificationRoutes from './routes/enhancedNotifications';
 import communityRoutes from './routes/community';
 import enhancedCommunityRoutes from './routes/enhancedCommunity';
 import connectionRoutes from './routes/connections';
@@ -114,6 +115,7 @@ class Server {
     this.app.use('/api/v1/blogs', blogRoutes);
     this.app.use('/api/v1/messages', messageRoutes);
     this.app.use('/api/v1/notifications', notificationRoutes);
+    this.app.use('/api/v1/notifications-enhanced', enhancedNotificationRoutes);
     this.app.use('/api/v1/community', communityRoutes);
     this.app.use('/api/v1/community-enhanced', enhancedCommunityRoutes);
     this.app.use('/api/v1/connections', connectionRoutes);

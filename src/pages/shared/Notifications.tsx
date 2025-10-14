@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ElevatedCard, CardContent } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
-import { Link } from "react-router-dom"; // ✅ FIX: use react-router-dom instead of next/link
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { notificationService } from "../../services/notificationService";
 import {
   Bell,
   CheckCircle,
@@ -13,267 +14,201 @@ import {
   MessageSquare,
   Shield,
   Star,
-  Check, // ✅ FIX: using Check icon for mark all as read
+  Check,
 } from "lucide-react";
 
 interface Notification {
-  id: string;
-  type: "success" | "warning" | "info" | "error";
+  _id: string;
+  type: string;
   title: string;
   message: string;
-  timestamp: string;
-  isRead: boolean;
-  icon: React.ReactNode;
-  action?: {
-    label: string;
-    href: string;
+  richContent?: {
+    metadata?: {
+      jobTitle?: string;
+      companyName?: string;
+      amount?: number;
+      senderName?: string;
+    };
+    actionButtons?: Array<{
+      label: string;
+      action: string;
+      url?: string;
+    }>;
   };
+  smart: {
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+  };
+  interaction: {
+    isRead: boolean;
+  };
+  createdAt: string;
+  timeAgo: string;
 }
-
-// Generate role-specific notifications
-const generateNotifications = (userRole: string): Notification[] => {
-  if (userRole === 'employer') {
-    return [
-      {
-        id: "1",
-        type: "info",
-        title: "New Job Application",
-        message:
-          "Aditya Sharma (4.8★) has applied for your 'Content Writer' position. Review their profile and portfolio.",
-        timestamp: "30 minutes ago",
-        isRead: false,
-        icon: <Briefcase className="h-5 w-5" />,
-        action: {
-          label: "Review Application",
-          href: "/employer/jobs",
-        },
-      },
-      {
-        id: "2",
-        type: "success",
-        title: "Payment Processed",
-        message:
-          "Payment of ₹5,000 has been successfully processed to Janu Patel for web development work.",
-        timestamp: "2 hours ago",
-        isRead: false,
-        icon: <DollarSign className="h-5 w-5" />,
-        action: {
-          label: "View Transaction",
-          href: "/employer/wallet",
-        },
-      },
-      {
-        id: "3",
-        type: "warning",
-        title: "Timesheet Approval Needed",
-        message:
-          "3 timesheets are pending your approval. Review and approve them to process payments on time.",
-        timestamp: "6 hours ago",
-        isRead: true,
-        icon: <Clock className="h-5 w-5" />,
-        action: {
-          label: "Review Timesheets",
-          href: "/employer/timesheets",
-        },
-      },
-      {
-        id: "4",
-        type: "success",
-        title: "Job Post Approved",
-        message:
-          'Your job posting "Digital Marketing Specialist" has been approved and is now live on the platform.',
-        timestamp: "1 day ago",
-        isRead: true,
-        icon: <CheckCircle className="h-5 w-5" />,
-        action: {
-          label: "View Job Post",
-          href: "/employer/jobs",
-        },
-      },
-      {
-        id: "5",
-        type: "info",
-        title: "Message from Worker",
-        message:
-          "Rahul Singh has sent you an update about the project milestone completion and next deliverables.",
-        timestamp: "2 days ago",
-        isRead: true,
-        icon: <MessageSquare className="h-5 w-5" />,
-        action: {
-          label: "Read Message",
-          href: "/messaging",
-        },
-      },
-      {
-        id: "6",
-        type: "success",
-        title: "Company Verification Renewed",
-        message:
-          "Your company verification has been renewed for another year. All premium employer features are now active.",
-        timestamp: "1 week ago",
-        isRead: true,
-        icon: <Shield className="h-5 w-5" />,
-        action: {
-          label: "View Profile",
-          href: "/profile",
-        },
-      },
-    ];
-  } else {
-    // Employee notifications
-    return [
-      {
-        id: "1",
-        type: "success",
-        title: "Payment Received",
-        message:
-          "You have received a payment of ₹8,000 from TechSolutions for your recent work on the web development project.",
-        timestamp: "10 minutes ago",
-        isRead: false,
-        icon: <DollarSign className="h-5 w-5" />,
-        action: {
-          label: "View Details",
-          href: "/employee/wallet",
-        },
-      },
-      {
-        id: "2",
-        type: "info",
-        title: "Job Application Approved",
-        message:
-          'Your application for "Content Writer" at Creative Agency has been approved. You can now start working on this project.',
-        timestamp: "2 hours ago",
-        isRead: false,
-        icon: <Briefcase className="h-5 w-5" />,
-        action: {
-          label: "View Job",
-          href: "/employee/jobs",
-        },
-      },
-      {
-        id: "3",
-        type: "warning",
-        title: "Timesheet Reminder",
-        message:
-          "Don't forget to submit your timesheet for this week. The deadline is tomorrow at 5 PM.",
-        timestamp: "4 hours ago",
-        isRead: true,
-        icon: <Clock className="h-5 w-5" />,
-        action: {
-          label: "Submit Now",
-          href: "/employee/timesheet",
-        },
-      },
-      {
-        id: "4",
-        type: "info",
-        title: "New Message",
-        message:
-          "Sarah from TechCorp has sent you a message regarding the project timeline and next steps.",
-        timestamp: "1 day ago",
-        isRead: true,
-        icon: <MessageSquare className="h-5 w-5" />,
-        action: {
-          label: "Read Message",
-          href: "/messaging",
-        },
-      },
-      {
-        id: "5",
-        type: "success",
-        title: "Profile Verified",
-        message:
-          "Congratulations! Your profile has been successfully verified. You now have access to premium job opportunities.",
-        timestamp: "2 days ago",
-        isRead: true,
-        icon: <Shield className="h-5 w-5" />,
-        action: {
-          label: "View Profile",
-          href: "/profile",
-        },
-      },
-      {
-        id: "6",
-        type: "info",
-        title: "New Job Matches",
-        message:
-          "We found 5 new job opportunities that match your skills and preferences. Check them out now!",
-        timestamp: "3 days ago",
-        isRead: true,
-        icon: <Star className="h-5 w-5" />,
-        action: {
-          label: "Browse Jobs",
-          href: "/employee/jobs",
-        },
-      },
-    ];
-  }
-};
 
 export const Notifications: React.FC = () => {
   const { user } = useAuth();
-  const [notifications, setNotifications] =
-    useState<Notification[]>(generateNotifications(user?.role || 'employee'));
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredNotifications = notifications.filter(
-    (notification) => filter === "all" || !notification.isRead
-  );
+  useEffect(() => {
+    loadNotifications();
+  }, [filter]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
+  const loadNotifications = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const params = {
+        unreadOnly: filter === "unread",
+        limit: 50
+      };
+      
+      const result = await notificationService.getNotifications(params);
+      setNotifications(result.notifications);
+    } catch (err) {
+      console.error('Failed to load notifications:', err);
+      setError('Failed to load notifications');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const filteredNotifications = notifications.filter(
+    (notification) => filter === "all" || !notification.interaction.isRead
+  );
+
+  const unreadCount = notifications.filter((n) => !n.interaction.isRead).length;
+
+  const markAsRead = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => 
+          n._id === id 
+            ? { ...n, interaction: { ...n.interaction, isRead: true } }
+            : n
+        )
+      );
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => 
+        prev.map((n) => ({ 
+          ...n, 
+          interaction: { ...n.interaction, isRead: true } 
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'job_application':
+      case 'job_approved':
+      case 'job_rejected':
+      case 'job_match':
+        return <Briefcase className="h-5 w-5" />;
+      case 'connection_request':
+      case 'connection_accepted':
+        return <Star className="h-5 w-5" />;
+      case 'message':
+      case 'message_reaction':
+        return <MessageSquare className="h-5 w-5" />;
+      case 'payment_received':
+      case 'payment_sent':
+        return <DollarSign className="h-5 w-5" />;
+      case 'verification_approved':
+      case 'verification_rejected':
+        return <Shield className="h-5 w-5" />;
+      default:
+        return <Bell className="h-5 w-5" />;
+    }
   };
 
   const getNotificationStyles = (
-    type: Notification["type"],
+    priority: string,
     isRead: boolean
   ) => {
-    const base =
-      "p-3 sm:p-4 rounded-lg sm:rounded-xl border-l-4";
+    const base = "p-3 sm:p-4 rounded-lg sm:rounded-xl border-l-4";
 
     if (isRead) {
       return `${base} bg-neutral-50 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600`;
     }
 
-    switch (type) {
-      case "success":
-        return `${base} bg-success-50 dark:bg-success-900/20 border-success-500`;
-      case "warning":
-        return `${base} bg-warning-50 dark:bg-warning-900/20 border-warning-500`;
-      case "error":
-        return `${base} bg-error-50 dark:bg-error-900/20 border-error-500`;
+    switch (priority) {
+      case "urgent":
+        return `${base} bg-red-50 dark:bg-red-900/20 border-red-500`;
+      case "high":
+        return `${base} bg-orange-50 dark:bg-orange-900/20 border-orange-500`;
+      case "medium":
+        return `${base} bg-blue-50 dark:bg-blue-900/20 border-blue-500`;
+      case "low":
+        return `${base} bg-gray-50 dark:bg-gray-900/20 border-gray-500`;
       default:
         return `${base} bg-primary-50 dark:bg-primary-900/20 border-primary-500`;
     }
   };
 
-  const getIconStyles = (type: Notification["type"], isRead: boolean) => {
-    const base =
-      "h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center transition-colors";
+  const getIconStyles = (priority: string, isRead: boolean) => {
+    const base = "h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center transition-colors";
 
     if (isRead) {
       return `${base} bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300`;
     }
 
-    switch (type) {
-      case "success":
-        return `${base} bg-success-100 dark:bg-success-800 text-success-600 dark:text-success-300`;
-      case "warning":
-        return `${base} bg-warning-100 dark:bg-warning-800 text-warning-600 dark:text-warning-300`;
-      case "error":
-        return `${base} bg-error-100 dark:bg-error-800 text-error-600 dark:text-error-300`;
+    switch (priority) {
+      case "urgent":
+        return `${base} bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300`;
+      case "high":
+        return `${base} bg-orange-100 dark:bg-orange-800 text-orange-600 dark:text-orange-300`;
+      case "medium":
+        return `${base} bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300`;
+      case "low":
+        return `${base} bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300`;
       default:
         return `${base} bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-300`;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 sm:space-y-6 animate-fade-in-up">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading notifications...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4 sm:space-y-6 animate-fade-in-up">
+        <div className="text-center py-8">
+          <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Failed to Load Notifications
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <Button onClick={loadNotifications} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in-up">
@@ -328,11 +263,11 @@ export const Notifications: React.FC = () => {
       <div className="space-y-3 sm:space-y-4">
         {filteredNotifications.length > 0 ? (
           filteredNotifications.map((n) => (
-            <div key={n.id} className={getNotificationStyles(n.type, n.isRead)}>
+            <div key={n._id} className={getNotificationStyles(n.smart.priority, n.interaction.isRead)}>
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="flex-shrink-0">
-                  <div className={getIconStyles(n.type, n.isRead)}>
-                    {n.icon}
+                  <div className={getIconStyles(n.smart.priority, n.interaction.isRead)}>
+                    {getNotificationIcon(n.type)}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -342,21 +277,37 @@ export const Notifications: React.FC = () => {
                         <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                           {n.title}
                         </p>
-                        {!n.isRead && (
+                        {!n.interaction.isRead && (
                           <div className="h-2 w-2 bg-primary-500 rounded-full flex-shrink-0" />
                         )}
                       </div>
                       <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 break-words">
                         {n.message}
                       </p>
+                      
+                      {/* Rich Content */}
+                      {n.richContent?.metadata && (
+                        <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                          {n.richContent.metadata.jobTitle && (
+                            <span>Job: {n.richContent.metadata.jobTitle}</span>
+                          )}
+                          {n.richContent.metadata.companyName && (
+                            <span> • {n.richContent.metadata.companyName}</span>
+                          )}
+                          {n.richContent.metadata.amount && (
+                            <span> • ₹{n.richContent.metadata.amount}</span>
+                          )}
+                        </div>
+                      )}
+                      
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-                        {n.timestamp}
+                        {n.timeAgo}
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 sm:ml-4">
-                      {!n.isRead && (
+                      {!n.interaction.isRead && (
                         <Button
-                          onClick={() => markAsRead(n.id)}
+                          onClick={() => markAsRead(n._id)}
                           variant="ghost"
                           size="sm"
                           leftIcon={<CheckCircle className="h-4 w-4" />}
@@ -366,13 +317,13 @@ export const Notifications: React.FC = () => {
                           <span className="sm:hidden">Read</span>
                         </Button>
                       )}
-                      {n.action && (
-                        <Link to={n.action.href} className="w-full sm:w-auto">
+                      {n.richContent?.actionButtons?.map((button, index) => (
+                        <Link key={index} to={button.url || '#'} className="w-full sm:w-auto">
                           <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                            {n.action.label}
+                            {button.label}
                           </Button>
                         </Link>
-                      )}
+                      ))}
                     </div>
                   </div>
                 </div>

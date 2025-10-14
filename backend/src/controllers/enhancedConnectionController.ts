@@ -7,6 +7,7 @@ import { IUser } from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
 import mongoose from 'mongoose';
 import User from '../models/User';
+import { sendConnectionRequest, followEmployer } from './connectionController';
 
 // Enhanced connection controller with analytics and recommendations
 

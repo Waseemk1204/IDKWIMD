@@ -584,16 +584,3 @@ export const searchMessages = async (req: AuthRequest, res: Response): Promise<v
   }
 };
 
-// Export all functions
-export {
-  getConversations,
-  createConversation,
-  getMessages,
-  sendMessage,
-  addReaction,
-  createThread,
-  markMessagesAsRead,
-  getUnreadCount,
-  searchMessages
-};
-

@@ -451,14 +451,3 @@ export const getNotificationAnalytics = async (req: AuthRequest, res: Response):
   }
 };
 
-export {
-  createCrossModuleNotification,
-  getUnifiedNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  getNotificationPreferences,
-  updateNotificationPreferences,
-  getCrossModuleActivity,
-  getSmartNotificationSuggestions,
-  getNotificationAnalytics
-};

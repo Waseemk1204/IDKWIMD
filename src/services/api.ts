@@ -1424,22 +1424,25 @@ class ApiService {
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.unreadOnly) queryParams.append('unreadOnly', params.unreadOnly.toString());
-    return this.request(`/notifications?${queryParams.toString()}`);
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.priority) queryParams.append('priority', params.priority);
+    if (params?.grouped) queryParams.append('grouped', params.grouped.toString());
+    return this.request(`/v1/notifications-enhanced?${queryParams.toString()}`);
   }
 
   async getNotificationStats(): Promise<ApiResponse> {
-    return this.request('/notifications/stats');
+    return this.request('/v1/notifications-enhanced/stats');
   }
 
   async markNotificationAsRead(id: string): Promise<ApiResponse> {
-    return this.request(`/notifications/${id}/read`, {
-      method: 'PUT',
+    return this.request(`/v1/notifications-enhanced/${id}/read`, {
+      method: 'PATCH',
     });
   }
 
   async markAllNotificationsAsRead(): Promise<ApiResponse> {
-    return this.request('/notifications/read-all', {
-      method: 'PUT',
+    return this.request('/v1/notifications-enhanced/mark-all-read', {
+      method: 'PATCH',
     });
   }
 
@@ -1456,13 +1459,27 @@ class ApiService {
   }
 
   async getNotificationSettings(): Promise<ApiResponse> {
-    return this.request('/notifications/settings');
+    return this.request('/v1/notifications-enhanced/preferences');
   }
 
   async updateNotificationSettings(settings: any): Promise<ApiResponse> {
-    return this.request('/notifications/settings', {
+    return this.request('/v1/notifications-enhanced/preferences', {
       method: 'PUT',
-      body: JSON.stringify({ settings }),
+      body: JSON.stringify(preferences),
+    });
+  }
+
+  async trackNotificationInteraction(id: string, action: string): Promise<ApiResponse> {
+    return this.request(`/v1/notifications-enhanced/${id}/interaction`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+  }
+
+  async createTestNotification(data: any): Promise<ApiResponse> {
+    return this.request('/v1/notifications-enhanced/test', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 
