@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, ThumbsUpIcon, MessageSquareIcon, ShareIcon, FlagIcon } from 'lucide-react';
+import { ArrowLeftIcon, ThumbsUpIcon, MessageSquareIcon, ShareIcon, FlagIcon, EyeIcon } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { formatDistanceToNow } from 'date-fns';
@@ -303,6 +303,10 @@ export const PostDetail: React.FC = () => {
               <MessageSquareIcon className="h-5 w-5" />
               <span>{comments.length}</span>
             </button>
+            <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400">
+              <EyeIcon className="h-5 w-5" />
+              <span>{post.views}</span>
+            </div>
             <button 
               onClick={handleShare}
               className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"

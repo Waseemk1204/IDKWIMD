@@ -307,6 +307,7 @@ export const CommunityHub: React.FC = () => {
                     timestamp={new Date(post.createdAt)} 
                     likes={post.likes} 
                     comments={post.commentCount || 0} 
+                    views={post.views || 0}
                     tags={post.tags} 
                   />
                 ))}

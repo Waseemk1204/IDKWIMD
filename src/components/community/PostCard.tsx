@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Avatar } from '../ui/Avatar';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageSquareIcon, ThumbsUpIcon } from 'lucide-react';
+import { MessageSquareIcon, ThumbsUpIcon, EyeIcon } from 'lucide-react';
 interface PostCardProps {
   id: string;
   title: string;
@@ -16,6 +16,7 @@ interface PostCardProps {
   timestamp: Date;
   likes: number;
   comments: number;
+  views?: number;
   tags?: string[];
 }
 export const PostCard: React.FC<PostCardProps> = ({
@@ -26,6 +27,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   timestamp,
   likes,
   comments,
+  views = 0,
   tags = []
 }) => {
   return <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
@@ -62,10 +64,14 @@ export const PostCard: React.FC<PostCardProps> = ({
             <ThumbsUpIcon className="h-4 w-4 mr-1" />
             <span>{likes}</span>
           </button>
-          <Link to={`/community/post/${id}`} className="flex items-center hover:text-blue-600 dark:hover:text-blue-400">
+          <Link to={`/community/post/${id}`} className="flex items-center hover:text-blue-600 dark:hover:text-blue-400 mr-4">
             <MessageSquareIcon className="h-4 w-4 mr-1" />
             <span>{comments}</span>
           </Link>
+          <div className="flex items-center">
+            <EyeIcon className="h-4 w-4 mr-1" />
+            <span>{views}</span>
+          </div>
         </div>
       </div>
     </div>;

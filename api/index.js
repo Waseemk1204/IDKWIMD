@@ -2004,6 +2004,9 @@ app.get('/api/community/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
+    // Increment view count
+    await CommunityPost.findByIdAndUpdate(id, { $inc: { views: 1 } });
+
     res.json({ success: true, data: { post } });
   } catch (error) {
     console.error('Get community post error:', error);
