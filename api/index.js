@@ -36,6 +36,9 @@ const allowedOrigins = [
   'http://localhost:3000'
 ].filter(Boolean);
 
+// Trust proxy for accurate IP addresses
+app.set('trust proxy', true);
+
 app.use(cors({
   origin: function (origin, callback) {
     console.log('CORS - Request origin:', origin);
@@ -229,6 +232,26 @@ const communityPostSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const CommunityPost = mongoose.model('CommunityPost', communityPostSchema);
+
+// View tracking schema to prevent manipulation
+const viewTrackingSchema = new mongoose.Schema({
+  postId: { type: mongoose.Schema.Types.ObjectId, ref: 'CommunityPost', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Optional for anonymous users
+  ipAddress: { type: String, required: true },
+  userAgent: { type: String },
+  sessionId: { type: String }, // Browser session ID
+  viewStartedAt: { type: Date, default: Date.now },
+  viewDuration: { type: Number, default: 0 }, // in seconds
+  isValidView: { type: Boolean, default: false }, // Only true if duration >= 30 seconds
+  createdAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+// Index for efficient queries
+viewTrackingSchema.index({ postId: 1, ipAddress: 1, createdAt: -1 });
+viewTrackingSchema.index({ postId: 1, userId: 1, createdAt: -1 });
+viewTrackingSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 * 7 }); // Auto-delete after 7 days
+
+const ViewTracking = mongoose.model('ViewTracking', viewTrackingSchema);
 
 // Additional model schemas
 const walletSchema = new mongoose.Schema({
@@ -2004,12 +2027,132 @@ app.get('/api/community/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    // Increment view count
-    await CommunityPost.findByIdAndUpdate(id, { $inc: { views: 1 } });
-
+    // Don't increment views here - let the frontend handle view tracking
     res.json({ success: true, data: { post } });
   } catch (error) {
     console.error('Get community post error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Start tracking a view (called when user opens a post)
+app.post('/api/community/:id/view/start', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { sessionId } = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+    const userAgent = req.headers['user-agent'];
+    const userId = req.user ? req.user._id : null;
+
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Check if post exists
+    const post = await CommunityPost.findById(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    // Check for recent duplicate views (same IP/user within last 5 minutes)
+    const recentView = await ViewTracking.findOne({
+      postId: id,
+      $or: [
+        { ipAddress: ipAddress },
+        ...(userId ? [{ userId: userId }] : []),
+        ...(sessionId ? [{ sessionId: sessionId }] : [])
+      ],
+      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // Last 5 minutes
+    });
+
+    if (recentView) {
+      return res.json({ 
+        success: true, 
+        message: 'View already tracked recently',
+        data: { viewId: recentView._id, alreadyTracked: true }
+      });
+    }
+
+    // Create new view tracking record
+    const viewTracking = new ViewTracking({
+      postId: id,
+      userId: userId,
+      ipAddress: ipAddress,
+      userAgent: userAgent,
+      sessionId: sessionId,
+      viewStartedAt: new Date()
+    });
+
+    await viewTracking.save();
+
+    res.json({ 
+      success: true, 
+      message: 'View tracking started',
+      data: { viewId: viewTracking._id }
+    });
+  } catch (error) {
+    console.error('Start view tracking error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Complete a view (called when user has viewed for minimum duration)
+app.post('/api/community/:id/view/complete', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { viewId, duration } = req.body;
+    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+    const userId = req.user ? req.user._id : null;
+
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Find the view tracking record
+    const viewTracking = await ViewTracking.findOne({
+      _id: viewId,
+      postId: id,
+      $or: [
+        { ipAddress: ipAddress },
+        ...(userId ? [{ userId: userId }] : [])
+      ]
+    });
+
+    if (!viewTracking) {
+      return res.status(404).json({ success: false, message: 'View tracking not found' });
+    }
+
+    // Update view duration
+    viewTracking.viewDuration = duration;
+    
+    // Only count as valid view if duration >= 30 seconds (like YouTube)
+    const isValidView = duration >= 30;
+    viewTracking.isValidView = isValidView;
+
+    await viewTracking.save();
+
+    // Only increment post views if this is a valid view
+    if (isValidView) {
+      await CommunityPost.findByIdAndUpdate(id, { $inc: { views: 1 } });
+    }
+
+    res.json({ 
+      success: true, 
+      message: isValidView ? 'View counted' : 'View not counted (insufficient duration)',
+      data: { isValidView: isValidView }
+    });
+  } catch (error) {
+    console.error('Complete view tracking error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

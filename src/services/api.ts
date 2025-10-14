@@ -582,6 +582,21 @@ class ApiService {
     return this.request('/community/tags');
   }
 
+  // View tracking methods
+  async startViewTracking(postId: string, data: { sessionId: string }): Promise<ApiResponse> {
+    return this.request(`/community/${postId}/view/start`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async completeViewTracking(postId: string, data: { viewId: string; duration: number }): Promise<ApiResponse> {
+    return this.request(`/community/${postId}/view/complete`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Enhanced Community Hub methods
   async getEnhancedCommunityPosts(params?: {
     page?: number;

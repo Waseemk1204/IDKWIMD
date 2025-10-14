@@ -55,6 +55,57 @@ export const PostDetail: React.FC = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewTracking, setViewTracking] = useState<{
+    viewId: string | null;
+    startTime: number;
+    isTracking: boolean;
+  }>({
+    viewId: null,
+    startTime: 0,
+    isTracking: false
+  });
+
+  // Start view tracking
+  const startViewTracking = async () => {
+    if (!id || viewTracking.isTracking) return;
+    
+    try {
+      const sessionId = sessionStorage.getItem('sessionId') || 
+        (() => {
+          const newSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+          sessionStorage.setItem('sessionId', newSessionId);
+          return newSessionId;
+        })();
+
+      const response = await apiService.startViewTracking(id, { sessionId });
+      if (response.success) {
+        setViewTracking({
+          viewId: response.data.viewId,
+          startTime: Date.now(),
+          isTracking: true
+        });
+      }
+    } catch (error) {
+      console.error('Error starting view tracking:', error);
+    }
+  };
+
+  // Complete view tracking
+  const completeViewTracking = async () => {
+    if (!viewTracking.isTracking || !viewTracking.viewId || !id) return;
+    
+    try {
+      const duration = Math.floor((Date.now() - viewTracking.startTime) / 1000);
+      await apiService.completeViewTracking(id, {
+        viewId: viewTracking.viewId,
+        duration: duration
+      });
+      
+      setViewTracking(prev => ({ ...prev, isTracking: false }));
+    } catch (error) {
+      console.error('Error completing view tracking:', error);
+    }
+  };
 
   // Fetch post data
   useEffect(() => {
@@ -79,6 +130,9 @@ export const PostDetail: React.FC = () => {
           if (commentsResponse.success && commentsResponse.data?.comments) {
             setComments(commentsResponse.data.comments);
           }
+          
+          // Start view tracking after post is loaded
+          await startViewTracking();
         } else {
           setError('Post not found');
         }
@@ -92,6 +146,15 @@ export const PostDetail: React.FC = () => {
 
     fetchPost();
   }, [id]);
+
+  // Complete view tracking when component unmounts or user navigates away
+  useEffect(() => {
+    return () => {
+      if (viewTracking.isTracking) {
+        completeViewTracking();
+      }
+    };
+  }, [viewTracking.isTracking]);
 
   // Helper function to get time ago
   const getTimeAgo = (date: Date): string => {
