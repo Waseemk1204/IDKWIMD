@@ -60,6 +60,8 @@ interface Notification {
 }
 
 export const EnhancedNotifications: React.FC = () => {
+  console.log('EnhancedNotifications component loaded');
+  
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
