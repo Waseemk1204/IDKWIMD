@@ -4299,15 +4299,155 @@ app.get('/api/v1/notifications-enhanced', authenticate, async (req, res) => {
       grouped = false
     } = req.query;
 
-    // For now, return empty notifications to test the endpoint
-    // TODO: Implement proper notification service integration
+    // Create some test notifications for demonstration
+    const testNotifications = [
+      {
+        _id: 'test-notification-1',
+        type: 'job_application',
+        title: 'New Job Application Received',
+        message: 'You have received a new application for "Frontend Developer" position.',
+        richContent: {
+          image: null,
+          avatar: null,
+          preview: 'John Doe has applied for your Frontend Developer position.',
+          actionButtons: [
+            { label: 'View Application', action: 'view_application', url: '/applications', style: 'primary' },
+            { label: 'Mark as Read', action: 'mark_read', style: 'secondary' }
+          ]
+        },
+        context: {
+          module: 'jobs',
+          entityId: 'job-123',
+          entityType: 'Job',
+          metadata: { jobTitle: 'Frontend Developer', applicantName: 'John Doe' }
+        },
+        smart: {
+          priority: 'high',
+          relevanceScore: 0.9,
+          category: 'job_management',
+          tags: ['urgent', 'application', 'frontend']
+        },
+        interaction: {
+          isRead: false,
+          readAt: null,
+          clickedAt: null,
+          actionTaken: null
+        },
+        delivery: {
+          channels: { push: true, email: false, sms: false, inApp: true },
+          status: { push: 'delivered', email: 'pending', sms: 'pending', inApp: 'delivered' },
+          deliveredAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        _id: 'test-notification-2',
+        type: 'connection_request',
+        title: 'New Connection Request',
+        message: 'Sarah Johnson wants to connect with you.',
+        richContent: {
+          image: null,
+          avatar: 'https://via.placeholder.com/40',
+          preview: 'Sarah Johnson sent you a connection request.',
+          actionButtons: [
+            { label: 'Accept', action: 'accept_connection', url: '/connections', style: 'primary' },
+            { label: 'Decline', action: 'decline_connection', style: 'danger' }
+          ]
+        },
+        context: {
+          module: 'connections',
+          entityId: 'connection-456',
+          entityType: 'Connection',
+          metadata: { requesterName: 'Sarah Johnson', requesterTitle: 'UX Designer' }
+        },
+        smart: {
+          priority: 'medium',
+          relevanceScore: 0.7,
+          category: 'networking',
+          tags: ['connection', 'networking', 'ux']
+        },
+        interaction: {
+          isRead: false,
+          readAt: null,
+          clickedAt: null,
+          actionTaken: null
+        },
+        delivery: {
+          channels: { push: true, email: false, sms: false, inApp: true },
+          status: { push: 'delivered', email: 'pending', sms: 'pending', inApp: 'delivered' },
+          deliveredAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+        updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        _id: 'test-notification-3',
+        type: 'payment_received',
+        title: 'Payment Received',
+        message: 'You have received a payment of $500 for completed work.',
+        richContent: {
+          image: null,
+          avatar: null,
+          preview: 'Payment of $500 received from TechCorp Inc.',
+          actionButtons: [
+            { label: 'View Details', action: 'view_payment', url: '/wallet', style: 'primary' },
+            { label: 'Mark as Read', action: 'mark_read', style: 'secondary' }
+          ]
+        },
+        context: {
+          module: 'wallet',
+          entityId: 'payment-789',
+          entityType: 'Payment',
+          metadata: { amount: 500, currency: 'USD', payer: 'TechCorp Inc.' }
+        },
+        smart: {
+          priority: 'urgent',
+          relevanceScore: 1.0,
+          category: 'financial',
+          tags: ['payment', 'urgent', 'financial']
+        },
+        interaction: {
+          isRead: true,
+          readAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+          clickedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          actionTaken: 'view_payment'
+        },
+        delivery: {
+          channels: { push: true, email: true, sms: false, inApp: true },
+          status: { push: 'delivered', email: 'delivered', sms: 'pending', inApp: 'delivered' },
+          deliveredAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+        updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+      }
+    ];
+
+    // Filter notifications based on query parameters
+    let filteredNotifications = testNotifications;
+    
+    if (unreadOnly === 'true') {
+      filteredNotifications = testNotifications.filter(n => !n.interaction.isRead);
+    }
+    
+    if (type) {
+      filteredNotifications = filteredNotifications.filter(n => n.type === type);
+    }
+    
+    if (priority) {
+      filteredNotifications = filteredNotifications.filter(n => n.smart.priority === priority);
+    }
+
     const result = {
-      notifications: [],
-      totalCount: 0,
-      unreadCount: 0,
+      notifications: filteredNotifications,
+      totalCount: filteredNotifications.length,
+      unreadCount: testNotifications.filter(n => !n.interaction.isRead).length,
       page: parseInt(page),
       limit: parseInt(limit),
-      totalPages: 0
+      totalPages: Math.ceil(filteredNotifications.length / parseInt(limit))
     };
 
     console.log('Enhanced notification API result:', result);
