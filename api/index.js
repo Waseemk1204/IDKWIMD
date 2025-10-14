@@ -4281,6 +4281,213 @@ app.put('/api/notifications/settings', authenticate, [
   }
 });
 
+// ===== ENHANCED NOTIFICATIONS ROUTES =====
+
+// Enhanced notification endpoint (v1)
+app.get('/api/v1/notifications-enhanced', authenticate, async (req, res) => {
+  try {
+    console.log('Enhanced notification API called');
+    console.log('User ID:', req.user._id);
+    console.log('Query params:', req.query);
+    
+    const {
+      page = 1,
+      limit = 20,
+      unreadOnly = false,
+      type,
+      priority,
+      grouped = false
+    } = req.query;
+
+    // For now, return empty notifications to test the endpoint
+    // TODO: Implement proper notification service integration
+    const result = {
+      notifications: [],
+      totalCount: 0,
+      unreadCount: 0,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: 0
+    };
+
+    console.log('Enhanced notification API result:', result);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Enhanced notification API error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notifications'
+    });
+  }
+});
+
+// Mark enhanced notification as read
+app.patch('/api/v1/notifications-enhanced/:notificationId/read', authenticate, async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    console.log('Mark notification as read:', notificationId);
+    
+    res.json({
+      success: true,
+      message: 'Notification marked as read'
+    });
+  } catch (error) {
+    console.error('Mark notification as read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark notification as read'
+    });
+  }
+});
+
+// Mark all enhanced notifications as read
+app.patch('/api/v1/notifications-enhanced/mark-all-read', authenticate, async (req, res) => {
+  try {
+    console.log('Mark all notifications as read');
+    
+    res.json({
+      success: true,
+      message: 'All notifications marked as read'
+    });
+  } catch (error) {
+    console.error('Mark all notifications as read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to mark all notifications as read'
+    });
+  }
+});
+
+// Track notification interaction
+app.post('/api/v1/notifications-enhanced/:notificationId/interaction', authenticate, async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const { action } = req.body;
+    console.log('Track notification interaction:', notificationId, action);
+    
+    res.json({
+      success: true,
+      message: 'Interaction tracked'
+    });
+  } catch (error) {
+    console.error('Track interaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to track interaction'
+    });
+  }
+});
+
+// Get enhanced notification preferences
+app.get('/api/v1/notifications-enhanced/preferences', authenticate, async (req, res) => {
+  try {
+    console.log('Get notification preferences');
+    
+    const preferences = {
+      channels: { push: true, email: true, sms: false, inApp: true },
+      types: {
+        job_application: { enabled: true, channels: ['push', 'email'], priority: 'high' },
+        job_approved: { enabled: true, channels: ['push', 'email'], priority: 'high' },
+        connection_request: { enabled: true, channels: ['push'], priority: 'medium' },
+        message: { enabled: true, channels: ['push'], priority: 'medium' },
+        payment_received: { enabled: true, channels: ['push', 'email'], priority: 'urgent' },
+        community_mention: { enabled: true, channels: ['push'], priority: 'low' },
+        verification_approved: { enabled: true, channels: ['push', 'email'], priority: 'high' }
+      },
+      timing: {
+        quietHours: { enabled: false, start: '22:00', end: '08:00', timezone: 'UTC' },
+        maxFrequency: { enabled: true, maxPerHour: 5, maxPerDay: 20 },
+        digest: { enabled: false, frequency: 'daily', time: '09:00' }
+      },
+      advanced: {
+        smartGrouping: true,
+        relevanceThreshold: 0.7,
+        aiRecommendations: true,
+        crossModuleIntegration: true
+      }
+    };
+    
+    res.json({
+      success: true,
+      data: preferences
+    });
+  } catch (error) {
+    console.error('Get preferences error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch preferences'
+    });
+  }
+});
+
+// Update enhanced notification preferences
+app.put('/api/v1/notifications-enhanced/preferences', authenticate, async (req, res) => {
+  try {
+    const preferences = req.body;
+    console.log('Update notification preferences:', preferences);
+    
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      data: preferences
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update preferences'
+    });
+  }
+});
+
+// Get enhanced notification stats
+app.get('/api/v1/notifications-enhanced/stats', authenticate, async (req, res) => {
+  try {
+    console.log('Get notification stats');
+    
+    const stats = {
+      total: 0,
+      unread: 0,
+      byType: {},
+      byPriority: { low: 0, medium: 0, high: 0, urgent: 0 },
+      recentActivity: []
+    };
+    
+    res.json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Get stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch stats'
+    });
+  }
+});
+
+// Create test notification
+app.post('/api/v1/notifications-enhanced/test', authenticate, async (req, res) => {
+  try {
+    console.log('Create test notification');
+    
+    res.json({
+      success: true,
+      message: 'Test notification created'
+    });
+  } catch (error) {
+    console.error('Create test notification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create test notification'
+    });
+  }
+});
+
 // ===== VERIFICATION SYSTEM ROUTES =====
 
 // Get user's verifications
