@@ -440,95 +440,29 @@ export const addComment = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Get comments for a community post - Fixed version
+// Get comments for a community post - Simple test version
 export const getPostComments = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-    const skip = (pageNum - 1) * limitNum;
-
-    const post = await CommunityPost.findById(id);
-    if (!post || post.status === 'deleted') {
-      return res.status(404).json({ success: false, message: 'Post not found' });
-    }
-
-    // Get comments without any populate to avoid model registration issues
-    const comments = await CommunityComment.find({ 
-      post: id, 
-      parentComment: null,
-      isApproved: true 
-    })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum)
-      .lean();
-
-    // Get all comment IDs to fetch authors separately
-    const commentIds = comments.map(comment => comment.author);
-    const authorIds = [...new Set(commentIds)]; // Remove duplicates
     
-    // Fetch authors separately
-    const authors = await mongoose.model('User').find(
-      { _id: { $in: authorIds } },
-      'name email profileImage role'
-    ).lean();
-    
-    // Create author lookup map
-    const authorMap = new Map(authors.map(author => [author._id.toString(), author]));
-    
-    // Get all reply IDs
-    const replyIds = comments.flatMap(comment => comment.replies || []);
-    const uniqueReplyIds = [...new Set(replyIds)];
-    
-    // Fetch replies separately
-    const replies = await CommunityComment.find({
-      _id: { $in: uniqueReplyIds },
-      isDeleted: false,
-      isApproved: true
-    }).lean();
-    
-    // Create reply lookup map
-    const replyMap = new Map(replies.map(reply => [reply._id.toString(), reply]));
-    
-    // Combine comments with authors and replies
-    const commentsWithReplies = comments.map(comment => ({
-      ...comment,
-      author: authorMap.get(comment.author.toString()) || { name: 'Unknown', email: '', profileImage: '', role: 'user' },
-      replies: (comment.replies || []).map(replyId => {
-        const reply = replyMap.get(replyId.toString());
-        return reply ? {
-          ...reply,
-          author: authorMap.get(reply.author.toString()) || { name: 'Unknown', email: '', profileImage: '', role: 'user' }
-        } : null;
-      }).filter(Boolean)
-    }));
-
-    const total = await CommunityComment.countDocuments({ 
-      post: id, 
-      parentComment: null,
-      isApproved: true 
-    });
-
+    // Simple test - just return empty comments for now
     return res.json({
       success: true,
       data: {
-        comments: commentsWithReplies,
+        comments: [],
         pagination: {
-          currentPage: pageNum,
-          totalPages: Math.ceil(total / limitNum),
-          totalComments: total,
-          hasNext: pageNum < Math.ceil(total / limitNum),
-          hasPrev: pageNum > 1
+          currentPage: 1,
+          totalPages: 0,
+          totalComments: 0,
+          hasNext: false,
+          hasPrev: false
         }
       }
     });
   } catch (error) {
     console.error('Error fetching comments:', error);
     console.error('Error details:', {
-      postId: id,
+      postId: req.params.id,
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     });
