@@ -4647,7 +4647,11 @@ app.put('/api/admin/moderate/:contentType/:contentId', authenticate, [
     if (contentType === 'post') {
       Model = CommunityPost;
     } else if (contentType === 'comment') {
-      Model = CommunityComment;
+      // CommunityComment model not implemented yet, skip for now
+      return res.status(400).json({
+        success: false,
+        message: 'Comment moderation not implemented yet'
+      });
     } else {
       return res.status(400).json({
         success: false,
