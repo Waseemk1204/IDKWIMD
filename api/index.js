@@ -243,12 +243,15 @@ const viewTrackingSchema = new mongoose.Schema({
   viewStartedAt: { type: Date, default: Date.now },
   viewDuration: { type: Number, default: 0 }, // in seconds
   isValidView: { type: Boolean, default: false }, // Only true if duration >= 5 seconds
+  isCounted: { type: Boolean, default: false }, // Whether this view has been counted in post views
+  countedAt: { type: Date }, // When this view was counted
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 // Index for efficient queries
 viewTrackingSchema.index({ postId: 1, ipAddress: 1, createdAt: -1 });
 viewTrackingSchema.index({ postId: 1, userId: 1, createdAt: -1 });
+viewTrackingSchema.index({ isValidView: 1, isCounted: 1 }); // For scheduled job queries
 viewTrackingSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 * 7 }); // Auto-delete after 7 days
 
 const ViewTracking = mongoose.model('ViewTracking', viewTrackingSchema);
@@ -2141,15 +2144,13 @@ app.post('/api/community/:id/view/complete', async (req, res) => {
 
     await viewTracking.save();
 
-    // Only increment post views if this is a valid view
-    if (isValidView) {
-      await CommunityPost.findByIdAndUpdate(id, { $inc: { views: 1 } });
-    }
+    // Don't immediately increment post views - let the scheduled job handle it
+    // This prevents users from seeing immediate feedback
 
     res.json({ 
       success: true, 
-      message: isValidView ? 'View counted' : 'View not counted (insufficient duration - need 5+ seconds)',
-      data: { isValidView: isValidView }
+      message: isValidView ? 'View recorded (will be counted in next update)' : 'View not counted (insufficient duration - need 5+ seconds)',
+      data: { isValidView: isValidView, willBeCounted: isValidView }
     });
   } catch (error) {
     console.error('Complete view tracking error:', error);
@@ -2316,6 +2317,55 @@ app.get('/api/community/:id/comments', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
+// Scheduled job to update view counts every 9 minutes
+const updateViewCounts = async () => {
+  try {
+    console.log('🔄 Running scheduled view count update...');
+    
+    // Find all valid views that haven't been counted yet
+    const validViews = await ViewTracking.find({
+      isValidView: true,
+      isCounted: { $exists: false } // New field to track if already counted
+    });
+
+    if (validViews.length === 0) {
+      console.log('📊 No new views to count');
+      return;
+    }
+
+    // Group views by postId and count them
+    const viewCounts = {};
+    validViews.forEach(view => {
+      const postId = view.postId.toString();
+      viewCounts[postId] = (viewCounts[postId] || 0) + 1;
+    });
+
+    // Update post view counts
+    const updatePromises = Object.entries(viewCounts).map(async ([postId, count]) => {
+      await CommunityPost.findByIdAndUpdate(postId, { $inc: { views: count } });
+      console.log(`📈 Updated post ${postId} with ${count} new views`);
+    });
+
+    await Promise.all(updatePromises);
+
+    // Mark these views as counted
+    await ViewTracking.updateMany(
+      { _id: { $in: validViews.map(v => v._id) } },
+      { $set: { isCounted: true, countedAt: new Date() } }
+    );
+
+    console.log(`✅ Updated ${validViews.length} views across ${Object.keys(viewCounts).length} posts`);
+  } catch (error) {
+    console.error('❌ Error updating view counts:', error);
+  }
+};
+
+// Run the job every 9 minutes (540,000 ms)
+setInterval(updateViewCounts, 9 * 60 * 1000);
+
+// Run immediately on startup (for any views that accumulated while server was down)
+setTimeout(updateViewCounts, 30000); // Wait 30 seconds after startup
 
 // ===== WALLET ROUTES =====
 
