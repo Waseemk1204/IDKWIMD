@@ -23,8 +23,12 @@ export const EnhancedNotifications: React.FC = () => {
       console.log('API response:', response);
       
       if (response.data.success) {
-        setNotifications(response.data.data?.notifications || []);
+        const notificationsData = response.data.data?.notifications || [];
+        console.log('Setting notifications:', notificationsData);
+        console.log('Notifications length:', notificationsData.length);
+        setNotifications(notificationsData);
       } else {
+        console.log('API returned success: false');
         setNotifications([]);
       }
     } catch (error) {
@@ -52,6 +56,10 @@ export const EnhancedNotifications: React.FC = () => {
       </div>
     );
   }
+
+  console.log('Render - notifications state:', notifications);
+  console.log('Render - notifications length:', notifications.length);
+  console.log('Render - isLoading:', isLoading);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
