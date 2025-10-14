@@ -2063,17 +2063,38 @@ app.post('/api/community/:id/view/start', async (req, res) => {
     }
 
     // Check for recent duplicate views (same IP/user within last 5 minutes)
+    // But only if the previous view was already completed and counted
     const recentView = await ViewTracking.findOne({
       postId: id,
-      $or: [
-        { ipAddress: ipAddress },
-        ...(userId ? [{ userId: userId }] : []),
-        ...(sessionId ? [{ sessionId: sessionId }] : [])
-      ],
-      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // Last 5 minutes
+      $and: [
+        {
+          $or: [
+            { ipAddress: ipAddress },
+            ...(userId ? [{ userId: userId }] : []),
+            ...(sessionId ? [{ sessionId: sessionId }] : [])
+          ]
+        },
+        {
+          createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // Last 5 minutes
+        },
+        {
+          $or: [
+            { isValidView: true, isCounted: true }, // Already counted valid view
+            { isValidView: false } // Invalid view (less than 5 seconds)
+          ]
+        }
+      ]
     });
 
     if (recentView) {
+      console.log('🚫 Duplicate view prevented:', {
+        postId: id,
+        userId: userId,
+        ipAddress: ipAddress,
+        recentViewId: recentView._id,
+        recentViewValid: recentView.isValidView,
+        recentViewCounted: recentView.isCounted
+      });
       return res.json({ 
         success: true, 
         message: 'View already tracked recently',
@@ -2143,6 +2164,15 @@ app.post('/api/community/:id/view/complete', async (req, res) => {
     viewTracking.isValidView = isValidView;
 
     await viewTracking.save();
+
+    console.log('📝 View completed:', {
+      viewId: viewTracking._id,
+      postId: id,
+      duration: duration,
+      isValidView: isValidView,
+      userId: userId,
+      ipAddress: ipAddress
+    });
 
     // Don't immediately increment post views - let the scheduled job handle it
     // This prevents users from seeing immediate feedback
@@ -2326,13 +2356,31 @@ const updateViewCounts = async () => {
     // Find all valid views that haven't been counted yet
     const validViews = await ViewTracking.find({
       isValidView: true,
-      isCounted: { $exists: false } // New field to track if already counted
+      $or: [
+        { isCounted: { $exists: false } },
+        { isCounted: false }
+      ]
     });
+
+    console.log(`🔍 Found ${validViews.length} uncounted valid views`);
 
     if (validViews.length === 0) {
       console.log('📊 No new views to count');
       return;
     }
+
+    // Log details about the views found
+    validViews.forEach(view => {
+      console.log(`👁️ View details:`, {
+        viewId: view._id,
+        postId: view.postId,
+        userId: view.userId,
+        duration: view.viewDuration,
+        isValidView: view.isValidView,
+        isCounted: view.isCounted,
+        createdAt: view.createdAt
+      });
+    });
 
     // Group views by postId and count them
     const viewCounts = {};
@@ -2341,20 +2389,23 @@ const updateViewCounts = async () => {
       viewCounts[postId] = (viewCounts[postId] || 0) + 1;
     });
 
+    console.log(`📊 View counts by post:`, viewCounts);
+
     // Update post view counts
     const updatePromises = Object.entries(viewCounts).map(async ([postId, count]) => {
-      await CommunityPost.findByIdAndUpdate(postId, { $inc: { views: count } });
-      console.log(`📈 Updated post ${postId} with ${count} new views`);
+      const result = await CommunityPost.findByIdAndUpdate(postId, { $inc: { views: count } });
+      console.log(`📈 Updated post ${postId} with ${count} new views. Current total: ${result?.views + count}`);
     });
 
     await Promise.all(updatePromises);
 
     // Mark these views as counted
-    await ViewTracking.updateMany(
+    const updateResult = await ViewTracking.updateMany(
       { _id: { $in: validViews.map(v => v._id) } },
       { $set: { isCounted: true, countedAt: new Date() } }
     );
 
+    console.log(`✅ Updated ${updateResult.modifiedCount} view records as counted`);
     console.log(`✅ Updated ${validViews.length} views across ${Object.keys(viewCounts).length} posts`);
   } catch (error) {
     console.error('❌ Error updating view counts:', error);
@@ -2366,6 +2417,18 @@ setInterval(updateViewCounts, 9 * 60 * 1000);
 
 // Run immediately on startup (for any views that accumulated while server was down)
 setTimeout(updateViewCounts, 30000); // Wait 30 seconds after startup
+
+// Manual endpoint to trigger view count update (for testing)
+app.post('/api/admin/update-view-counts', async (req, res) => {
+  try {
+    console.log('🔧 Manual view count update triggered');
+    await updateViewCounts();
+    res.json({ success: true, message: 'View count update completed' });
+  } catch (error) {
+    console.error('Error in manual view count update:', error);
+    res.status(500).json({ success: false, message: 'Error updating view counts' });
+  }
+});
 
 // ===== WALLET ROUTES =====
 
