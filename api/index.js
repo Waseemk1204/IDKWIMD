@@ -2062,43 +2062,63 @@ app.post('/api/community/:id/view/start', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post not found' });
     }
 
-    // Check for recent duplicate views (same IP/user within last 5 minutes)
-    // But only if the previous view was already completed and counted
+    // Check for recent duplicate views with proper limits
+    // Allow multiple views but with time-based and daily limits
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
+
+    // Check for views within last hour (cooldown period)
     const recentView = await ViewTracking.findOne({
       postId: id,
-      $and: [
-        {
-          $or: [
-            { ipAddress: ipAddress },
-            ...(userId ? [{ userId: userId }] : []),
-            ...(sessionId ? [{ sessionId: sessionId }] : [])
-          ]
-        },
-        {
-          createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) } // Last 5 minutes
-        },
-        {
-          $or: [
-            { isValidView: true, isCounted: true }, // Already counted valid view
-            { isValidView: false } // Invalid view (less than 5 seconds)
-          ]
-        }
-      ]
+      $or: [
+        { ipAddress: ipAddress },
+        ...(userId ? [{ userId: userId }] : []),
+        ...(sessionId ? [{ sessionId: sessionId }] : [])
+      ],
+      createdAt: { $gte: oneHourAgo },
+      isValidView: true
     });
 
     if (recentView) {
-      console.log('🚫 Duplicate view prevented:', {
+      console.log('🚫 View blocked - within 1 hour cooldown:', {
         postId: id,
         userId: userId,
         ipAddress: ipAddress,
-        recentViewId: recentView._id,
-        recentViewValid: recentView.isValidView,
-        recentViewCounted: recentView.isCounted
+        lastViewTime: recentView.createdAt,
+        timeSinceLastView: Math.floor((now - recentView.createdAt) / 1000 / 60) + ' minutes'
       });
       return res.json({ 
         success: true, 
-        message: 'View already tracked recently',
-        data: { viewId: recentView._id, alreadyTracked: true }
+        message: 'View blocked - please wait 1 hour between views',
+        data: { viewId: recentView._id, blocked: true, reason: 'cooldown' }
+      });
+    }
+
+    // Check daily view limit (max 3 views per user per post per day)
+    const dailyViewCount = await ViewTracking.countDocuments({
+      postId: id,
+      $or: [
+        { ipAddress: ipAddress },
+        ...(userId ? [{ userId: userId }] : []),
+        ...(sessionId ? [{ sessionId: sessionId }] : [])
+      ],
+      createdAt: { $gte: oneDayAgo },
+      isValidView: true
+    });
+
+    if (dailyViewCount >= 3) {
+      console.log('🚫 View blocked - daily limit reached:', {
+        postId: id,
+        userId: userId,
+        ipAddress: ipAddress,
+        dailyViewCount: dailyViewCount,
+        limit: 3
+      });
+      return res.json({ 
+        success: true, 
+        message: 'Daily view limit reached (3 views per day)',
+        data: { blocked: true, reason: 'daily_limit', dailyCount: dailyViewCount }
       });
     }
 
@@ -2114,10 +2134,24 @@ app.post('/api/community/:id/view/start', async (req, res) => {
 
     await viewTracking.save();
 
+    console.log('✅ New view tracking started:', {
+      viewId: viewTracking._id,
+      postId: id,
+      userId: userId,
+      ipAddress: ipAddress,
+      sessionId: sessionId,
+      dailyViewCount: dailyViewCount + 1, // +1 because this is the new view
+      remainingViews: Math.max(0, 3 - (dailyViewCount + 1))
+    });
+
     res.json({ 
       success: true, 
       message: 'View tracking started',
-      data: { viewId: viewTracking._id }
+      data: { 
+        viewId: viewTracking._id,
+        dailyViewCount: dailyViewCount + 1,
+        remainingViews: Math.max(0, 3 - (dailyViewCount + 1))
+      }
     });
   } catch (error) {
     console.error('Start view tracking error:', error);
@@ -2427,6 +2461,63 @@ app.post('/api/admin/update-view-counts', async (req, res) => {
   } catch (error) {
     console.error('Error in manual view count update:', error);
     res.status(500).json({ success: false, message: 'Error updating view counts' });
+  }
+});
+
+// Check view limits for a user on a specific post
+app.get('/api/community/:id/view-limits', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+    const userId = req.user ? req.user._id : null;
+    const sessionId = req.query.sessionId;
+
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // Check recent view (cooldown)
+    const recentView = await ViewTracking.findOne({
+      postId: id,
+      $or: [
+        { ipAddress: ipAddress },
+        ...(userId ? [{ userId: userId }] : []),
+        ...(sessionId ? [{ sessionId: sessionId }] : [])
+      ],
+      createdAt: { $gte: oneHourAgo },
+      isValidView: true
+    });
+
+    // Check daily view count
+    const dailyViewCount = await ViewTracking.countDocuments({
+      postId: id,
+      $or: [
+        { ipAddress: ipAddress },
+        ...(userId ? [{ userId: userId }] : []),
+        ...(sessionId ? [{ sessionId: sessionId }] : [])
+      ],
+      createdAt: { $gte: oneDayAgo },
+      isValidView: true
+    });
+
+    const canView = !recentView && dailyViewCount < 3;
+    const timeUntilNextView = recentView ? 
+      Math.max(0, 60 - Math.floor((now - recentView.createdAt) / 1000 / 60)) : 0;
+
+    res.json({
+      success: true,
+      data: {
+        canView: canView,
+        dailyViewCount: dailyViewCount,
+        remainingViews: Math.max(0, 3 - dailyViewCount),
+        isInCooldown: !!recentView,
+        timeUntilNextView: timeUntilNextView,
+        lastViewTime: recentView?.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Error checking view limits:', error);
+    res.status(500).json({ success: false, message: 'Error checking view limits' });
   }
 });
 
