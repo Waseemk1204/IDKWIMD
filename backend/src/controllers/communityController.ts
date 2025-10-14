@@ -95,14 +95,7 @@ export const getCommunityPostById = async (req: Request, res: Response) => {
     const userId = (req as any).user?._id; // Get user ID if authenticated
 
     const post = await CommunityPost.findById(id)
-      .populate('author', 'name email profileImage role')
-      .populate({
-        path: 'comments',
-        populate: {
-          path: 'author',
-          select: 'name email profileImage role'
-        }
-      });
+      .populate('author', 'name email profileImage role');
 
     if (!post || post.status === 'deleted') {
       return res.status(404).json({
@@ -123,10 +116,7 @@ export const getCommunityPostById = async (req: Request, res: Response) => {
         post: {
           ...post.toObject(),
           userHasLiked,
-          comments: post.comments.map((comment: any) => ({
-            ...comment,
-            likes: comment.likes || 0
-          }))
+          comments: [] // Comments will be fetched separately via the comments endpoint
         }
       }
     });
