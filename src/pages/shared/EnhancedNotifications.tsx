@@ -73,21 +73,11 @@ export const EnhancedNotifications: React.FC = () => {
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
 
-  // Safety check for user
-  if (!user) {
-    console.log('No user found, returning loading state');
-    return (
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="text-center py-12">
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   useEffect(() => {
-    loadNotifications();
-  }, [filter, typeFilter, priorityFilter]);
+    if (user) {
+      loadNotifications();
+    }
+  }, [filter, typeFilter, priorityFilter, user]);
 
   const loadNotifications = async () => {
     setIsLoading(true);
@@ -312,6 +302,18 @@ export const EnhancedNotifications: React.FC = () => {
   // Ensure all arrays are properly initialized
   const safeNotifications = Array.isArray(notifications) ? notifications : [];
   const safeSelectedNotifications = Array.isArray(selectedNotifications) ? selectedNotifications : [];
+
+  // Safety check for user - moved after all hooks
+  if (!user) {
+    console.log('No user found, returning loading state');
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
