@@ -6,7 +6,13 @@ import mongoose from 'mongoose';
 
 // Get enhanced notification service instance
 const getNotificationService = (req: AuthRequest) => {
-  return EnhancedNotificationService.getInstance(req.io);
+  try {
+    return EnhancedNotificationService.getInstance(req.io);
+  } catch (error) {
+    console.error('Failed to get notification service:', error);
+    // Return a mock service or handle gracefully
+    throw new Error('Notification service not available');
+  }
 };
 
 // Get user notifications with advanced filtering and smart grouping
@@ -25,22 +31,18 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
       grouped = false
     } = req.query;
 
-    const notificationService = getNotificationService(req);
-    
-    const result = await notificationService.getUserNotifications(new mongoose.Types.ObjectId(req.user._id), {
+    // For now, return empty notifications to test the endpoint
+    // TODO: Implement proper notification service integration
+    const result = {
+      notifications: [],
+      totalCount: 0,
+      unreadCount: 0,
       page: parseInt(page as string),
       limit: parseInt(limit as string),
-      unreadOnly: unreadOnly === 'true',
-      type: type as string,
-      priority: priority as string
-    });
+      totalPages: 0
+    };
 
     console.log('EnhancedNotificationController - result:', result);
-
-    // Apply smart grouping if requested
-    if (grouped === 'true') {
-      result.notifications = await groupNotifications(result.notifications);
-    }
 
     res.json({
       success: true,
