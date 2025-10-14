@@ -242,7 +242,7 @@ const viewTrackingSchema = new mongoose.Schema({
   sessionId: { type: String }, // Browser session ID
   viewStartedAt: { type: Date, default: Date.now },
   viewDuration: { type: Number, default: 0 }, // in seconds
-  isValidView: { type: Boolean, default: false }, // Only true if duration >= 30 seconds
+  isValidView: { type: Boolean, default: false }, // Only true if duration >= 3 seconds
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
@@ -2135,8 +2135,8 @@ app.post('/api/community/:id/view/complete', async (req, res) => {
     // Update view duration
     viewTracking.viewDuration = duration;
     
-    // Only count as valid view if duration >= 30 seconds (like YouTube)
-    const isValidView = duration >= 30;
+    // Only count as valid view if duration >= 3 seconds (like Instagram)
+    const isValidView = duration >= 3;
     viewTracking.isValidView = isValidView;
 
     await viewTracking.save();
@@ -2148,7 +2148,7 @@ app.post('/api/community/:id/view/complete', async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: isValidView ? 'View counted' : 'View not counted (insufficient duration)',
+      message: isValidView ? 'View counted' : 'View not counted (insufficient duration - need 3+ seconds)',
       data: { isValidView: isValidView }
     });
   } catch (error) {
