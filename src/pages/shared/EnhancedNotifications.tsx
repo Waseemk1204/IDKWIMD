@@ -78,13 +78,12 @@ export const EnhancedNotifications: React.FC = () => {
   const loadNotifications = async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      
-      if (filter === 'unread') params.append('unreadOnly', 'true');
-      if (filter === 'high') params.append('priority', 'high');
-      if (filter === 'urgent') params.append('priority', 'urgent');
-      if (typeFilter !== 'all') params.append('type', typeFilter);
-      if (priorityFilter !== 'all') params.append('priority', priorityFilter);
+      console.log('Loading notifications with params:', {
+        limit: 50,
+        unreadOnly: filter === 'unread',
+        type: typeFilter !== 'all' ? typeFilter : undefined,
+        priority: priorityFilter !== 'all' ? priorityFilter : undefined
+      });
       
       const response = await api.getNotifications({
         limit: 50,
@@ -93,12 +92,22 @@ export const EnhancedNotifications: React.FC = () => {
         priority: priorityFilter !== 'all' ? priorityFilter : undefined
       });
       
+      console.log('Notification API response:', response);
+      
       if (response.data.success) {
+        console.log('Setting notifications:', response.data.data?.notifications || []);
         setNotifications(response.data.data?.notifications || []);
         setUnreadCount(response.data.data?.unreadCount || 0);
+      } else {
+        console.error('API returned success: false', response.data);
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
+      // Set empty arrays on error to prevent undefined issues
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }

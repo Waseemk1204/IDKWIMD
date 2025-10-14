@@ -1419,6 +1419,9 @@ class ApiService {
     page?: number;
     limit?: number;
     unreadOnly?: boolean;
+    type?: string;
+    priority?: string;
+    grouped?: boolean;
   }): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
@@ -1427,7 +1430,12 @@ class ApiService {
     if (params?.type) queryParams.append('type', params.type);
     if (params?.priority) queryParams.append('priority', params.priority);
     if (params?.grouped) queryParams.append('grouped', params.grouped.toString());
-    return this.request(`/v1/notifications-enhanced?${queryParams.toString()}`);
+    
+    const url = `/v1/notifications-enhanced?${queryParams.toString()}`;
+    console.log('API Service - getNotifications URL:', url);
+    console.log('API Service - getNotifications params:', params);
+    
+    return this.request(url);
   }
 
   async getNotificationStats(): Promise<ApiResponse> {

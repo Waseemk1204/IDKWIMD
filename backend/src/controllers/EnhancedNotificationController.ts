@@ -12,6 +12,10 @@ const getNotificationService = (req: AuthRequest) => {
 // Get user notifications with advanced filtering and smart grouping
 export const getNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    console.log('EnhancedNotificationController - getNotifications called');
+    console.log('User ID:', req.user._id);
+    console.log('Query params:', req.query);
+    
     const {
       page = 1,
       limit = 20,
@@ -30,6 +34,8 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
       type: type as string,
       priority: priority as string
     });
+
+    console.log('EnhancedNotificationController - result:', result);
 
     // Apply smart grouping if requested
     if (grouped === 'true') {
