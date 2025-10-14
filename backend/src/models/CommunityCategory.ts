@@ -92,7 +92,7 @@ communityCategorySchema.pre('save', function(next) {
 
 // Virtual for full path
 communityCategorySchema.virtual('fullPath').get(function() {
-  return this.parentCategory ? `${this.parentCategory.name} > ${this.name}` : this.name;
+  return this.parentCategory ? `${this.parentCategory.toString()} > ${this.name}` : this.name;
 });
 
 export const CommunityCategory = mongoose.model<ICommunityCategory>('CommunityCategory', communityCategorySchema);

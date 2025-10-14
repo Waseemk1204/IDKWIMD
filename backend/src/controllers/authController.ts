@@ -549,3 +549,33 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     });
   }
 };
+
+// Deactivate account
+export const deactivateAccount = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Account deactivated successfully'
+    });
+  } catch (error) {
+    console.error('Deactivate account error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};

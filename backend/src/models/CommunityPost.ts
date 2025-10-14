@@ -189,11 +189,11 @@ communityPostSchema.virtual('engagementScore').get(function() {
          (this.engagement.shares * 1.5) + (this.engagement.bookmarks * 1) + (this.views * 0.1);
 });
 
-// Virtual for is trending
-communityPostSchema.virtual('isTrending').get(function() {
+// Method for is trending
+communityPostSchema.methods.isTrending = function() {
   const hoursSinceCreation = (new Date().getTime() - this.createdAt.getTime()) / (1000 * 60 * 60);
   return this.engagementScore > 10 && hoursSinceCreation < 24;
-});
+};
 
 // Virtual for professional relevance score
 communityPostSchema.virtual('professionalRelevanceScore').get(function() {

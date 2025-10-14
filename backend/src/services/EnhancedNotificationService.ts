@@ -400,32 +400,32 @@ export class EnhancedNotificationService {
     switch (type) {
       case 'connection_request':
         buttons.push(
-          { label: 'Accept', action: 'accept_connection', style: 'primary' },
-          { label: 'Decline', action: 'decline_connection', style: 'secondary' }
+          { label: 'Accept', action: 'accept_connection', style: 'primary' as const },
+          { label: 'Decline', action: 'decline_connection', style: 'secondary' as const }
         );
         break;
       case 'job_application':
         buttons.push(
           { label: 'Review', action: 'view_application', url: '/employer/jobs' },
-          { label: 'Message', action: 'start_conversation', style: 'secondary' }
+          { label: 'Message', action: 'start_conversation', style: 'secondary' as const }
         );
         break;
       case 'job_approved':
         buttons.push(
           { label: 'View Job', action: 'view_job', url: '/employee/jobs' },
-          { label: 'Start Work', action: 'start_work', style: 'primary' }
+          { label: 'Start Work', action: 'start_work', style: 'primary' as const }
         );
         break;
       case 'payment_received':
         buttons.push(
           { label: 'View Details', action: 'view_payment', url: '/employee/wallet' },
-          { label: 'Withdraw', action: 'withdraw_funds', style: 'primary' }
+          { label: 'Withdraw', action: 'withdraw_funds', style: 'primary' as const }
         );
         break;
       case 'new_message':
         buttons.push(
           { label: 'Reply', action: 'reply_message', url: '/messaging' },
-          { label: 'View Chat', action: 'view_chat', style: 'secondary' }
+          { label: 'View Chat', action: 'view_chat', style: 'secondary' as const }
         );
         break;
     }

@@ -24,16 +24,16 @@ import messageRoutes from './routes/messages';
 import notificationRoutes from './routes/notifications';
 import enhancedNotificationRoutes from './routes/enhancedNotifications';
 import communityRoutes from './routes/community';
-import enhancedCommunityRoutes from './routes/enhancedCommunity';
+// import enhancedCommunityRoutes from './routes/enhancedCommunity';
 import connectionRoutes from './routes/connections';
 import searchRoutes from './routes/search';
 import walletRoutes from './routes/wallet';
 import adminRoutes from './routes/admin';
 import verificationRoutes from './routes/verification';
-import integrationRoutes from './routes/integration';
-import unifiedMessagingRoutes from './routes/unifiedMessaging';
-import unifiedNotificationRoutes from './routes/unifiedNotifications';
-import unifiedUserContextRoutes from './routes/unifiedUserContext';
+// import integrationRoutes from './routes/integration';
+// import unifiedMessagingRoutes from './routes/unifiedMessaging';
+// import unifiedNotificationRoutes from './routes/unifiedNotifications';
+// import unifiedUserContextRoutes from './routes/unifiedUserContext';
 
 // Import socket handlers
 import { setupSocketHandlers } from './services/socketService';
@@ -117,16 +117,16 @@ class Server {
     this.app.use('/api/v1/notifications', notificationRoutes);
     this.app.use('/api/v1/notifications-enhanced', enhancedNotificationRoutes);
     this.app.use('/api/v1/community', communityRoutes);
-    this.app.use('/api/v1/community-enhanced', enhancedCommunityRoutes);
+    // this.app.use('/api/v1/community-enhanced', enhancedCommunityRoutes);
     this.app.use('/api/v1/connections', connectionRoutes);
     this.app.use('/api/v1/search', searchRoutes);
     this.app.use('/api/v1/wallet', walletRoutes);
     this.app.use('/api/v1/admin', adminRoutes);
     this.app.use('/api/v1/verification', verificationRoutes);
-    this.app.use('/api/v1/integration', integrationRoutes);
-    this.app.use('/api/v1/unified-messaging', unifiedMessagingRoutes);
-    this.app.use('/api/v1/unified-notifications', unifiedNotificationRoutes);
-    this.app.use('/api/v1/unified-context', unifiedUserContextRoutes);
+    // this.app.use('/api/v1/integration', integrationRoutes);
+    // this.app.use('/api/v1/unified-messaging', unifiedMessagingRoutes);
+    // this.app.use('/api/v1/unified-notifications', unifiedNotificationRoutes);
+    // this.app.use('/api/v1/unified-context', unifiedUserContextRoutes);
 
     // 404 handler
     this.app.use('*', (req, res) => {

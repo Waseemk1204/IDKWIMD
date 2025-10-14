@@ -67,6 +67,9 @@ export interface IUnifiedUserContext extends Document {
   lastUpdated: Date;
   createdAt: Date;
   updatedAt: Date;
+  
+  // Methods
+  calculateNetworkMetrics(): void;
 }
 
 const unifiedUserContextSchema = new Schema<IUnifiedUserContext>({
@@ -334,9 +337,37 @@ unifiedUserContextSchema.methods.calculateNetworkMetrics = function() {
     this.crossModuleProfile.networkMetrics.engagementScore * 0.3;
 };
 
+// Method for calculate network metrics
+unifiedUserContextSchema.methods.calculateNetworkMetrics = function() {
+  // Calculate influence score based on connections and activity
+  this.crossModuleProfile.networkMetrics.influenceScore = 
+    Math.min(100, (this.crossModuleProfile.connections.totalConnections * 0.1) + 
+    (this.crossModuleProfile.activity.totalPosts * 0.2) + 
+    (this.crossModuleProfile.activity.totalComments * 0.1));
+  
+  // Calculate reach score based on followers and shares
+  this.crossModuleProfile.networkMetrics.reachScore = 
+    Math.min(100, (this.crossModuleProfile.connections.followers * 0.2) + 
+    (this.crossModuleProfile.activity.totalShares * 0.3));
+  
+  // Calculate engagement score based on interactions
+  this.crossModuleProfile.networkMetrics.engagementScore = 
+    Math.min(100, (this.crossModuleProfile.activity.totalLikes * 0.1) + 
+    (this.crossModuleProfile.activity.totalComments * 0.2) + 
+    (this.crossModuleProfile.activity.totalShares * 0.3));
+  
+  // Calculate total engagement
+  this.crossModuleProfile.totalEngagement = 
+    this.crossModuleProfile.networkMetrics.influenceScore * 0.4 +
+    this.crossModuleProfile.networkMetrics.reachScore * 0.3 +
+    this.crossModuleProfile.networkMetrics.engagementScore * 0.3;
+};
+
 // Pre-save hook to calculate metrics
 unifiedUserContextSchema.pre('save', function(next) {
-  this.calculateNetworkMetrics();
+  if (this.calculateNetworkMetrics) {
+    this.calculateNetworkMetrics();
+  }
   this.lastUpdated = new Date();
   next();
 });

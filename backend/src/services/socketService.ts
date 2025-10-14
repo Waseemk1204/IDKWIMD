@@ -91,6 +91,7 @@ export const setupSocketHandlers = (io: SocketIOServer): void => {
     socket.on('edit_message', (data: {
       messageId: string;
       content: string;
+      conversationId: string;
     }) => {
       // Broadcast edited message to conversation room
       socket.to(`conversation_${data.conversationId}`).emit('message_edited', {

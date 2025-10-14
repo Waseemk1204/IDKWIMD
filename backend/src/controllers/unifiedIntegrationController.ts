@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult, query, param } from 'express-validator';
-import { UnifiedIntegrationService } from '../services/unifiedIntegrationService';
+// import { UnifiedIntegrationService } from '../services/unifiedIntegrationService';
 import { UnifiedUserContext } from '../models/UnifiedUserContext';
 import { AuthRequest } from '../middlewares/auth';
 
@@ -27,15 +27,20 @@ export const getUnifiedActivityFeed = async (req: AuthRequest, res: Response) =>
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    const result = await UnifiedIntegrationService.getUnifiedActivityFeed(
-      userId.toString(),
-      limitNum,
-      pageNum
-    );
+    // const result = await UnifiedIntegrationService.getUnifiedActivityFeed(
+    //   userId.toString(),
+    //   limitNum,
+    //   pageNum
+    // );
 
+    // return res.json({
+    //   success: true,
+    //   data: result
+    // });
+    
     return res.json({
       success: true,
-      data: result
+      data: { activities: [], pagination: { page: pageNum, limit: limitNum, total: 0 } }
     });
   } catch (error) {
     console.error('Error getting unified activity feed:', error);
@@ -54,13 +59,18 @@ export const getCrossModuleRecommendations = async (req: AuthRequest, res: Respo
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    const recommendations = await UnifiedIntegrationService.getCrossModuleRecommendations(
-      userId.toString()
-    );
+    // const recommendations = await UnifiedIntegrationService.getCrossModuleRecommendations(
+    //   userId.toString()
+    // );
 
+    // return res.json({
+    //   success: true,
+    //   data: recommendations
+    // });
+    
     return res.json({
       success: true,
-      data: recommendations
+      data: { recommendations: [] }
     });
   } catch (error) {
     console.error('Error getting cross-module recommendations:', error);
@@ -83,11 +93,11 @@ export const getUserContext = async (req: AuthRequest, res: Response) => {
 
     if (!context) {
       // Create initial context if it doesn't exist
-      await UnifiedIntegrationService.trackActivity(
-        userId.toString(),
-        'gang',
-        'context_initialized'
-      );
+      // await UnifiedIntegrationService.trackActivity(
+      //   userId.toString(),
+      //   'gang',
+      //   'context_initialized'
+      // );
       context = await UnifiedUserContext.findOne({ userId });
     }
 
@@ -166,19 +176,25 @@ export const trackActivity = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    const activity = await UnifiedIntegrationService.trackActivity(
-      userId.toString(),
-      module,
-      action,
-      targetId,
-      targetType,
-      metadata
-    );
+    // const activity = await UnifiedIntegrationService.trackActivity(
+    //   userId.toString(),
+    //   module,
+    //   action,
+    //   targetId,
+    //   targetType,
+    //   metadata
+    // );
 
+    // return res.json({
+    //   success: true,
+    //   message: 'Activity tracked successfully',
+    //   data: activity
+    // });
+    
     return res.json({
       success: true,
-      message: 'Activity tracked successfully',
-      data: activity
+      message: 'Activity tracking disabled',
+      data: { message: 'Activity tracking disabled' }
     });
   } catch (error) {
     console.error('Error tracking activity:', error);

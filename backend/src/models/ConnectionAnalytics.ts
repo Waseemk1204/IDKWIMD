@@ -26,6 +26,9 @@ export interface IConnectionAnalytics extends Document {
   // Timestamps
   createdAt: Date;
   updatedAt: Date;
+  
+  // Methods
+  calculateStrength(): number;
 }
 
 const connectionAnalyticsSchema = new Schema<IConnectionAnalytics>({
@@ -152,9 +155,39 @@ connectionAnalyticsSchema.methods.calculateStrength = function() {
   return this.strength;
 };
 
+// Method for calculate strength
+connectionAnalyticsSchema.methods.calculateStrength = function() {
+  let strength = 0;
+  
+  // Base strength from interaction frequency
+  strength += Math.min(20, this.interactionFrequency * 2);
+  
+  // Strength from mutual connections
+  strength += Math.min(15, this.mutualConnections * 0.5);
+  
+  // Strength from shared interests
+  strength += Math.min(10, this.sharedInterests * 2);
+  
+  // Strength from professional context
+  if (this.professionalContext?.isColleague) strength += 15;
+  if (this.professionalContext?.isMentor) strength += 20;
+  if (this.professionalContext?.isMentee) strength += 15;
+  
+  // Strength from recent activity
+  const daysSinceLastInteraction = this.lastInteraction ? 
+    (new Date().getTime() - this.lastInteraction.getTime()) / (1000 * 60 * 60 * 24) : 365;
+  if (daysSinceLastInteraction < 7) strength += 10;
+  else if (daysSinceLastInteraction < 30) strength += 5;
+  
+  this.strength = Math.min(100, Math.max(0, strength));
+  return this.strength;
+};
+
 // Pre-save middleware to calculate strength
 connectionAnalyticsSchema.pre('save', function(next) {
-  this.calculateStrength();
+  if (this.calculateStrength) {
+    this.calculateStrength();
+  }
   next();
 });
 

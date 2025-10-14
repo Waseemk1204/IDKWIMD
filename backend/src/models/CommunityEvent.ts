@@ -221,10 +221,10 @@ communityEventSchema.virtual('isFull').get(function() {
   return this.maxParticipants ? this.participants.length >= this.maxParticipants : false;
 });
 
-// Virtual for can join
-communityEventSchema.virtual('canJoin').get(function() {
+// Method for can join
+communityEventSchema.methods.canJoin = function() {
   return this.status === 'upcoming' && !this.isFull;
-});
+};
 
 // Virtual for time until start
 communityEventSchema.virtual('timeUntilStart').get(function() {
@@ -265,8 +265,8 @@ communityEventSchema.methods.addParticipant = function(userId: mongoose.Types.Ob
 };
 
 // Method to remove participant
-communityEventSchema.methods.removeParticipant = function(userId: mongoose.Types.ObjectId) {
-  this.participants = this.participants.filter(id => !id.equals(userId));
+communityEventSchema.methods.removeParticipant = function(id: mongoose.Types.ObjectId) {
+  this.participants = this.participants.filter((participantId: mongoose.Types.ObjectId) => !participantId.equals(id));
   return this.save();
 };
 

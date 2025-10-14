@@ -7,7 +7,7 @@ import { IUser } from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
 import mongoose from 'mongoose';
 import User from '../models/User';
-import { UnifiedIntegrationService } from '../services/unifiedIntegrationService';
+// import { UnifiedIntegrationService } from '../services/unifiedIntegrationService';
 
 // Send a connection request (Employee to Employee only)
 export const sendConnectionRequest = async (req: AuthRequest, res: Response) => {
@@ -158,22 +158,22 @@ export const acceptConnectionRequest = async (req: AuthRequest, res: Response) =
     await connection.save();
 
     // Track cross-module activity
-    try {
-      await UnifiedIntegrationService.trackActivity(
-        connection.requester.toString(),
-        'gang',
-        'connection_accepted',
-        connection._id.toString(),
-        'connection',
-        {
-          recipientId: connection.recipient.toString(),
-          connectionStrength: 50
-        }
-      );
-    } catch (trackingError) {
-      console.error('Error tracking connection activity:', trackingError);
-      // Don't fail the connection if tracking fails
-    }
+    // try {
+    //   await UnifiedIntegrationService.trackActivity(
+    //     connection.requester.toString(),
+    //     'gang',
+    //     'connection_accepted',
+    //     connection._id.toString(),
+    //     'connection',
+    //     {
+    //       recipientId: connection.recipient.toString(),
+    //       connectionStrength: 50
+    //     }
+    //   );
+    // } catch (trackingError) {
+    //   console.error('Error tracking connection activity:', trackingError);
+    //   // Don't fail the connection if tracking fails
+    // }
 
     // Create analytics tracking for the new connection
     try {
