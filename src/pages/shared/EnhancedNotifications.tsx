@@ -22,8 +22,8 @@ export const EnhancedNotifications: React.FC = () => {
       
       console.log('API response:', response);
       
-      if (response.data.success) {
-        const notificationsData = response.data.data?.notifications || [];
+      if (response.success) {
+        const notificationsData = response.data?.notifications || [];
         console.log('Setting notifications:', notificationsData);
         console.log('Notifications length:', notificationsData.length);
         setNotifications(notificationsData);

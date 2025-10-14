@@ -80,13 +80,13 @@ export const NotificationSettings: React.FC = () => {
         api.getNotificationStats()
       ]);
 
-      if (preferencesRes.data.success) {
-        setPreferences(preferencesRes.data.data);
-      }
+        if (preferencesRes.success) {
+          setPreferences(preferencesRes.data);
+        }
 
-      if (statsRes.data.success) {
-        setStats(statsRes.data.data);
-      }
+        if (statsRes.success) {
+          setStats(statsRes.data);
+        }
     } catch (error) {
       console.error('Failed to load notification data:', error);
     } finally {
@@ -101,8 +101,8 @@ export const NotificationSettings: React.FC = () => {
     try {
       const response = await api.updateNotificationPreferences(preferences);
       
-      if (response.data.success) {
-        setPreferences(response.data.data);
+      if (response.success) {
+        setPreferences(response.data);
         // Show success message
         console.log('Preferences saved successfully');
       }

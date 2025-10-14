@@ -124,10 +124,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
         priority: filter === 'high' ? 'high' : filter === 'urgent' ? 'urgent' : undefined
       });
       
-      if (response.data.success) {
-        setNotifications(response.data.data?.notifications || []);
-        setUnreadCount(response.data.data?.unreadCount || 0);
-      }
+        if (response.success) {
+          setNotifications(response.data?.notifications || []);
+          setUnreadCount(response.data?.unreadCount || 0);
+        }
     } catch (error) {
       console.error('Failed to load notifications:', error);
     } finally {
