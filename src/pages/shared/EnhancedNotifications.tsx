@@ -86,11 +86,16 @@ export const EnhancedNotifications: React.FC = () => {
       if (typeFilter !== 'all') params.append('type', typeFilter);
       if (priorityFilter !== 'all') params.append('priority', priorityFilter);
       
-      const response = await api.get(`/notifications?${params.toString()}`);
+      const response = await api.getNotifications({
+        limit: 50,
+        unreadOnly: filter === 'unread',
+        type: typeFilter !== 'all' ? typeFilter : undefined,
+        priority: priorityFilter !== 'all' ? priorityFilter : undefined
+      });
       
       if (response.data.success) {
-        setNotifications(response.data.data.notifications);
-        setUnreadCount(response.data.data.unreadCount);
+        setNotifications(response.data.data?.notifications || []);
+        setUnreadCount(response.data.data?.unreadCount || 0);
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -101,7 +106,7 @@ export const EnhancedNotifications: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await api.patch(`/notifications/${notificationId}/read`);
+      await api.markNotificationAsRead(notificationId);
       
       setNotifications(prev => 
         prev.map(n => 
@@ -119,7 +124,7 @@ export const EnhancedNotifications: React.FC = () => {
 
   const markAllAsRead = async () => {
     try {
-      await api.patch('/notifications/mark-all-read');
+      await api.markAllNotificationsAsRead();
       
       setNotifications(prev => 
         prev.map(n => ({ 
@@ -136,7 +141,7 @@ export const EnhancedNotifications: React.FC = () => {
 
   const trackInteraction = async (notificationId: string, action: string) => {
     try {
-      await api.post(`/notifications/${notificationId}/interaction`, { action });
+      await api.trackNotificationInteraction(notificationId, action);
     } catch (error) {
       console.error('Failed to track interaction:', error);
     }
@@ -213,7 +218,7 @@ export const EnhancedNotifications: React.FC = () => {
     }
   };
 
-  const filteredNotifications = notifications.filter(notification => {
+  const filteredNotifications = (notifications || []).filter(notification => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -251,7 +256,7 @@ export const EnhancedNotifications: React.FC = () => {
   const bulkMarkAsRead = async () => {
     try {
       await Promise.all(
-        selectedNotifications.map(id => api.patch(`/notifications/${id}/read`))
+        selectedNotifications.map(id => api.markNotificationAsRead(id))
       );
       
       setNotifications(prev => 
@@ -326,7 +331,7 @@ export const EnhancedNotifications: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {notifications.length}
+                  {notifications?.length || 0}
                 </p>
               </div>
             </div>
@@ -340,7 +345,7 @@ export const EnhancedNotifications: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Unread</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {unreadCount}
+                  {unreadCount || 0}
                 </p>
               </div>
             </div>
@@ -354,7 +359,7 @@ export const EnhancedNotifications: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Today</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {notifications.filter(n => {
+                  {(notifications || []).filter(n => {
                     const today = new Date();
                     const notificationDate = new Date(n.createdAt);
                     return notificationDate.toDateString() === today.toDateString();
@@ -372,7 +377,7 @@ export const EnhancedNotifications: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">High Priority</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {notifications.filter(n => n.smart.priority === 'high' || n.smart.priority === 'urgent').length}
+                  {(notifications || []).filter(n => n.smart?.priority === 'high' || n.smart?.priority === 'urgent').length}
                 </p>
               </div>
             </div>

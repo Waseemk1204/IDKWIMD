@@ -76,8 +76,8 @@ export const NotificationSettings: React.FC = () => {
   const loadData = async () => {
     try {
       const [preferencesRes, statsRes] = await Promise.all([
-        api.get('/notifications/preferences'),
-        api.get('/notifications/stats')
+        api.getNotificationPreferences(),
+        api.getNotificationStats()
       ]);
 
       if (preferencesRes.data.success) {
@@ -99,7 +99,7 @@ export const NotificationSettings: React.FC = () => {
 
     setIsSaving(true);
     try {
-      const response = await api.put('/notifications/preferences', preferences);
+      const response = await api.updateNotificationPreferences(preferences);
       
       if (response.data.success) {
         setPreferences(response.data.data);

@@ -118,16 +118,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
   const loadNotifications = async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filter === 'unread') params.append('unreadOnly', 'true');
-      if (filter === 'high') params.append('priority', 'high');
-      if (filter === 'urgent') params.append('priority', 'urgent');
-      
-      const response = await api.get(`/notifications?${params.toString()}`);
+      const response = await api.getNotifications({
+        limit: 10,
+        unreadOnly: filter === 'unread',
+        priority: filter === 'high' ? 'high' : filter === 'urgent' ? 'urgent' : undefined
+      });
       
       if (response.data.success) {
-        setNotifications(response.data.data.notifications);
-        setUnreadCount(response.data.data.unreadCount);
+        setNotifications(response.data.data?.notifications || []);
+        setUnreadCount(response.data.data?.unreadCount || 0);
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -138,7 +137,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await api.patch(`/notifications/${notificationId}/read`);
+      await api.markNotificationAsRead(notificationId);
       
       setNotifications(prev => 
         prev.map(n => 
@@ -156,7 +155,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
 
   const markAllAsRead = async () => {
     try {
-      await api.patch('/notifications/mark-all-read');
+      await api.markAllNotificationsAsRead();
       
       setNotifications(prev => 
         prev.map(n => ({ 
@@ -173,7 +172,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
 
   const trackInteraction = async (notificationId: string, action: string) => {
     try {
-      await api.post(`/notifications/${notificationId}/interaction`, { action });
+      await api.trackNotificationInteraction(notificationId, action);
     } catch (error) {
       console.error('Failed to track interaction:', error);
     }
