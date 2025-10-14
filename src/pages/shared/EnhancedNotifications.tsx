@@ -73,6 +73,18 @@ export const EnhancedNotifications: React.FC = () => {
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
 
+  // Safety check for user
+  if (!user) {
+    console.log('No user found, returning loading state');
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     loadNotifications();
   }, [filter, typeFilter, priorityFilter]);
@@ -229,7 +241,7 @@ export const EnhancedNotifications: React.FC = () => {
     }
   };
 
-  const filteredNotifications = (notifications || []).filter(notification => {
+  const filteredNotifications = safeNotifications.filter(notification => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -257,7 +269,7 @@ export const EnhancedNotifications: React.FC = () => {
   };
 
   const selectAllNotifications = () => {
-    if (selectedNotifications.length === filteredNotifications.length) {
+    if (safeSelectedNotifications.length === filteredNotifications.length) {
       setSelectedNotifications([]);
     } else {
       setSelectedNotifications(filteredNotifications.map(n => n._id));
@@ -296,6 +308,10 @@ export const EnhancedNotifications: React.FC = () => {
     { value: 'community_mention', label: 'Community' },
     { value: 'verification_approved', label: 'Verification' }
   ];
+
+  // Ensure all arrays are properly initialized
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  const safeSelectedNotifications = Array.isArray(selectedNotifications) ? selectedNotifications : [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -434,7 +450,7 @@ export const EnhancedNotifications: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {notificationTypes.map(type => (
+                  {Array.isArray(notificationTypes) && notificationTypes.map(type => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
                     </SelectItem>
@@ -473,7 +489,7 @@ export const EnhancedNotifications: React.FC = () => {
                   size="sm"
                   onClick={selectAllNotifications}
                 >
-                  {selectedNotifications.length === filteredNotifications.length ? 'Deselect All' : 'Select All'}
+                  {safeSelectedNotifications.length === filteredNotifications.length ? 'Deselect All' : 'Select All'}
                 </Button>
               </div>
               
@@ -605,7 +621,7 @@ export const EnhancedNotifications: React.FC = () => {
                           </Button>
                         )}
                         
-                        {notification.richContent?.actionButtons?.map((button, index) => (
+                        {Array.isArray(notification.richContent?.actionButtons) && notification.richContent.actionButtons.map((button, index) => (
                           <Button
                             key={index}
                             variant={button.style === 'primary' ? 'primary' : 'outline'}
