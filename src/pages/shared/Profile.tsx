@@ -246,7 +246,7 @@ export const Profile: React.FC = () => {
           companyInfo: formData.companyInfo
         })
       };
-
+``
       await updateProfile(updateData);
       
       setSuccessMessage('Profile updated successfully!');
@@ -489,7 +489,7 @@ export const Profile: React.FC = () => {
                     <Star className="h-4 w-4 text-warning-500 mr-2" />
                     <span className="text-sm text-neutral-600 dark:text-neutral-400">Rating</span>
                   </div>
-                  <span className="font-semibold text-neutral-900 dark:text-neutral-100">4.8★</span>
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-100">Highly Rated</span>
                 </div>
                 
                 <div className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">

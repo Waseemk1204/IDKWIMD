@@ -1,4 +1,7 @@
 // API service for communicating with the backend
+import { toast } from 'sonner';
+import sessionService from './sessionService';
+
 const getApiBaseUrl = () => {
   // In production, use relative URLs for Vercel API routes
   if (import.meta.env.PROD) {
@@ -9,12 +12,6 @@ const getApiBaseUrl = () => {
 };
 
 const API_BASE_URL = getApiBaseUrl();
-
-// Debug: Log the API URL being used
-console.log('API_BASE_URL:', API_BASE_URL);
-console.log('VITE_API_URL env var:', import.meta.env.VITE_API_URL);
-console.log('Environment:', import.meta.env.MODE);
-console.log('Is production:', import.meta.env.PROD);
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -38,10 +35,13 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     
+    // Get token from session service
+    const token = sessionService.getToken();
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        ...(this.token && { Authorization: `Bearer ${this.token}` }),
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       credentials: 'include', // Include cookies in requests
@@ -49,13 +49,7 @@ class ApiService {
     };
 
     try {
-      console.log(`Making API request to: ${url}`);
-      console.log('Request config:', { method: config.method || 'GET', headers: config.headers });
-      
       const response = await fetch(url, config);
-      
-      console.log(`Response status: ${response.status} ${response.statusText}`);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       let data;
       const contentType = response.headers.get('content-type');
@@ -75,7 +69,6 @@ class ApiService {
       }
 
       if (!response.ok) {
-        console.error('API Error Response:', data);
         // For validation errors, return the error response instead of throwing
         if (response.status === 400 && data.errors) {
           return {
@@ -84,15 +77,39 @@ class ApiService {
             errors: data.errors
           };
         }
+        
+        // Show user-friendly error messages
+        if (response.status === 401) {
+          toast.error('Authentication Error', 'Please log in again');
+        } else if (response.status === 403) {
+          toast.error('Access Denied', 'You don\'t have permission to perform this action');
+        } else if (response.status === 404) {
+          toast.error('Not Found', 'The requested resource was not found');
+        } else if (response.status >= 500) {
+          toast.error('Server Error', 'Something went wrong on our end. Please try again later.');
+        } else {
+          toast.error('Request Failed', data.message || `Request failed with status ${response.status}`);
+        }
+        
         throw new Error(data.message || `Request failed with status ${response.status}`);
       }
 
-      console.log('API Success Response:', data);
       return data;
     } catch (error) {
       console.error('API request failed:', error);
-      console.error('Request URL:', url);
-      console.error('Request config:', config);
+      
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast.error('Network Error', 'Please check your internet connection and try again');
+      } else if (error instanceof Error) {
+        // Only show toast if it's not already shown above
+        if (!error.message.includes('Request failed with status')) {
+          toast.error('Error', error.message);
+        }
+      } else {
+        toast.error('Unexpected Error', 'An unexpected error occurred. Please try again.');
+      }
+      
       throw error;
     }
   }
@@ -118,7 +135,13 @@ class ApiService {
     });
 
     if (response.success && response.data && typeof response.data === 'object' && 'token' in response.data) {
-      this.setToken((response.data as any).token);
+      const tokenData = response.data as any;
+      sessionService.setSession(
+        tokenData.token,
+        tokenData.refreshToken,
+        tokenData.expiresIn || 3600
+      );
+      toast.success('Welcome back!', 'You have been successfully logged in');
     }
 
     return response;
@@ -138,7 +161,12 @@ class ApiService {
     });
 
     if (response.success && response.data && typeof response.data === 'object' && 'token' in response.data) {
-      this.setToken((response.data as any).token);
+      const tokenData = response.data as any;
+      sessionService.setSession(
+        tokenData.token,
+        tokenData.refreshToken,
+        tokenData.expiresIn || 3600
+      );
     }
 
     return response;
@@ -157,7 +185,13 @@ class ApiService {
     });
 
     if (response.success && response.data && typeof response.data === 'object' && 'token' in response.data) {
-      this.setToken((response.data as any).token);
+      const tokenData = response.data as any;
+      sessionService.setSession(
+        tokenData.token,
+        tokenData.refreshToken,
+        tokenData.expiresIn || 3600
+      );
+      toast.success('Account Created!', 'Welcome to PartTimePays. Your account has been created successfully.');
     }
 
     return response;
@@ -168,7 +202,7 @@ class ApiService {
       method: 'POST',
     });
 
-    this.clearToken();
+    sessionService.clearSession();
     return response;
   }
 
@@ -177,10 +211,16 @@ class ApiService {
   }
 
   async updateProfile(userData: any): Promise<ApiResponse> {
-    return this.request('/users/profile', {
+    const response = await this.request('/users/profile', {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
+    
+    if (response.success) {
+      toast.success('Profile Updated', 'Your profile has been updated successfully');
+    }
+    
+    return response;
   }
 
   async changePassword(passwordData: {
@@ -331,10 +371,16 @@ class ApiService {
   }
 
   async submitApplication(jobId: string, applicationData: any): Promise<ApiResponse> {
-    return this.request(`/applications/job/${jobId}`, {
+    const response = await this.request(`/applications/job/${jobId}`, {
       method: 'POST',
       body: JSON.stringify(applicationData),
     });
+    
+    if (response.success) {
+      toast.success('Application Submitted', 'Your job application has been submitted successfully');
+    }
+    
+    return response;
   }
 
   async getApplicationById(id: string): Promise<ApiResponse> {
@@ -469,23 +515,21 @@ class ApiService {
 
 
 
-  // Token management
+  // Token management - now using session service
   setToken(token: string): void {
-    this.token = token;
-    localStorage.setItem('token', token);
+    sessionService.setSession(token);
   }
 
   clearToken(): void {
-    this.token = null;
-    localStorage.removeItem('token');
+    sessionService.clearSession();
   }
 
   getToken(): string | null {
-    return this.token;
+    return sessionService.getToken();
   }
 
   isAuthenticated(): boolean {
-    return !!this.token;
+    return sessionService.isAuthenticated();
   }
 
 

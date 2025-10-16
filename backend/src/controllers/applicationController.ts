@@ -4,6 +4,7 @@ import Application, { IApplication } from '../models/Application';
 import Job from '../models/Job';
 import User from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
+import { EnhancedNotificationService } from '../services/EnhancedNotificationService';
 
 // Get user's applications
 export const getUserApplications = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -125,9 +126,69 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
 
     // Populate application data
     await application.populate([
-      { path: 'job', select: 'title company location hourlyRate' },
-      { path: 'applicant', select: 'name email profileImage' }
+      { path: 'job', select: 'title company location hourlyRate employer' },
+      { path: 'applicant', select: 'fullName email profilePhoto' }
     ]);
+
+    // Send notification to employer about new job application
+    try {
+      const notificationService = EnhancedNotificationService.getInstance();
+      
+      // Get applicant details for the notification
+      const applicant = await User.findById(req.user._id).select('fullName email profilePhoto');
+      
+      if (notificationService && job.employer && applicant) {
+        await notificationService.createNotification({
+          recipientId: job.employer,
+          senderId: req.user._id,
+          type: 'job_application',
+          title: 'New Job Application Received',
+          message: `${applicant.fullName} has applied for your "${job.title}" position.`,
+          richContent: {
+            image: null,
+            avatar: applicant.profilePhoto || null,
+            preview: `${applicant.fullName} applied for "${job.title}" at ${job.company}`,
+            actionButtons: [
+              { 
+                label: 'View Application', 
+                action: 'view_application', 
+                url: `/employer/applications/${application._id}`,
+                style: 'primary' as const
+              },
+              { 
+                label: 'View All Applications', 
+                action: 'view_all_applications', 
+                url: `/employer/jobs/${jobId}/applications`,
+                style: 'secondary' as const
+              }
+            ]
+          },
+          context: {
+            module: 'jobs',
+            entityId: jobId,
+            entityType: 'Job',
+            metadata: {
+              jobTitle: job.title,
+              companyName: job.company,
+              applicantName: applicant.fullName,
+              applicantEmail: applicant.email,
+              applicationId: application._id.toString()
+            }
+          },
+          smart: {
+            priority: job.urgency === 'high' ? 'high' : 'medium',
+            relevanceScore: 0.9,
+            category: 'job_management',
+            tags: ['urgent', 'application', job.category.toLowerCase()]
+          }
+        });
+        
+        console.log(`Job application notification sent to employer ${job.employer} for job ${jobId}`);
+      }
+    } catch (notificationError) {
+      console.error('Failed to send job application notification:', notificationError);
+      // Don't fail the application submission if notification fails
+    }
 
     res.status(201).json({
       success: true,

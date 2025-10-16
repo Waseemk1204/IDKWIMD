@@ -189,8 +189,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           icon: <FileTextIcon className="w-5 h-5" />
         },
         {
-          name: 'Gang Members',
-          href: '/employee/gang-members',
+          name: 'My Connections',
+          href: '/employee/connections',
           icon: <UserPlusIcon className="w-5 h-5" />,
           isNew: true
         },

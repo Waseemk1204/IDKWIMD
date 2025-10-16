@@ -343,6 +343,60 @@ const applicationSchema = new mongoose.Schema({
   notes: { type: String }
 }, { timestamps: true });
 
+// Enhanced Notification Schema
+const enhancedNotificationSchema = new mongoose.Schema({
+  recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  type: { type: String, required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  richContent: {
+    image: { type: String },
+    avatar: { type: String },
+    preview: { type: String },
+    actionButtons: [{
+      label: { type: String },
+      action: { type: String },
+      url: { type: String },
+      style: { type: String, enum: ['primary', 'secondary', 'danger'] }
+    }]
+  },
+  context: {
+    module: { type: String },
+    entityId: { type: mongoose.Schema.Types.ObjectId },
+    entityType: { type: String },
+    metadata: { type: mongoose.Schema.Types.Mixed }
+  },
+  smart: {
+    priority: { type: String, enum: ['low', 'medium', 'high', 'urgent'] },
+    relevanceScore: { type: Number, min: 0, max: 1 },
+    category: { type: String },
+    tags: [{ type: String }]
+  },
+  interaction: {
+    isRead: { type: Boolean, default: false },
+    readAt: { type: Date },
+    clickedAt: { type: Date },
+    actionTaken: { type: String }
+  },
+  delivery: {
+    channels: {
+      push: { type: Boolean, default: true },
+      email: { type: Boolean, default: false },
+      sms: { type: Boolean, default: false },
+      inApp: { type: Boolean, default: true }
+    },
+    status: {
+      push: { type: String, enum: ['pending', 'delivered', 'failed'] },
+      email: { type: String, enum: ['pending', 'delivered', 'failed'] },
+      sms: { type: String, enum: ['pending', 'delivered', 'failed'] },
+      inApp: { type: String, enum: ['pending', 'delivered', 'failed'] }
+    },
+    deliveredAt: { type: Date },
+    expiresAt: { type: Date }
+  }
+}, { timestamps: true });
+
 // Create models
 const Wallet = mongoose.model('Wallet', walletSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
@@ -375,7 +429,7 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return res.status(401).json({ success: false, message: 'Token is not valid' });
     }
@@ -1036,6 +1090,61 @@ app.post('/api/auth/logout', authenticate, async (req, res) => {
   }
 });
 
+});
+
+// Refresh token endpoint
+app.post('/api/auth/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Refresh token is required'
+      });
+    }
+
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid refresh token'
+      });
+    }
+
+    // Generate new tokens
+    const newToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        token: newToken,
+        refreshToken: newRefreshToken,
+        expiresIn: 3600 // 1 hour
+      }
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Invalid refresh token'
+    });
+  }
+});
+
 // Get current user
 app.get('/api/auth/me', authenticate, async (req, res) => {
   try {
@@ -1323,9 +1432,76 @@ app.post('/api/applications/job/:jobId', authenticate, [
     
     await application.save();
     
+    // Add application to job
+    await Job.findByIdAndUpdate(jobId, {
+      $push: { applications: application._id }
+    });
+    
     // Populate the response
-    await application.populate('job', 'title company location salary');
-    await application.populate('applicant', 'fullName email');
+    await application.populate('job', 'title company location salary employer');
+    await application.populate('applicant', 'fullName email profilePhoto');
+    
+    // Send notification to employer about new job application
+    try {
+      const applicant = await User.findById(req.user._id).select('fullName email profilePhoto');
+      
+      if (job.employer && applicant) {
+        // Create notification data for the employer
+        const notificationData = {
+          recipientId: job.employer,
+          senderId: req.user._id,
+          type: 'job_application',
+          title: 'New Job Application Received',
+          message: `${applicant.fullName} has applied for your "${job.title}" position.`,
+          richContent: {
+            image: null,
+            avatar: applicant.profilePhoto || null,
+            preview: `${applicant.fullName} applied for "${job.title}" at ${job.company}`,
+            actionButtons: [
+              { 
+                label: 'View Application', 
+                action: 'view_application', 
+                url: `/employer/applications/${application._id}`,
+                style: 'primary'
+              },
+              { 
+                label: 'View All Applications', 
+                action: 'view_all_applications', 
+                url: `/employer/jobs/${jobId}/applications`,
+                style: 'secondary'
+              }
+            ]
+          },
+          context: {
+            module: 'jobs',
+            entityId: jobId,
+            entityType: 'Job',
+            metadata: {
+              jobTitle: job.title,
+              companyName: job.company,
+              applicantName: applicant.fullName,
+              applicantEmail: applicant.email,
+              applicationId: application._id.toString()
+            }
+          },
+          smart: {
+            priority: job.urgency === 'high' ? 'high' : 'medium',
+            relevanceScore: 0.9,
+            category: 'job_management',
+            tags: ['urgent', 'application', job.category?.toLowerCase() || 'general']
+          }
+        };
+        
+        // Store notification in database (simplified version for Vercel)
+        const notification = new EnhancedNotification(notificationData);
+        await notification.save();
+        
+        console.log(`Job application notification created for employer ${job.employer} for job ${jobId}`);
+      }
+    } catch (notificationError) {
+      console.error('Failed to create job application notification:', notificationError);
+      // Don't fail the application submission if notification fails
+    }
     
     res.status(201).json({
       success: true,
@@ -1598,6 +1774,112 @@ app.get('/api/jobs/featured', async (req, res) => {
     res.json({ success: true, data: { jobs } });
   } catch (error) {
     console.error('Get featured jobs error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get job by ID
+app.get('/api/jobs/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid job ID format'
+      });
+    }
+
+    const job = await Job.findById(id)
+      .populate('employer', 'name email profileImage phone location')
+      .populate('applications', 'applicant status appliedDate')
+      .lean();
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found'
+      });
+    }
+
+    // Increment view count
+    await Job.findByIdAndUpdate(id, { $inc: { views: 1 } });
+
+    res.json({
+      success: true,
+      data: { job }
+    });
+  } catch (error) {
+    console.error('Get job by ID error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// Get job categories
+app.get('/api/jobs/categories', async (req, res) => {
+  try {
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    // Get distinct categories from jobs
+    const categories = await Job.distinct('category', { status: 'active' });
+    
+    res.json({ 
+      success: true, 
+      data: { categories: categories.filter(Boolean) } // Remove any null/undefined values
+    });
+  } catch (error) {
+    console.error('Get job categories error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Get job statistics
+app.get('/api/jobs/stats', async (req, res) => {
+  try {
+    // Ensure MongoDB connection
+    const connected = await ensureConnection();
+    if (!connected) {
+      return res.status(503).json({ 
+        success: false, 
+        message: 'Database not available. Please try again later.' 
+      });
+    }
+
+    const totalJobs = await Job.countDocuments({ status: 'active' });
+    const totalApplications = await Application.countDocuments();
+    const categories = await Job.distinct('category', { status: 'active' });
+    
+    res.json({ 
+      success: true, 
+      data: { 
+        totalJobs,
+        totalApplications,
+        categories: categories.filter(Boolean),
+        averageSalary: 0 // Placeholder - could calculate from actual job data
+      } 
+    });
+  } catch (error) {
+    console.error('Get job stats error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });

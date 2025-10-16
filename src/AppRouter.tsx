@@ -26,7 +26,7 @@ import { JobDetails } from './pages/employee/JobDetails';
 import { MyApplications } from './pages/employee/MyApplications';
 import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
 import { EmployeeWallet } from './pages/employee/Wallet';
-import { GangMembers } from './pages/employee/GangMembers';
+import { Connections } from './pages/employee/Connections';
 import { UnifiedDashboardPage } from './pages/shared/UnifiedDashboard';
 // Admin pages
 import { AdminDashboard } from './pages/admin/Dashboard';
@@ -151,7 +151,7 @@ export function AppRouter() {
           <Route path="applications" element={<MyApplications />} />
           <Route path="timesheet" element={<TimesheetSubmission />} />
           <Route path="wallet" element={<EmployeeWallet />} />
-          <Route path="gang-members" element={<GangMembers />} />
+          <Route path="connections" element={<Connections />} />
         </Route>
 
         {/* Unified Dashboard - Available to all authenticated users */}

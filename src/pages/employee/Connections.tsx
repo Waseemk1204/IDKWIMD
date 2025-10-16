@@ -44,9 +44,9 @@ interface ConnectionRequest {
   createdAt: string;
 }
 
-export const GangMembers: React.FC = () => {
+export const Connections: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'gang' | 'requests' | 'follows' | 'discover' | 'recommendations' | 'analytics'>('discover');
+  const [activeTab, setActiveTab] = useState<'connections' | 'requests' | 'follows' | 'discover' | 'recommendations' | 'analytics'>('discover');
   const [connections, setConnections] = useState<Connection[]>([]);
   const [pendingRequests, setPendingRequests] = useState<ConnectionRequest[]>([]);
   const [follows, setFollows] = useState<Follow[]>([]);
@@ -76,7 +76,7 @@ export const GangMembers: React.FC = () => {
     try {
       setLoading(true);
       
-      if (activeTab === 'gang') {
+      if (activeTab === 'connections') {
         const response = await apiService.getUserConnections('accepted');
         if (response.success) {
           setConnections(response.data.connections || []);
@@ -405,14 +405,14 @@ export const GangMembers: React.FC = () => {
     </div>
   );
 
-  const renderGangMembers = () => (
+  const renderConnections = () => (
     <div className="space-y-4">
       {loading ? (
-        <div className="text-center py-8">Loading gang members...</div>
+        <div className="text-center py-8">Loading connections...</div>
       ) : connections.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p>No gang members yet</p>
+          <p>No connections yet</p>
           <p className="text-sm">Start connecting with other employees!</p>
         </div>
       ) : (
@@ -680,7 +680,7 @@ export const GangMembers: React.FC = () => {
   const tabs = [
     { id: 'recommendations', label: 'Recommendations', icon: Star, count: recommendations.length },
     { id: 'discover', label: 'Discover', icon: Search, count: availableUsers.length },
-    { id: 'gang', label: 'Gang Members', icon: Users, count: connections.length },
+    { id: 'connections', label: 'My Connections', icon: Users, count: connections.length },
     { id: 'requests', label: 'Requests', icon: UserPlus, count: pendingRequests.length },
     { id: 'follows', label: 'Following', icon: Heart, count: follows.length },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, count: analytics?.summary.totalConnections || 0 }
@@ -691,7 +691,7 @@ export const GangMembers: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Gang Members
+            My Connections
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Connect with other employees and follow employers to stay updated
@@ -728,7 +728,7 @@ export const GangMembers: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'recommendations' && renderRecommendations()}
         {activeTab === 'discover' && renderDiscover()}
-        {activeTab === 'gang' && renderGangMembers()}
+        {activeTab === 'connections' && renderConnections()}
         {activeTab === 'requests' && renderRequests()}
         {activeTab === 'follows' && renderFollows()}
         {activeTab === 'analytics' && renderAnalytics()}

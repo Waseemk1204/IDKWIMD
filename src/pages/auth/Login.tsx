@@ -37,12 +37,12 @@ export const Login: React.FC = () => {
           console.log('Decoded JWT payload:', payload);
           
           const googleUser = {
-            googleId: payload.sub,
+            id: payload.sub,
             email: payload.email,
-            fullName: payload.name,
-            profilePhoto: payload.picture,
-            givenName: payload.given_name,
-            familyName: payload.family_name
+            name: payload.name,
+            picture: payload.picture,
+            given_name: payload.given_name,
+            family_name: payload.family_name
           };
           
           console.log('Google user data:', googleUser);
@@ -233,16 +233,16 @@ export const Login: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 pt-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-600">50K+</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Students</div>
+                <div className="text-2xl font-bold text-primary-600">Growing</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Community</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-secondary-600">25K+</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Jobs</div>
+                <div className="text-2xl font-bold text-secondary-600">Active</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Job Market</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-trust-600">4.8★</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Rating</div>
+                <div className="text-2xl font-bold text-trust-600">Trusted</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Platform</div>
               </div>
             </div>
           </div>

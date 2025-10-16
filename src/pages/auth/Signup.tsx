@@ -7,6 +7,7 @@ import { TrustBadge, VerifiedBadge, SecureBadge } from '../../components/ui/Trus
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 import { SignupSuccessAnimation } from '../../components/ui/SignupSuccessAnimation';
 import { googleAuthService } from '../../services/googleAuth';
+import { useValidation, schemas } from '../../utils/validation';
 import { 
   Mail, 
   Lock, 
@@ -36,6 +37,16 @@ export const Signup: React.FC = () => {
   
   const { signup, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  // Enhanced validation
+  const {
+    errors,
+    validateAll,
+    handleFieldChange,
+    handleFieldBlur,
+    getFieldError,
+    clearErrors
+  } = useValidation(schemas.userRegistration);
 
   const handleGoogleSuccess = async () => {
     setIsLoading(true);
@@ -156,9 +167,9 @@ export const Signup: React.FC = () => {
   };
 
   const trustStats = [
-    { value: '50K+', label: 'Students', color: 'text-primary-600' },
-    { value: '25K+', label: 'Jobs Posted', color: 'text-secondary-600' },
-    { value: '4.8★', label: 'Rating', color: 'text-trust-600' },
+    { value: 'Growing', label: 'Community', color: 'text-primary-600' },
+    { value: 'Active', label: 'Job Market', color: 'text-secondary-600' },
+    { value: 'Trusted', label: 'Platform', color: 'text-trust-600' },
   ];
 
   return (
@@ -315,49 +326,49 @@ export const Signup: React.FC = () => {
             </div>
           )}
           
-                <div className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-4">
-            <div>
+                    <div>
                       <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                         Email Address
-              </label>
+                      </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Mail className="h-5 w-5 text-neutral-400" />
                         </div>
-              <input 
+                        <input 
                           id="email"
-                name="email" 
-                type="email" 
-                autoComplete="email" 
-                required 
+                          name="email" 
+                          type="email" 
+                          autoComplete="email" 
+                          required 
                           className="input-professional pl-10"
                           placeholder="Enter your email"
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-              />
-            </div>
+                          value={email} 
+                          onChange={(e) => setEmail(e.target.value)} 
+                        />
+                      </div>
                     </div>
 
-            <div>
+                    <div>
                       <label htmlFor="password" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Password
-              </label>
+                        Password
+                      </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Lock className="h-5 w-5 text-neutral-400" />
                         </div>
-              <input 
-                id="password" 
-                name="password" 
-                type="password" 
-                autoComplete="new-password" 
-                required 
+                        <input 
+                          id="password" 
+                          name="password" 
+                          type="password" 
+                          autoComplete="new-password" 
+                          required 
                           className="input-professional pl-10"
                           placeholder="Create a strong password"
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-              />
+                          value={password} 
+                          onChange={(e) => setPassword(e.target.value)} 
+                        />
                       </div>
                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                         Must be at least 8 characters with letters and numbers
@@ -373,18 +384,17 @@ export const Signup: React.FC = () => {
                   </div>
 
                   <Button
-                    type="button"
+                    type="submit"
                     variant="gradient"
                     size="lg"
                     isFullWidth
                     isLoading={isLoading}
                     loadingText="Creating account..."
                     trustIndicator
-                    onClick={handleSubmit}
                   >
                     Create {role === 'employee' ? 'Student' : 'Employer'} Account
                   </Button>
-                </div>
+                </form>
 
                 {/* Social Sign-In Options */}
                 <div className="mt-6">

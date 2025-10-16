@@ -5,6 +5,7 @@ import { Job } from '../../components/jobs/JobCard';
 import { JobApplicationForm } from '../../components/jobs/JobApplicationForm';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
+import { Skeleton, SkeletonCard, SkeletonText } from '../../components/ui/Skeleton';
 import { 
   MapPin, 
   Clock, 
@@ -13,7 +14,8 @@ import {
   Calendar,
   Briefcase,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
 
 export const JobDetails: React.FC = () => {
@@ -80,13 +82,32 @@ export const JobDetails: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/3 animate-pulse"></div>
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-          <div className="space-y-4">
-            <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-1/2 animate-pulse"></div>
-            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4 animate-pulse"></div>
-            <div className="h-32 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
+        {/* Back Button Skeleton */}
+        <SkeletonButton size="sm" className="w-32" />
+        
+        {/* Header Skeleton */}
+        <div className="space-y-4">
+          <Skeleton height={36} width="70%" />
+          <div className="flex items-center space-x-4">
+            <Skeleton height={16} width="30%" />
+            <Skeleton height={16} width="25%" />
+            <Skeleton height={16} width="20%" />
           </div>
+        </div>
+
+        {/* Main Content Skeleton */}
+        <SkeletonCard />
+        
+        {/* Job Description Skeleton */}
+        <div className="space-y-4">
+          <Skeleton height={24} width="40%" />
+          <SkeletonText lines={8} />
+        </div>
+        
+        {/* Requirements Skeleton */}
+        <div className="space-y-4">
+          <Skeleton height={24} width="35%" />
+          <SkeletonText lines={5} />
         </div>
       </div>
     );
@@ -95,6 +116,19 @@ export const JobDetails: React.FC = () => {
   if (error || !job) {
     return (
       <div className="space-y-6">
+        {/* Back Button */}
+        <div className="flex items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<ArrowLeft className="h-4 w-4" />}
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            Back to Jobs
+          </Button>
+        </div>
+        
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Job Not Found
         </h1>
@@ -164,35 +198,48 @@ export const JobDetails: React.FC = () => {
   };
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <div className="flex items-center">
+        <Button
+          variant="outline"
+          size="sm"
+          leftIcon={<ArrowLeft className="h-4 w-4" />}
+          onClick={() => navigate(-1)}
+          className="mb-4"
+        >
+          Back to Jobs
+        </Button>
+      </div>
+
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-2">
             {job.title}
           </h1>
-          <div className="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-400">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-neutral-600 dark:text-neutral-400">
             <div className="flex items-center">
-              <Briefcase className="w-4 h-4 mr-1" />
-              {job.company}
+              <Briefcase className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="truncate">{job.company}</span>
             </div>
             <div className="flex items-center">
-              <MapPin className="w-4 h-4 mr-1" />
-              {job.location}
+              <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="truncate">{job.location}</span>
             </div>
             <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              Posted {formatDate(job.postedDate)}
+              <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+              <span className="truncate">Posted {formatDate(job.postedDate)}</span>
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-end space-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-end space-y-2 sm:space-y-0 sm:space-x-2">
           {getApplicationStatusBadge()}
           <Button
             onClick={handleApplyClick}
             variant="primary"
             size="lg"
             disabled={hasApplied || job.status !== 'active'}
-            className="min-w-[140px]"
+            className="w-full sm:w-auto min-w-[140px]"
           >
             {hasApplied ? 'Applied' : 'Apply Now'}
           </Button>
@@ -200,7 +247,7 @@ export const JobDetails: React.FC = () => {
       </div>
 
       {/* Job Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-soft border border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center mb-2">
             <DollarSign className="w-5 h-5 text-green-500 mr-2" />

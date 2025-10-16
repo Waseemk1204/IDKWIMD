@@ -9,6 +9,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   rightIcon?: React.ReactNode;
   isFullWidth?: boolean;
   variant?: 'default' | 'professional';
+  ariaDescribedBy?: string;
+  ariaInvalid?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(({
@@ -19,10 +21,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   rightIcon,
   isFullWidth = true,
   variant = 'professional',
+  ariaDescribedBy,
+  ariaInvalid,
   className = '',
+  id,
   ...props
 }, ref) => {
   const hasError = !!error;
+  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const errorId = hasError ? `${inputId}-error` : undefined;
+  const helpId = helpText ? `${inputId}-help` : undefined;
+  
+  const describedBy = [ariaDescribedBy, errorId, helpId].filter(Boolean).join(' ');
   
   const baseInputStyles = variant === 'professional' 
     ? 'input-professional'
@@ -31,7 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className={`${isFullWidth ? 'w-full' : ''} space-y-2`}>
       {label && (
-        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        <label htmlFor={inputId} className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
           {label}
         </label>
       )}
@@ -43,12 +53,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         )}
         <input 
           ref={ref} 
+          id={inputId}
           className={`
             ${baseInputStyles}
             ${leftIcon ? 'pl-10' : ''} 
             ${rightIcon ? 'pr-10' : ''} 
             ${className}
           `} 
+          aria-invalid={ariaInvalid !== undefined ? ariaInvalid : hasError}
+          aria-describedby={describedBy || undefined}
           {...props} 
         />
         {rightIcon && (
@@ -58,13 +71,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         )}
       </div>
       {hasError && (
-        <p className="text-sm text-error-600 dark:text-error-400 flex items-center">
+        <p id={errorId} className="text-sm text-error-600 dark:text-error-400 flex items-center" role="alert">
           <AlertCircle className="h-4 w-4 mr-1" />
           {error}
         </p>
       )}
       {helpText && !hasError && (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p id={helpId} className="text-sm text-neutral-500 dark:text-neutral-400">
           {helpText}
         </p>
       )}

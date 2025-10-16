@@ -1,5 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import apiService from '../services/api';
+import sessionService from '../services/sessionService';
 import { GoogleUserInfo } from '../services/googleAuth';
 
 type UserRole = 'employer' | 'employee' | 'admin' | null;
@@ -96,10 +97,8 @@ export const AuthProvider: React.FC<{
     const tokenFromUrl = urlParams.get('token');
     
     if (tokenFromUrl) {
-      console.log('AuthContext - Token found in URL, handling authentication...');
       handleTokenFromUrl(tokenFromUrl)
         .then(() => {
-          console.log('AuthContext - Token authentication successful');
           // Remove token from URL
           window.history.replaceState({}, document.title, window.location.pathname);
         })
@@ -187,9 +186,6 @@ export const AuthProvider: React.FC<{
   const signup = async (email: string, password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
     try {
-      console.log('=== AUTHCONTEXT SIGNUP START ===');
-      console.log('AuthContext signup called with:', { email, password, role });
-
       const response = await apiService.register({
         fullName: email.split('@')[0], // Default name from email
         username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, ''), // Generate username from email
@@ -197,8 +193,6 @@ export const AuthProvider: React.FC<{
         password,
         role: role || 'employee'
       });
-
-      console.log('Signup API response:', response);
       
       if (response.success && response.data?.user) {
         const userData = response.data.user;
@@ -207,9 +201,7 @@ export const AuthProvider: React.FC<{
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         apiService.setToken(token);
-        console.log('Signup successful, user logged in automatically');
       } else {
-        console.error('Signup failed:', response.message);
         throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
@@ -223,7 +215,6 @@ export const AuthProvider: React.FC<{
   const loginWithGoogle = async (googleUser: GoogleUserInfo): Promise<User> => {
     setIsLoading(true);
     try {
-      console.log('Processing Google login with API:', googleUser);
       
       const response = await apiService.loginWithGoogle({
         googleId: googleUser.googleId,
@@ -242,7 +233,6 @@ export const AuthProvider: React.FC<{
         localStorage.setItem('token', token);
         apiService.setToken(token);
         setIsLoading(false);
-        console.log('Google login successful:', userData);
         return userData;
       } else {
         throw new Error(response.message || 'Google login failed');
@@ -257,8 +247,6 @@ export const AuthProvider: React.FC<{
   const handleTokenFromUrl = async (token: string): Promise<User> => {
     setIsLoading(true);
     try {
-      console.log('Handling token from URL:', token);
-      
       // Store token in localStorage and set in API service
       localStorage.setItem('token', token);
       apiService.setToken(token);
@@ -271,7 +259,6 @@ export const AuthProvider: React.FC<{
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         setIsLoading(false);
-        console.log('Token authentication successful:', userData);
         return userData;
       } else {
         throw new Error('Failed to get user data with token');
@@ -293,6 +280,7 @@ export const AuthProvider: React.FC<{
       console.error('Logout error:', error);
     } finally {
       clearAuth();
+      sessionService.clearSession();
       // Redirect to homepage after logout
       window.location.href = '/';
     }

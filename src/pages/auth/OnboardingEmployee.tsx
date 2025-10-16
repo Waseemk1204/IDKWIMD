@@ -4,8 +4,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { User, GraduationCap, Briefcase, Mail, Phone } from 'lucide-react';
+import { User, GraduationCap, Briefcase, Mail, Phone, CheckCircle } from 'lucide-react';
 import { VerifiedBadge, TrustBadge } from '../../components/ui/TrustBadge';
+import { toast } from 'sonner';
 
 interface FormData {
   name: string;
@@ -30,6 +31,8 @@ export const OnboardingEmployee: React.FC = () => {
   const { completeOnboarding } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
   
   // Get pre-filled data from location state (from Google OAuth)
   const prefillData = location.state as { fullName?: string; email?: string; profilePhoto?: string } | null;
@@ -42,6 +45,23 @@ export const OnboardingEmployee: React.FC = () => {
     experienceLevel: '',
     bio: ''
   });
+  
+  // Calculate progress percentage
+  const progressPercentage = (currentStep / totalSteps) * 100;
+  
+  // Check if current step is complete
+  const isStepComplete = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return formData.name.trim().length >= 2 && formData.email.trim().length > 0;
+      case 2:
+        return formData.primarySkill.length > 0 && formData.experienceLevel.length > 0;
+      case 3:
+        return formData.bio.trim().length >= 10;
+      default:
+        return false;
+    }
+  };
   
   useEffect(() => {
     // Prefill data is already set in useState
@@ -92,6 +112,7 @@ export const OnboardingEmployee: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      toast.error('Please fix the errors below', 'Some required fields are missing or invalid');
       return;
     }
 
@@ -106,9 +127,12 @@ export const OnboardingEmployee: React.FC = () => {
         headline: formData.experienceLevel,
         isVerified: false
       });
+      
+      toast.success('Profile Completed!', 'Welcome to PartTimePays! Your profile has been set up successfully.');
       navigate('/employee');
     } catch (error) {
       console.error('Profile completion failed:', error);
+      toast.error('Profile Update Failed', 'There was an error completing your profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +156,34 @@ export const OnboardingEmployee: React.FC = () => {
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">
             Tell us about your skills and experience to get started
           </p>
+          
+          {/* Progress Indicator */}
+          <div className="mb-6">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              {Array.from({ length: totalSteps }, (_, index) => (
+                <div key={index} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    index + 1 < currentStep 
+                      ? 'bg-green-500 text-white' 
+                      : index + 1 === currentStep 
+                        ? 'bg-primary-500 text-white' 
+                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400'
+                  }`}>
+                    {index + 1 < currentStep ? <CheckCircle className="h-4 w-4" /> : index + 1}
+                  </div>
+                  {index < totalSteps - 1 && (
+                    <div className={`w-8 h-0.5 mx-1 ${
+                      index + 1 < currentStep ? 'bg-green-500' : 'bg-neutral-200 dark:bg-neutral-700'
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="text-sm text-neutral-500 dark:text-neutral-400">
+              Step {currentStep} of {totalSteps} • {Math.round(progressPercentage)}% Complete
+            </div>
+          </div>
+          
           <div className="flex items-center justify-center space-x-4 text-sm text-neutral-500 dark:text-neutral-400">
             <VerifiedBadge size="sm" />
             <TrustBadge variant="secure" size="sm" text="Secure" />
@@ -281,11 +333,19 @@ export const OnboardingEmployee: React.FC = () => {
                     onChange={handleChange}
                     rows={3}
                     placeholder="Tell us about yourself, your interests, and what you're looking for..."
-                    className="input-professional"
+                    className={`input-professional ${formData.bio.length >= 10 ? 'border-green-500 focus:border-green-500' : formData.bio.length > 0 ? 'border-yellow-500 focus:border-yellow-500' : ''}`}
                   />
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {formData.bio.length}/500 characters
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className={`text-xs ${formData.bio.length >= 10 ? 'text-green-600 dark:text-green-400' : formData.bio.length > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-neutral-500 dark:text-neutral-400'}`}>
+                      {formData.bio.length}/500 characters
+                      {formData.bio.length >= 10 && ' • ✓ Complete'}
+                    </p>
+                    {formData.bio.length > 0 && formData.bio.length < 10 && (
+                      <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                        Minimum 10 characters recommended
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 

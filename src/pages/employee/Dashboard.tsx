@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/TrustBadge';
+import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
+import { LazyLoad, LazyImage } from '../../components/ui/LazyLoad';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import { Job } from '../../components/jobs/JobCard';
@@ -18,7 +20,11 @@ import {
   CheckCircle,
   AlertCircle,
   Eye,
-  Target
+  Target,
+  User,
+  Phone,
+  FileText,
+  Award
 } from 'lucide-react';
 
 export const EmployeeDashboard: React.FC = () => {
@@ -27,15 +33,58 @@ export const EmployeeDashboard: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Real data will be loaded from API
-  const [stats, _setStats] = useState({
-    activeApplications: 0,
-    totalEarnings: 0,
-    hoursThisMonth: 0,
-    completedJobs: 0,
-    rating: 0,
-    profileCompletion: 0
-  });
+  // Calculate profile completion percentage
+  const calculateProfileCompletion = () => {
+    if (!user) return 0;
+    
+    let completed = 0;
+    let total = 6;
+    
+    if (user.fullName) completed++;
+    if (user.email) completed++;
+    if (user.phone) completed++;
+    if (user.about && user.about.length > 10) completed++;
+    if (user.skills && user.skills.length > 0) completed++;
+    if (user.profileImage) completed++;
+    
+    return Math.round((completed / total) * 100);
+  };
+
+  const profileCompletion = calculateProfileCompletion();
+  
+  // Profile completion checklist items
+  const profileChecklist = [
+    {
+      id: 'name',
+      label: 'Full Name',
+      completed: !!user?.fullName,
+      icon: User
+    },
+    {
+      id: 'phone',
+      label: 'Phone Number',
+      completed: !!user?.phone,
+      icon: Phone
+    },
+    {
+      id: 'bio',
+      label: 'About Section',
+      completed: !!(user?.about && user.about.length > 10),
+      icon: FileText
+    },
+    {
+      id: 'skills',
+      label: 'Skills Added',
+      completed: !!(user?.skills && user.skills.length > 0),
+      icon: Award
+    },
+    {
+      id: 'photo',
+      label: 'Profile Photo',
+      completed: !!user?.profileImage,
+      icon: User
+    }
+  ];
 
   // Load jobs and stats from API
   useEffect(() => {
@@ -138,13 +187,42 @@ export const EmployeeDashboard: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-8 animate-fade-in-up">
-        <div className="h-32 bg-gray-300 dark:bg-gray-600 rounded-2xl animate-pulse"></div>
+        {/* Welcome Header Skeleton */}
+        <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-8">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <Skeleton height={36} width="60%" className="mb-2 bg-primary-200" />
+              <Skeleton height={20} width="80%" className="bg-primary-200" />
+            </div>
+            <div className="hidden md:flex items-center space-x-4">
+              <Skeleton width={120} height={32} rounded className="bg-primary-200" />
+              <div className="text-right">
+                <Skeleton height={24} width={40} className="mb-1 bg-primary-200" />
+                <Skeleton height={16} width={60} className="bg-primary-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-32 bg-gray-300 dark:bg-gray-600 rounded-xl animate-pulse"></div>
+            <SkeletonCard key={i} />
           ))}
         </div>
-        <div className="h-64 bg-gray-300 dark:bg-gray-600 rounded-xl animate-pulse"></div>
+
+        {/* Jobs Section Skeleton */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Skeleton height={28} width="40%" />
+            <SkeletonButton size="sm" />
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <SkeletonJobCard key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -152,54 +230,82 @@ export const EmployeeDashboard: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in-up">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.fullName || 'Student'}!</h1>
-            <p className="text-primary-100 text-lg">
+      <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 lg:p-8 text-white">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Welcome back, {user?.fullName || 'Student'}!</h1>
+            <p className="text-primary-100 text-base lg:text-lg">
               Ready to find your next opportunity? Let's make today productive.
             </p>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-0 lg:space-y-2">
             <VerifiedBadge size="lg" text="Verified Student" />
             <div className="text-right">
-              <div className="text-2xl font-bold">{stats.rating}★</div>
+              <div className="text-xl lg:text-2xl font-bold">{stats.rating}★</div>
               <div className="text-sm text-primary-100">Your Rating</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Profile Completion Alert */}
-      {stats.profileCompletion < 100 && (
-        <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl p-4">
-          <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 text-warning-600 dark:text-warning-400 mr-3" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-warning-800 dark:text-warning-200">
-                Complete your profile to get better job matches
-              </p>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="flex-1 bg-warning-200 dark:bg-warning-800 rounded-full h-2">
-                  <div 
-                    className="bg-warning-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${stats.profileCompletion}%` }}
-                  ></div>
+      {/* Profile Completion Checklist */}
+      {profileCompletion < 100 && (
+        <ElevatedCard className="border-l-4 border-l-yellow-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                  <Target className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                 </div>
-                <span className="text-xs text-warning-700 dark:text-warning-300">
-                  {stats.profileCompletion}%
-                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                    Complete Your Profile
+                  </h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    {profileCompletion}% complete • {profileChecklist.filter(item => !item.completed).length} items remaining
+                  </p>
+                </div>
               </div>
+              <Link to="/profile">
+                <Button variant="outline" size="sm">
+                  Complete Profile
+                </Button>
+              </Link>
             </div>
-            <Button variant="outline" size="sm" className="ml-4">
-              Complete
-            </Button>
-          </div>
-        </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {profileChecklist.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <div key={item.id} className={`flex items-center space-x-3 p-3 rounded-lg ${
+                    item.completed 
+                      ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                      : 'bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
+                  }`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                      item.completed 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-neutral-300 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400'
+                    }`}>
+                      {item.completed ? <CheckCircle className="h-4 w-4" /> : <IconComponent className="h-4 w-4" />}
+                    </div>
+                    <span className={`text-sm font-medium ${
+                      item.completed 
+                        ? 'text-green-700 dark:text-green-300' 
+                        : 'text-neutral-700 dark:text-neutral-300'
+                    }`}>
+                      {item.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </ElevatedCard>
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <ElevatedCard hover className="relative overflow-hidden">
           <div className="absolute top-0 right-0 w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full -translate-y-10 translate-x-10"></div>
           <CardContent className="relative">
@@ -325,78 +431,104 @@ export const EmployeeDashboard: React.FC = () => {
         </div>
         
         <div className="space-y-4">
-          {recentJobs.map((job) => (
-            <ElevatedCard key={job.id} hover className="relative">
-              {job.urgent && (
-                <div className="absolute -top-2 -right-2 bg-error-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  URGENT
-                </div>
-              )}
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                        {job.title}
-                      </h3>
-                      {job.verified && <VerifiedBadge size="sm" />}
+          {recentJobs.length > 0 ? (
+            recentJobs.map((job, index) => (
+              <LazyLoad
+                key={job.id}
+                fallback={<SkeletonJobCard />}
+                threshold={0.1}
+                rootMargin="100px"
+              >
+                <ElevatedCard hover className="relative">
+                  {job.urgent && (
+                    <div className="absolute -top-2 -right-2 bg-error-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      URGENT
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                      <div className="flex items-center">
-                        <Briefcase className="h-4 w-4 mr-1 flex-shrink-0" />
-                        <span className="truncate">{job.company}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                        <span className="truncate">{job.location}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
-                        <span className="truncate">{job.posted}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {job.skills.map((skill, index) => (
-                        <span 
-                          key={index}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <div className="text-xl sm:text-2xl font-bold text-primary-600">
-                          {job.minRate && job.maxRate ? `₹${job.minRate}-${job.maxRate}/hr` : `₹${job.rate}/hr`}
+                  )}
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                            {job.title}
+                          </h3>
+                          {job.verified && <VerifiedBadge size="sm" />}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
-                          <span>{job.type}</span>
-                          <span className="text-trust-600 dark:text-trust-400 font-medium">
-                            {job.match}% match
-                          </span>
+                        
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+                          <div className="flex items-center">
+                            <Briefcase className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{job.company}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{job.location}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{job.posted}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {job.skills.map((skill, index) => (
+                            <span 
+                              key={index}
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <div className="text-xl sm:text-2xl font-bold text-primary-600">
+                              {job.minRate && job.maxRate ? `₹${job.minRate}-${job.maxRate}/hr` : `₹${job.rate}/hr`}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
+                              <span>{job.type}</span>
+                              <span className="text-trust-600 dark:text-trust-400 font-medium">
+                                {job.match}% match
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+                            <Link to={`/employee/jobs/${job.id}`} className="flex-1 sm:flex-none">
+                              <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />} className="w-full sm:w-auto">
+                                View
+                              </Button>
+                            </Link>
+                            <Button variant="primary" size="sm" className="w-full sm:w-auto">
+                              Apply Now
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
-                        <Link to={`/employee/jobs/${job.id}`} className="flex-1 sm:flex-none">
-                          <Button variant="outline" size="sm" leftIcon={<Eye className="h-4 w-4" />} className="w-full sm:w-auto">
-                            View
-                          </Button>
-                        </Link>
-                        <Button variant="primary" size="sm" className="w-full sm:w-auto">
-                          Apply Now
-                        </Button>
-                      </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </ElevatedCard>
+              </LazyLoad>
+            ))
+          ) : (
+            <ElevatedCard className="text-center py-12">
+              <CardContent>
+                <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="h-8 w-8 text-neutral-400" />
                 </div>
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                  No Jobs Available
+                </h3>
+                <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+                  We're working on bringing you the best opportunities. Check back soon!
+                </p>
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                  Refresh Jobs
+                </Button>
               </CardContent>
             </ElevatedCard>
-          ))}
+          )}
         </div>
 
         {/* Additional Jobs - shown when "View All" is clicked */}
@@ -485,4 +617,5 @@ export const EmployeeDashboard: React.FC = () => {
 
     </div>
   );
+};
 };

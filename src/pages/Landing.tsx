@@ -7,7 +7,7 @@ import { ThemeToggle } from '../components/ui/ThemeToggle';
 import { FeaturesCycle } from '../components/FeaturesCycle';
 import { JobCard } from '../components/jobs/JobCard';
 import apiService from '../services/api';
-import { SEO, SEOConfigs } from '../components/seo/SEO';
+import { SEO, pageSEO } from '../utils/seo';
 import { DevelopmentNotice } from '../components/ui/DevelopmentNotice';
 
 // API Test Component for debugging
@@ -247,10 +247,10 @@ const Navbar = ({ onAboutClick, onHowItWorksClick, onContactClick }: { onAboutCl
 
 // Statistics data
 const stats = [
-  { id: 1, name: 'Active Users', value: '50,000+' },
-  { id: 2, name: 'Jobs Posted', value: '25,000+' },
+  { id: 1, name: 'Active Users', value: 'Growing Community' },
+  { id: 2, name: 'Jobs Posted', value: 'Active Market' },
   { id: 3, name: 'Hours Worked', value: '1M+' },
-  { id: 4, name: 'Average Rating', value: '4.8★' },
+  { id: 4, name: 'Platform Rating', value: 'Highly Rated' },
 ];
 
 // Testimonials data
@@ -511,11 +511,11 @@ export const Landing = () => {
                       <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-neutral-600 dark:text-neutral-400">
                         <div className="flex items-center">
                           <Users className="h-4 w-4 mr-1 text-primary-600" />
-                          <span className="font-semibold text-primary-600">50K+</span> Students
+                          <span className="font-semibold text-primary-600">Growing</span> Community
                         </div>
                         <div className="flex items-center">
                           <Award className="h-4 w-4 mr-1 text-secondary-600" />
-                          <span className="font-semibold text-secondary-600">4.8★</span> Rating
+                          <span className="font-semibold text-secondary-600">Trusted</span> Platform
                         </div>
                         <div className="flex items-center">
                           <Shield className="h-4 w-4 mr-1 text-trust-600" />
@@ -899,7 +899,7 @@ export const Landing = () => {
                   </div>
                   <div className="flex items-center text-primary-100">
                     <Star className="h-5 w-5 mr-2" />
-                    <span className="text-sm font-medium">4.8★ rating</span>
+                    <span className="text-sm font-medium">Highly rated platform</span>
                   </div>
                 </div>
               </div>

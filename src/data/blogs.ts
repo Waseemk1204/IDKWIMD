@@ -21,10 +21,10 @@ export interface BlogPost {
 export const BLOGS_DATA: BlogPost[] = [
   {
     id: '1',
-    title: 'Top 5 Side Hustles for College Students in 2025',
+    title: 'Top 5 Side Hustles for College Students in 2024',
     excerpt: 'Discover the most profitable and flexible side hustles that perfectly complement your college schedule and help build your career.',
     content: `
-      <p>The landscape of part-time work has evolved dramatically in recent years, offering college students unprecedented opportunities to earn money while building valuable skills. Here are the top 5 side hustles that are perfect for students in 2025:</p>
+      <p>The landscape of part-time work has evolved dramatically in recent years, offering college students unprecedented opportunities to earn money while building valuable skills. Here are the top 5 side hustles that are perfect for students in 2024:</p>
 
       <h2>1. Freelance Content Creation</h2>
       <p>With the rise of digital marketing, businesses are constantly seeking fresh content. Whether it's writing blog posts, creating social media content, or designing graphics, freelance content creation offers flexible hours and competitive pay rates.</p>
@@ -55,7 +55,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Priya Sharma',
     authorRole: 'Career Advisor',
     authorBio: 'Priya is a career advisor with over 8 years of experience helping students and young professionals navigate the job market. She specializes in remote work opportunities and career development.',
-    publishDate: '2025-01-15',
+    publishDate: '2024-12-15',
     readTime: '8 min read',
     category: 'Career Tips',
     tags: ['students', 'side-hustle', 'income', 'flexibility'],
@@ -90,7 +90,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Rajesh Kumar',
     authorRole: 'Student Success Coach',
     authorBio: 'Rajesh is a student success coach who has helped over 500 students balance work and studies effectively. He holds a Master\'s in Educational Psychology.',
-    publishDate: '2025-01-12',
+    publishDate: '2024-12-12',
     readTime: '6 min read',
     category: 'Productivity',
     tags: ['time-management', 'studies', 'work-life-balance'],
@@ -122,7 +122,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Lisa Wang',
     authorRole: 'HR Specialist',
     authorBio: 'Lisa is an HR specialist with 12 years of experience in talent acquisition and workforce management. She has helped numerous companies optimize their hiring strategies.',
-    publishDate: '2025-01-10',
+    publishDate: '2024-12-10',
     readTime: '5 min read',
     category: 'Employer Insights',
     tags: ['hiring', 'employers', 'productivity', 'flexibility'],
@@ -154,7 +154,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Sarah Johnson',
     authorRole: 'Remote Work Consultant',
     authorBio: 'Sarah is a remote work consultant who has helped over 200 professionals transition to remote work successfully. She is the author of "The Remote Worker\'s Guide to Success".',
-    publishDate: '2025-01-08',
+    publishDate: '2024-12-08',
     readTime: '7 min read',
     category: 'Skill Building',
     tags: ['remote-work', 'skills', 'productivity', 'career-development'],
@@ -166,10 +166,10 @@ export const BLOGS_DATA: BlogPost[] = [
   },
   {
     id: '5',
-    title: 'The Future of Part-Time Work: Trends to Watch in 2025',
+    title: 'The Future of Part-Time Work: Trends to Watch in 2024',
     excerpt: 'Explore the emerging trends in part-time work and how they will shape the future of employment.',
     content: `
-      <p>The part-time work landscape is evolving rapidly, with new trends emerging that will shape how we work in 2025 and beyond.</p>
+      <p>The part-time work landscape is evolving rapidly, with new trends emerging that will shape how we work in 2024 and beyond.</p>
 
       <h2>1. Gig Economy Expansion</h2>
       <p>The gig economy continues to grow, offering more opportunities for flexible, project-based work across various industries.</p>
@@ -186,7 +186,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Michael Chen',
     authorRole: 'Workplace Trends Analyst',
     authorBio: 'Michael is a workplace trends analyst with a Ph.D. in Organizational Psychology. He has published numerous articles on the future of work and employment trends.',
-    publishDate: '2025-01-05',
+    publishDate: '2024-12-05',
     readTime: '6 min read',
     category: 'Workplace Trends',
     tags: ['future-of-work', 'trends', 'gig-economy', 'technology'],
@@ -218,7 +218,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Vikram Reddy',
     authorRole: 'Productivity Coach',
     authorBio: 'Vikram is a productivity coach who specializes in helping remote workers optimize their performance. He has worked with Fortune 500 companies and startups alike.',
-    publishDate: '2025-01-03',
+    publishDate: '2024-12-03',
     readTime: '6 min read',
     category: 'Productivity',
     tags: ['remote-work', 'productivity', 'tools', 'success'],
@@ -250,7 +250,7 @@ export const BLOGS_DATA: BlogPost[] = [
     author: 'Emma Rodriguez',
     authorRole: 'Branding Expert',
     authorBio: 'Emma is a branding expert who has helped over 300 freelancers build successful personal brands. She is the founder of BrandBuild Academy.',
-    publishDate: '2025-01-01',
+    publishDate: '2024-12-01',
     readTime: '8 min read',
     category: 'Skill Building',
     tags: ['personal-branding', 'freelancing', 'marketing', 'career-growth'],

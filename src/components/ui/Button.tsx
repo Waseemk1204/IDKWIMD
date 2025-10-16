@@ -22,6 +22,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   rightIcon?: React.ReactNode;
   loadingText?: string;
   trustIndicator?: boolean;
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -34,6 +36,8 @@ export const Button: React.FC<ButtonProps> = ({
   rightIcon,
   loadingText,
   trustIndicator = false,
+  ariaLabel,
+  ariaDescribedBy,
   className = '',
   disabled,
   ...props
@@ -127,7 +131,10 @@ export const Button: React.FC<ButtonProps> = ({
         ${disabledStyles} 
         ${className}
       `} 
-      disabled={disabled || isLoading} 
+      disabled={disabled || isLoading}
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
+      aria-disabled={disabled || isLoading}
       {...props}
     >
       {isLoading && (
