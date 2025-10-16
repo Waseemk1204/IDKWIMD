@@ -12,8 +12,19 @@ import {
   XCircle,
   Eye,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  TrendingUp,
+  Calendar,
+  MessageSquare,
+  Download,
+  Filter,
+  Search,
+  BarChart3,
+  Target,
+  Award,
+  Users
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Application {
   _id: string;
@@ -26,6 +37,8 @@ interface Application {
     minHourlyRate?: number;
     maxHourlyRate?: number;
     status: string;
+    category?: string;
+    skills?: string[];
   };
   status: 'pending' | 'reviewed' | 'shortlisted' | 'rejected' | 'accepted';
   appliedDate: string;
@@ -33,6 +46,23 @@ interface Application {
   coverLetter: string;
   salaryExpectation?: number;
   availability?: string;
+  notes?: string;
+  timeline?: Array<{
+    status: string;
+    date: string;
+    note?: string;
+  }>;
+}
+
+interface ApplicationStats {
+  total: number;
+  pending: number;
+  reviewed: number;
+  shortlisted: number;
+  accepted: number;
+  rejected: number;
+  successRate: number;
+  averageResponseTime: number;
 }
 
 export const MyApplications: React.FC = () => {
@@ -44,6 +74,9 @@ export const MyApplications: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showStats, setShowStats] = useState(false);
+  const [stats, setStats] = useState<ApplicationStats | null>(null);
 
   // Load applications
   useEffect(() => {
@@ -54,12 +87,15 @@ export const MyApplications: React.FC = () => {
         const response = await apiService.getUserApplications();
         if (response.success && response.data?.applications) {
           setApplications(response.data.applications);
+          calculateStats(response.data.applications);
         } else {
           setError(response.message || 'Failed to load applications');
+          toast.error('Error', 'Failed to load applications');
         }
       } catch (error) {
         console.error('Failed to load applications:', error);
         setError('Failed to load applications. Please try again.');
+        toast.error('Error', 'Failed to load applications. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -67,6 +103,38 @@ export const MyApplications: React.FC = () => {
 
     loadApplications();
   }, []);
+
+  const calculateStats = (apps: Application[]) => {
+    const total = apps.length;
+    const pending = apps.filter(app => app.status === 'pending').length;
+    const reviewed = apps.filter(app => app.status === 'reviewed').length;
+    const shortlisted = apps.filter(app => app.status === 'shortlisted').length;
+    const accepted = apps.filter(app => app.status === 'accepted').length;
+    const rejected = apps.filter(app => app.status === 'rejected').length;
+    
+    const successRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
+    
+    // Calculate average response time (simplified)
+    const respondedApps = apps.filter(app => app.reviewedDate);
+    const averageResponseTime = respondedApps.length > 0 
+      ? respondedApps.reduce((sum, app) => {
+          const appliedDate = new Date(app.appliedDate);
+          const reviewedDate = new Date(app.reviewedDate!);
+          return sum + (reviewedDate.getTime() - appliedDate.getTime());
+        }, 0) / respondedApps.length / (1000 * 60 * 60 * 24) // Convert to days
+      : 0;
+
+    setStats({
+      total,
+      pending,
+      reviewed,
+      shortlisted,
+      accepted,
+      rejected,
+      successRate,
+      averageResponseTime: Math.round(averageResponseTime)
+    });
+  };
 
   const handleViewApplication = (application: Application) => {
     setSelectedApplication(application);
@@ -97,7 +165,7 @@ export const MyApplications: React.FC = () => {
       accepted: { 
         color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', 
         text: 'Accepted',
-        icon: CheckCircle
+        icon: Award
       },
       rejected: { 
         color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', 
@@ -133,9 +201,14 @@ export const MyApplications: React.FC = () => {
     return `₹${job.hourlyRate}/hr`;
   };
 
-  const filteredApplications = applications.filter(app => 
-    selectedStatus === 'all' || app.status === selectedStatus
-  );
+  const filteredApplications = applications.filter(app => {
+    const matchesStatus = selectedStatus === 'all' || app.status === selectedStatus;
+    const matchesSearch = !searchQuery || 
+      app.job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.job.location.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   const getStatusCounts = () => {
     const counts = {
@@ -188,7 +261,7 @@ export const MyApplications: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             My Applications
@@ -197,14 +270,94 @@ export const MyApplications: React.FC = () => {
             Track the status of your job applications
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => navigate('/employee/jobs')}
-          className="flex items-center"
-        >
-          <Briefcase className="w-4 h-4 mr-2" />
-          Browse Jobs
-        </Button>
+        <div className="flex space-x-3 mt-4 sm:mt-0">
+          <Button
+            variant="outline"
+            onClick={() => setShowStats(!showStats)}
+            className="flex items-center"
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => navigate('/employee/jobs')}
+            className="flex items-center"
+          >
+            <Briefcase className="w-4 h-4 mr-2" />
+            Browse Jobs
+          </Button>
+        </div>
+      </div>
+
+      {/* Application Analytics */}
+      {showStats && stats && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2" />
+            Application Analytics
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <div className="flex items-center">
+                <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Success Rate</p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.successRate}%</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+              <div className="flex items-center">
+                <Award className="w-8 h-8 text-green-600 dark:text-green-400" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Accepted</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.accepted}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+              <div className="flex items-center">
+                <Clock className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Avg Response</p>
+                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.averageResponseTime}d</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+              <div className="flex items-center">
+                <Users className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Total Applied</p>
+                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.total}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search and Filter */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search applications..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {filteredApplications.length} of {applications.length} applications
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Status Overview */}
@@ -292,6 +445,13 @@ export const MyApplications: React.FC = () => {
                             <DollarSign className="w-4 h-4 mr-1" />
                             {formatPayRate(application.job)}
                           </div>
+                          {application.job.category && (
+                            <div className="flex items-center">
+                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded-full">
+                                {application.job.category}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="text-right">
@@ -299,12 +459,35 @@ export const MyApplications: React.FC = () => {
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           Applied {formatDate(application.appliedDate)}
                         </p>
+                        {application.reviewedDate && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Reviewed {formatDate(application.reviewedDate)}
+                          </p>
+                        )}
                       </div>
                     </div>
                     
                     <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-3">
                       {application.coverLetter}
                     </p>
+
+                    {/* Skills */}
+                    {application.job.skills && application.job.skills.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {application.job.skills.slice(0, 3).map((skill, index) => (
+                            <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs rounded">
+                              {skill}
+                            </span>
+                          ))}
+                          {application.job.skills.length > 3 && (
+                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded">
+                              +{application.job.skills.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center space-x-4">
                       <Button
@@ -325,6 +508,16 @@ export const MyApplications: React.FC = () => {
                         <ExternalLink className="w-4 h-4 mr-1" />
                         View Job
                       </Button>
+                      {application.status === 'accepted' && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="flex items-center"
+                        >
+                          <MessageSquare className="w-4 h-4 mr-1" />
+                          Message Employer
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -401,6 +594,14 @@ export const MyApplications: React.FC = () => {
                       {formatPayRate(selectedApplication.job)}
                     </span>
                   </div>
+                  {selectedApplication.job.category && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600 dark:text-neutral-400">Category:</span>
+                      <span className="font-medium text-neutral-900 dark:text-white">
+                        {selectedApplication.job.category}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -460,6 +661,15 @@ export const MyApplications: React.FC = () => {
                   <ExternalLink className="w-4 h-4 mr-2" />
                   View Job
                 </Button>
+                {selectedApplication.status === 'accepted' && (
+                  <Button
+                    variant="primary"
+                    className="flex items-center justify-center"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Message Employer
+                  </Button>
+                )}
               </div>
             </div>
           </div>
