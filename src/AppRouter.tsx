@@ -48,6 +48,8 @@ import { NotFound } from './pages/NotFound';
 // Auth pages
 import { OAuthCallback } from './pages/auth/OAuthCallback';
 import { GoogleAuthCallback } from './pages/auth/GoogleAuthCallback';
+// UI Components
+import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 // Messaging pages
 import { Messaging } from './pages/Messaging';
 // Community pages
@@ -200,5 +202,6 @@ export function AppRouter() {
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <StickyFeedbackButton />
     </BrowserRouter>;
 }

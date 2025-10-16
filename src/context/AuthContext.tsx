@@ -168,10 +168,16 @@ export const AuthProvider: React.FC<{
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
+        const refreshToken = response.data.refreshToken;
+        const expiresIn = response.data.expiresIn || 3600;
+        
+        console.log('AuthContext - Login successful, setting session');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
-        apiService.setToken(token);
+        
+        // Use session service for proper token management
+        sessionService.setSession(token, refreshToken, expiresIn);
+        
         setIsLoading(false);
         return userData;
       } else {
@@ -197,10 +203,15 @@ export const AuthProvider: React.FC<{
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
+        const refreshToken = response.data.refreshToken;
+        const expiresIn = response.data.expiresIn || 3600;
+        
+        console.log('AuthContext - Signup successful, setting session');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
-        apiService.setToken(token);
+        
+        // Use session service for proper token management
+        sessionService.setSession(token, refreshToken, expiresIn);
       } else {
         throw new Error(response.message || 'Registration failed');
       }
@@ -229,10 +240,16 @@ export const AuthProvider: React.FC<{
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
+        const refreshToken = response.data.refreshToken;
+        const expiresIn = response.data.expiresIn || 3600;
+        
+        console.log('AuthContext - Google login successful, setting session');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
-        apiService.setToken(token);
+        
+        // Use session service for proper token management
+        sessionService.setSession(token, refreshToken, expiresIn);
+        
         setIsLoading(false);
         return userData;
       } else {
