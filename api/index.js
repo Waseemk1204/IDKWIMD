@@ -1090,8 +1090,6 @@ app.post('/api/auth/logout', authenticate, async (req, res) => {
   }
 });
 
-});
-
 // Refresh token endpoint
 app.post('/api/auth/refresh', async (req, res) => {
   try {
