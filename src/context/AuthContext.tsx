@@ -215,14 +215,15 @@ export const AuthProvider: React.FC<{
   const loginWithGoogle = async (googleUser: GoogleUserInfo): Promise<User> => {
     setIsLoading(true);
     try {
+      console.log('AuthContext - loginWithGoogle called with:', googleUser);
       
       const response = await apiService.loginWithGoogle({
-        googleId: googleUser.googleId,
+        googleId: googleUser.id,
         email: googleUser.email,
-        fullName: googleUser.fullName,
-        profilePhoto: googleUser.profilePhoto,
-        givenName: googleUser.givenName,
-        familyName: googleUser.familyName
+        fullName: googleUser.name,
+        profilePhoto: googleUser.picture,
+        givenName: googleUser.given_name,
+        familyName: googleUser.family_name
       });
       
       if (response.success && response.data?.user) {

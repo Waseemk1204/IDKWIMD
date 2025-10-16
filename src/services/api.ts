@@ -155,18 +155,23 @@ class ApiService {
     givenName?: string;
     familyName?: string;
   }): Promise<ApiResponse> {
-    const response = await this.request('/auth/google', {
+    console.log('API Service - loginWithGoogle called with:', googleData);
+    const response = await this.request('/api/auth/google', {
       method: 'POST',
       body: JSON.stringify(googleData),
     });
 
     if (response.success && response.data && typeof response.data === 'object' && 'token' in response.data) {
       const tokenData = response.data as any;
+      console.log('Google login successful, setting session with token');
       sessionService.setSession(
         tokenData.token,
         tokenData.refreshToken,
         tokenData.expiresIn || 3600
       );
+      toast.success('Welcome!', 'You have been successfully logged in with Google');
+    } else {
+      console.error('Google login failed:', response);
     }
 
     return response;

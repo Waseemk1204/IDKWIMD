@@ -1235,8 +1235,11 @@ app.post('/api/auth/google', [
       console.log(`Google OAuth signup successful for new user: ${user.email}`);
     }
 
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Generate tokens
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    console.log(`Generated tokens for user ${user.email}`);
 
     res.json({
       success: true,
@@ -1253,7 +1256,9 @@ app.post('/api/auth/google', [
           profilePhoto: user.profilePhoto || user.profileImage,
           googleId: user.googleId
         },
-        token
+        token,
+        refreshToken,
+        expiresIn: 3600 // 1 hour in seconds
       }
     });
   } catch (error) {
