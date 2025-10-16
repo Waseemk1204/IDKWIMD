@@ -58,8 +58,8 @@ const ApiTestComponent = () => {
     }
   };
 
-  // Show on mobile or in development
-  const shouldShow = !import.meta.env.PROD || window.innerWidth < 768;
+  // Only show in development mode
+  const shouldShow = !import.meta.env.PROD;
 
   if (!shouldShow) return null;
 
@@ -468,7 +468,6 @@ export const Landing = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 overflow-x-hidden pt-16 scrollbar-hide" style={{ overflowX: 'hidden' }}>
       <SEO {...SEOConfigs.home} />
-      <ApiTestComponent />
       
       {/* Development Notice Dialog - Only on Landing Page */}
       <DevelopmentNotice />
