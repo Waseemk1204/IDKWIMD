@@ -4,7 +4,6 @@ import Message, { IMessage } from '../models/Message';
 import Conversation, { IConversation } from '../models/Conversation';
 import User from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
-import { sendMessageToConversation } from '../services/socketService';
 
 // Get user's conversations
 export const getConversations = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -220,14 +219,8 @@ export const sendMessage = async (req: AuthRequest, res: Response): Promise<void
     // Emit real-time message to conversation participants
     const populatedMessage = message.toObject();
     if (req.io) {
-      sendMessageToConversation(
-        req.io,
-        conversationId,
-        {
-          ...populatedMessage,
-          conversationId
-        }
-      );
+      // TODO: Implement socket emission
+      // req.io.to(`conversation:${conversationId}`).emit('new_message', populatedMessage);
     }
 
     res.status(201).json({
@@ -398,17 +391,8 @@ export const editMessage = async (req: AuthRequest, res: Response): Promise<void
 
     // Emit real-time update
     if (req.io) {
-      sendMessageToConversation(
-        req.io,
-        message.conversation.toString(),
-        {
-          type: 'message_edited',
-          messageId: message._id,
-          content: message.content,
-          editedAt: message.editedAt,
-          conversationId: message.conversation.toString()
-        }
-      );
+      // TODO: Implement socket emission
+      // req.io.to(`conversation:${message.conversation}`).emit('message_edited', { messageId: message._id, content: message.content });
     }
 
     res.json({
@@ -456,15 +440,8 @@ export const deleteMessage = async (req: AuthRequest, res: Response): Promise<vo
 
     // Emit real-time update
     if (req.io) {
-      sendMessageToConversation(
-        req.io,
-        message.conversation.toString(),
-        {
-          type: 'message_deleted',
-          messageId: message._id,
-          conversationId: message.conversation.toString()
-        }
-      );
+      // TODO: Implement socket emission
+      // req.io.to(`conversation:${message.conversation}`).emit('message_deleted', { messageId: message._id });
     }
 
     res.json({

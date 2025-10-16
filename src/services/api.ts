@@ -1140,31 +1140,178 @@ class ApiService {
     return this.request('/search/filters');
   }
 
-  // Messaging methods
-  async getConversations(page?: number, limit?: number): Promise<ApiResponse> {
+  // Channel methods
+  async getChannels(params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+  }): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
-    if (page) queryParams.append('page', page.toString());
-    if (limit) queryParams.append('limit', limit.toString());
-    return this.request(`/v1/messages/conversations?${queryParams.toString()}`);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.type) queryParams.append('type', params.type);
+    return this.request(`/channels?${queryParams.toString()}`);
+  }
+
+  async createChannel(channelData: {
+    name: string;
+    description?: string;
+    type?: 'public' | 'private' | 'announcement';
+    topic?: string;
+    purpose?: string;
+    settings?: any;
+  }): Promise<ApiResponse> {
+    return this.request('/channels', {
+      method: 'POST',
+      body: JSON.stringify(channelData),
+    });
+  }
+
+  async getChannel(channelId: string): Promise<ApiResponse> {
+    return this.request(`/channels/${channelId}`);
+  }
+
+  async updateChannel(channelId: string, channelData: any): Promise<ApiResponse> {
+    return this.request(`/channels/${channelId}`, {
+      method: 'PUT',
+      body: JSON.stringify(channelData),
+    });
+  }
+
+  async addChannelMember(channelId: string, userId: string): Promise<ApiResponse> {
+    return this.request(`/channels/${channelId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async removeChannelMember(channelId: string, userId: string): Promise<ApiResponse> {
+    return this.request(`/channels/${channelId}/members/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateChannelMemberRole(channelId: string, userId: string, role: string, permissions?: any): Promise<ApiResponse> {
+    return this.request(`/channels/${channelId}/members/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role, permissions }),
+    });
+  }
+
+  async archiveChannel(channelId: string): Promise<ApiResponse> {
+    return this.request(`/channels/${channelId}/archive`, {
+      method: 'PUT',
+    });
+  }
+
+  async getChannelMessages(channelId: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    return this.request(`/channels/${channelId}/messages?${queryParams.toString()}`);
+  }
+
+  // Call methods
+  async getCallHistory(params?: {
+    page?: number;
+    limit?: number;
+    callType?: string;
+    status?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.callType) queryParams.append('callType', params.callType);
+    if (params?.status) queryParams.append('status', params.status);
+    return this.request(`/calls/history?${queryParams.toString()}`);
+  }
+
+  async getCallDetails(callId: string): Promise<ApiResponse> {
+    return this.request(`/calls/history/${callId}`);
+  }
+
+  async createMeetingRoom(data: {
+    conversationId?: string;
+    channelId?: string;
+    callType?: 'audio' | 'video';
+    participants?: string[];
+  }): Promise<ApiResponse> {
+    return this.request('/calls/meeting-room', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async startCall(callId: string): Promise<ApiResponse> {
+    return this.request(`/calls/${callId}/start`, {
+      method: 'POST',
+    });
+  }
+
+  async endCall(callId: string): Promise<ApiResponse> {
+    return this.request(`/calls/${callId}/end`, {
+      method: 'POST',
+    });
+  }
+
+  async joinCall(callId: string): Promise<ApiResponse> {
+    return this.request(`/calls/${callId}/join`, {
+      method: 'POST',
+    });
+  }
+
+  async leaveCall(callId: string): Promise<ApiResponse> {
+    return this.request(`/calls/${callId}/leave`, {
+      method: 'POST',
+    });
+  }
+
+  async getActiveCalls(): Promise<ApiResponse> {
+    return this.request('/calls/active');
+  }
+
+  // Messaging methods
+  async getConversations(params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    return this.request(`/messages/conversations?${queryParams.toString()}`);
   }
 
   async createConversation(data: {
     participants: string[];
     title?: string;
     conversationType?: 'direct' | 'group' | 'job_related';
-    job?: string;
   }): Promise<ApiResponse> {
-    return this.request('/v1/messages/conversations', {
+    return this.request('/messages/conversations', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async getMessages(conversationId: string, page?: number, limit?: number): Promise<ApiResponse> {
+  async getMessages(conversationId: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    return this.request(`/messages/conversations/${conversationId}/messages?${queryParams.toString()}`);
+  }
+
+  async searchMessages(query: string, conversationId?: string, page?: number, limit?: number): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('q', query);
+    if (conversationId) queryParams.append('conversationId', conversationId);
     if (page) queryParams.append('page', page.toString());
     if (limit) queryParams.append('limit', limit.toString());
-    return this.request(`/v1/messages/conversations/${conversationId}/messages?${queryParams.toString()}`);
+    return this.request(`/messages/search?${queryParams.toString()}`);
   }
 
   async sendMessage(conversationId: string, data: {
@@ -1228,15 +1375,6 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  }
-
-  async searchMessages(query: string, conversationId?: string, page?: number, limit?: number): Promise<ApiResponse> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('q', query);
-    if (conversationId) queryParams.append('conversationId', conversationId);
-    if (page) queryParams.append('page', page.toString());
-    if (limit) queryParams.append('limit', limit.toString());
-    return this.request(`/v1/messages/search?${queryParams.toString()}`);
   }
 
   // Unified messaging integration methods

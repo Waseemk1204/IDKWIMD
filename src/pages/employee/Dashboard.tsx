@@ -5,6 +5,9 @@ import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/TrustBadge';
 import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
 import { LazyLoad, LazyImage } from '../../components/ui/LazyLoad';
+import { ProfileCompletionWizard } from '../../components/profile/ProfileCompletionWizard';
+import { ProfileCompletionProgress, getProfileCompletionItems, calculateProfileCompletion } from '../../components/profile/ProfileCompletionProgress';
+import { SkillVerification } from '../../components/profile/SkillVerification';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import { Job } from '../../components/jobs/JobCard';
@@ -24,7 +27,9 @@ import {
   User,
   Phone,
   FileText,
-  Award
+  Award,
+  Settings,
+  X
 } from 'lucide-react';
 
 export const EmployeeDashboard: React.FC = () => {

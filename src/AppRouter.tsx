@@ -51,7 +51,7 @@ import { GoogleAuthCallback } from './pages/auth/GoogleAuthCallback';
 // UI Components
 import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 // Messaging pages
-import { Messaging } from './pages/Messaging';
+import { Comms } from './pages/Comms';
 // Community pages
 import { CommunityHub } from './pages/community/CommunityHub';
 import { PostDetail } from './pages/community/PostDetail';
@@ -184,8 +184,8 @@ export function AppRouter() {
         </Route>
 
         {/* Messaging Routes - Available to all authenticated users */}
-        <Route path="/messaging" element={<ProtectedRoute>
-              <Messaging />
+        <Route path="/comms" element={<ProtectedRoute>
+              <Comms />
             </ProtectedRoute>} />
 
         {/* Community Routes - Available to all authenticated users */}

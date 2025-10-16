@@ -11,6 +11,7 @@ import { config } from './config';
 import { corsOptions, helmetConfig, mongoSanitizeConfig, xssProtection, requestLogger, errorHandler } from './middlewares/security';
 import { generalLimiter } from './middlewares/rateLimiter';
 import { injectSocketIO } from './middlewares/socket';
+import { configureSocket } from './config/socket';
 import { swaggerSpec } from './config/swagger';
 import swaggerUi from 'swagger-ui-express';
 
@@ -30,6 +31,8 @@ import searchRoutes from './routes/search';
 import walletRoutes from './routes/wallet';
 import adminRoutes from './routes/admin';
 import verificationRoutes from './routes/verification';
+import channelRoutes from './routes/channels';
+import callRoutes from './routes/calls';
 // import integrationRoutes from './routes/integration';
 // import unifiedMessagingRoutes from './routes/unifiedMessaging';
 // import unifiedNotificationRoutes from './routes/unifiedNotifications';
@@ -46,9 +49,7 @@ class Server {
   constructor() {
     this.app = express();
     this.server = createServer(this.app);
-    this.io = new SocketIOServer(this.server, {
-      cors: corsOptions
-    });
+    this.io = configureSocket(this.server);
 
     this.initializeMiddlewares();
     this.initializeRoutes();
@@ -123,6 +124,8 @@ class Server {
     this.app.use('/api/v1/wallet', walletRoutes);
     this.app.use('/api/v1/admin', adminRoutes);
     this.app.use('/api/v1/verification', verificationRoutes);
+    this.app.use('/api/v1/channels', channelRoutes);
+    this.app.use('/api/v1/calls', callRoutes);
     // this.app.use('/api/v1/integration', integrationRoutes);
     // this.app.use('/api/v1/unified-messaging', unifiedMessagingRoutes);
     // this.app.use('/api/v1/unified-notifications', unifiedNotificationRoutes);

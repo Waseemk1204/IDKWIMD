@@ -139,14 +139,14 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
       
       if (notificationService && job.employer && applicant) {
         await notificationService.createNotification({
-          recipientId: job.employer,
-          senderId: req.user._id,
+          recipient: job.employer,
+          sender: req.user._id as any,
           type: 'job_application',
           title: 'New Job Application Received',
           message: `${applicant.fullName} has applied for your "${job.title}" position.`,
           richContent: {
-            image: null,
-            avatar: applicant.profilePhoto || null,
+            image: undefined,
+            avatar: applicant.profilePhoto || undefined,
             preview: `${applicant.fullName} applied for "${job.title}" at ${job.company}`,
             actionButtons: [
               { 
@@ -165,21 +165,18 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
           },
           context: {
             module: 'jobs',
-            entityId: jobId,
-            entityType: 'Job',
-            metadata: {
-              jobTitle: job.title,
-              companyName: job.company,
-              applicantName: applicant.fullName,
-              applicantEmail: applicant.email,
-              applicationId: application._id.toString()
+            relatedEntity: {
+              type: 'job',
+              id: jobId as any,
+              title: job.title,
+              url: `/employer/jobs/${jobId}`
+            },
+            crossModuleContext: {
+              sourceModule: 'jobs',
+              targetModule: 'profile',
+              connectionStrength: 0.8,
+              activityRelevance: 0.9
             }
-          },
-          smart: {
-            priority: job.urgency === 'high' ? 'high' : 'medium',
-            relevanceScore: 0.9,
-            category: 'job_management',
-            tags: ['urgent', 'application', job.category.toLowerCase()]
           }
         });
         

@@ -3,12 +3,20 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IMessage extends Document {
   _id: string;
   conversation: mongoose.Types.ObjectId;
+  channel?: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
   content: string;
-  messageType: 'text' | 'image' | 'file' | 'system' | 'job_context' | 'community_context';
-  attachments?: string[];
+  messageType: 'text' | 'image' | 'file' | 'system' | 'job_context' | 'community_context' | 'call_start' | 'call_end' | 'screen_share';
+  attachments?: {
+    url: string;
+    filename: string;
+    fileType: string;
+    fileSize: number;
+    thumbnailUrl?: string;
+  }[];
   isRead: boolean;
   readAt?: Date;
+  readBy?: mongoose.Types.ObjectId[];
   editedAt?: Date;
   isEdited: boolean;
   replyTo?: mongoose.Types.ObjectId;
@@ -23,7 +31,14 @@ export interface IMessage extends Document {
     communityPostId?: mongoose.Types.ObjectId;
     connectionId?: mongoose.Types.ObjectId;
     applicationId?: mongoose.Types.ObjectId;
+    callId?: string;
+    callDuration?: number;
+    callType?: 'audio' | 'video';
   };
+  mentions?: mongoose.Types.ObjectId[];
+  isPinned?: boolean;
+  pinnedAt?: Date;
+  pinnedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,7 +47,12 @@ const messageSchema = new Schema<IMessage>({
   conversation: {
     type: Schema.Types.ObjectId,
     ref: 'Conversation',
-    required: true
+    required: function() { return !this.channel; }
+  },
+  channel: {
+    type: Schema.Types.ObjectId,
+    ref: 'Channel',
+    required: function() { return !this.conversation; }
   },
   sender: {
     type: Schema.Types.ObjectId,
@@ -47,11 +67,15 @@ const messageSchema = new Schema<IMessage>({
   },
   messageType: {
     type: String,
-    enum: ['text', 'image', 'file', 'system', 'job_context', 'community_context'],
+    enum: ['text', 'image', 'file', 'system', 'job_context', 'community_context', 'call_start', 'call_end', 'screen_share'],
     default: 'text'
   },
   attachments: [{
-    type: String // URLs to uploaded files
+    url: { type: String, required: true },
+    filename: { type: String, required: true },
+    fileType: { type: String, required: true },
+    fileSize: { type: Number, required: true },
+    thumbnailUrl: { type: String }
   }],
   isRead: {
     type: Boolean,
@@ -60,6 +84,10 @@ const messageSchema = new Schema<IMessage>({
   readAt: {
     type: Date
   },
+  readBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   editedAt: {
     type: Date
   },
@@ -78,7 +106,7 @@ const messageSchema = new Schema<IMessage>({
   reactions: [{
     reactionType: {
       type: String,
-      enum: ['like', 'love', 'laugh', 'wow', 'sad', 'angry', 'thumbs_up', 'lightbulb', 'checkmark', 'question']
+      enum: ['like', 'love', 'laugh', 'wow', 'sad', 'angry', 'thumbs_up', 'lightbulb', 'checkmark', 'question', 'fire', 'rocket', 'eyes', 'party']
     },
     count: {
       type: Number,
@@ -105,7 +133,32 @@ const messageSchema = new Schema<IMessage>({
     applicationId: {
       type: Schema.Types.ObjectId,
       ref: 'Application'
+    },
+    callId: {
+      type: String
+    },
+    callDuration: {
+      type: Number
+    },
+    callType: {
+      type: String,
+      enum: ['audio', 'video']
     }
+  },
+  mentions: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  isPinned: {
+    type: Boolean,
+    default: false
+  },
+  pinnedAt: {
+    type: Date
+  },
+  pinnedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true,
