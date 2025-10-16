@@ -18,7 +18,6 @@ export interface GoogleAuthResponse {
 
 class GoogleAuthService {
   private isLoaded = false;
-  private isResolved = false;
 
   constructor() {
     this.loadGoogleScript();
@@ -68,55 +67,7 @@ class GoogleAuthService {
     }
   }
 
-  /**
-   * Handle Google credential response
-   */
-  private handleCredentialResponse(response: any): GoogleAuthResponse {
-    try {
-      console.log('Google OAuth credential response received:', response);
-      
-      // Decode the JWT token to get user info
-      const payload = this.decodeJWT(response.credential);
-      console.log('Decoded JWT payload:', payload);
-      
-      const userInfo: GoogleUserInfo = {
-        id: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture,
-        given_name: payload.given_name,
-        family_name: payload.family_name
-      };
 
-      console.log('Google user info:', userInfo);
-
-      return {
-        success: true,
-        user: userInfo
-      };
-    } catch (error) {
-      console.error('Google OAuth error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Authentication failed'
-      };
-    }
-  }
-
-  /**
-   * Decode JWT token
-   */
-  private decodeJWT(token: string): any {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  }
 
   /**
    * Trigger Google OAuth flow
@@ -124,135 +75,95 @@ class GoogleAuthService {
    * @param role - 'employee' or 'employer' for signup
    */
   async signIn(mode: 'login' | 'signup' = 'login', role?: 'employee' | 'employer'): Promise<GoogleAuthResponse> {
-    return new Promise((resolve) => {
-      if (!this.isLoaded) {
-        resolve({
-          success: false,
-          error: 'Google Auth not loaded yet'
-        });
-        return;
-      }
-
-      // Reset resolved state
-      this.isResolved = false;
-
-      // Set up one-time callback
-      const originalCallback = (window as any).google.accounts.id.callback;
-      (window as any).google.accounts.id.callback = (response: any) => {
-        console.log('Google OAuth callback triggered with response:', response);
-        this.isResolved = true;
-        const result = this.handleCredentialResponse(response);
-        console.log('Google OAuth result:', result);
-        resolve(result);
-        // Restore original callback
-        (window as any).google.accounts.id.callback = originalCallback;
+    if (!this.isLoaded) {
+      return {
+        success: false,
+        error: 'Google Auth not loaded yet'
       };
+    }
 
-      try {
-        console.log('Initiating Google OAuth redirect...');
-        
-        // Check if Google API is available
-        if (!(window as any).google?.accounts?.id) {
-          throw new Error('Google Identity Services not loaded');
-        }
-        
-        // Use different redirect URIs for signup and login
-        // For signup, encode role in the URI path so backend can read it
-        let loginUri;
-        if (mode === 'signup') {
-          const rolePath = role || 'employee';
-          loginUri = window.location.hostname === 'localhost' 
-            ? `${window.location.origin}/signup/${rolePath}`  // Local development
-            : `https://parttimepays.in/signup/${rolePath}`;    // Production
-        } else {
-          loginUri = window.location.hostname === 'localhost' 
-            ? window.location.origin + '/login'  // Local development
-            : 'https://parttimepays.in/login';    // Production
-        }
-        
-        // Store mode and role in localStorage for frontend callback handling
-        localStorage.setItem('google_auth_mode', mode);
-        if (role) {
-          localStorage.setItem('signup_role', role);
-        }
-        
-        // CRITICAL: Reinitialize Google Auth with the specific login_uri
-        // The login_uri parameter tells Google where to POST the credential
-        (window as any).google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          ux_mode: 'redirect',
-          login_uri: loginUri, // This is where Google will POST the credential
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: false
-        });
-        
-        // Create a temporary button element and trigger it
-        const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'fixed';
-        tempDiv.style.top = '-1000px';
-        tempDiv.style.left = '-1000px';
-        tempDiv.style.visibility = 'hidden';
-        document.body.appendChild(tempDiv);
-        
-        // Render the Google Sign-In button (no redirect_uri needed here)
-        (window as any).google.accounts.id.renderButton(tempDiv, {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard'
-        });
-        
-        // Wait for the button to render and then click it
-        setTimeout(() => {
-          const button = tempDiv.querySelector('div[role="button"]') as HTMLElement;
-          if (button) {
-            console.log('Clicking Google OAuth button programmatically');
-            button.click();
-          } else {
-            console.error('Google OAuth button not found');
-            document.body.removeChild(tempDiv);
-            resolve({
-              success: false,
-              error: 'Failed to create Google OAuth button'
-            });
-            return;
-          }
-        }, 100);
-        
-        // Add timeout for popup
-        setTimeout(() => {
-          if (!this.isResolved) {
-            console.log('Google OAuth popup timeout');
-            document.body.removeChild(tempDiv);
-            resolve({
-              success: false,
-              error: 'Google authentication timed out. Please try again.'
-            });
-          }
-        }, 30000); // 30 second timeout
-        
-        // Clean up after a delay
-        setTimeout(() => {
-          if (document.body.contains(tempDiv)) {
-            document.body.removeChild(tempDiv);
-          }
-        }, 5000);
-        
-        console.log('Google OAuth redirect initiated - user will be redirected to Google');
-        
-        // For redirect mode, we don't need to wait for a response
-        // The user will be redirected to Google and then back to our callback
-        // The Promise will be resolved when the callback page processes the response
-        
-      } catch (error) {
-        console.error('Google OAuth error:', error);
-        this.isResolved = true;
-        resolve({
-          success: false,
-          error: 'Failed to initiate Google authentication. Please try email/password login.'
-        });
+    try {
+      console.log('Initiating Google OAuth redirect...');
+      
+      // Check if Google API is available
+      if (!(window as any).google?.accounts?.id) {
+        throw new Error('Google Identity Services not loaded');
       }
-    });
+      
+      // Use different redirect URIs for signup and login
+      let loginUri;
+      if (mode === 'signup') {
+        const rolePath = role || 'employee';
+        loginUri = window.location.hostname === 'localhost' 
+          ? `${window.location.origin}/signup/${rolePath}`  // Local development
+          : `https://parttimepays.in/signup/${rolePath}`;    // Production
+      } else {
+        loginUri = window.location.hostname === 'localhost' 
+          ? window.location.origin + '/login'  // Local development
+          : 'https://parttimepays.in/login';    // Production
+      }
+      
+      console.log('Google OAuth redirect URI:', loginUri);
+      
+      // Reinitialize Google Auth with the specific login_uri for redirect mode
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        ux_mode: 'redirect',
+        login_uri: loginUri, // This is where Google will POST the credential
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        use_fedcm_for_prompt: false
+      });
+      
+      // Create a temporary button element and trigger it
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'fixed';
+      tempDiv.style.top = '-1000px';
+      tempDiv.style.left = '-1000px';
+      tempDiv.style.visibility = 'hidden';
+      document.body.appendChild(tempDiv);
+      
+      // Render the Google Sign-In button
+      (window as any).google.accounts.id.renderButton(tempDiv, {
+        theme: 'outline',
+        size: 'large',
+        type: 'standard'
+      });
+      
+      // Wait for the button to render and then click it
+      setTimeout(() => {
+        const button = tempDiv.querySelector('div[role="button"]') as HTMLElement;
+        if (button) {
+          console.log('Clicking Google OAuth button programmatically');
+          button.click();
+        } else {
+          console.error('Google OAuth button not found');
+          document.body.removeChild(tempDiv);
+        }
+      }, 100);
+      
+      // Clean up after a delay
+      setTimeout(() => {
+        if (document.body.contains(tempDiv)) {
+          document.body.removeChild(tempDiv);
+        }
+      }, 5000);
+      
+      console.log('Google OAuth redirect initiated - user will be redirected to Google');
+      
+      // For redirect mode, we return immediately as the user will be redirected
+      return {
+        success: true,
+        user: undefined // Will be handled by backend redirect
+      };
+      
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      return {
+        success: false,
+        error: 'Failed to initiate Google authentication. Please try email/password login.'
+      };
+    }
   }
 
   /**
