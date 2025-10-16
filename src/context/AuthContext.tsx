@@ -133,46 +133,62 @@ export const AuthProvider: React.FC<{
     
     console.log('AuthContext - Checking authentication:', { hasValidSession, savedUser: !!savedUser });
     
-    // Always try to get current user to check session-based auth
-    apiService.getCurrentUser()
-      .then(response => {
-        console.log('AuthContext - getCurrentUser response:', response.success);
-        if (response.success && response.data?.user) {
-          setUser(response.data.user);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        } else if (savedUser && hasValidSession) {
-          // Fallback to localStorage if session auth fails but we have a valid session
-          try {
-            const parsedUser = JSON.parse(savedUser);
-            setUser(parsedUser);
-          } catch (error) {
-            console.error('AuthContext - Failed to parse saved user:', error);
+    // Only try to get current user if we have a valid session
+    if (hasValidSession) {
+      apiService.getCurrentUser()
+        .then(response => {
+          console.log('AuthContext - getCurrentUser response:', response.success);
+          if (response.success && response.data?.user) {
+            setUser(response.data.user);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+          } else if (savedUser) {
+            // Fallback to localStorage if session auth fails but we have a valid session
+            try {
+              const parsedUser = JSON.parse(savedUser);
+              setUser(parsedUser);
+            } catch (error) {
+              console.error('AuthContext - Failed to parse saved user:', error);
+              clearAuth();
+            }
+          } else {
+            // No valid authentication found
+            console.log('AuthContext - No valid authentication found');
             clearAuth();
           }
-        } else {
-          // No valid authentication found
-          console.log('AuthContext - No valid authentication found');
-          clearAuth();
-        }
-      })
-      .catch((error) => {
-        console.error('AuthContext - getCurrentUser failed:', error);
-        // If API call fails, try localStorage fallback
-        if (savedUser && hasValidSession) {
-          try {
-            const parsedUser = JSON.parse(savedUser);
-            setUser(parsedUser);
-          } catch (parseError) {
-            console.error('AuthContext - Failed to parse saved user on fallback:', parseError);
+        })
+        .catch((error) => {
+          console.error('AuthContext - getCurrentUser failed:', error);
+          // If API call fails, try localStorage fallback
+          if (savedUser) {
+            try {
+              const parsedUser = JSON.parse(savedUser);
+              setUser(parsedUser);
+            } catch (parseError) {
+              console.error('AuthContext - Failed to parse saved user on fallback:', parseError);
+              clearAuth();
+            }
+          } else {
             clearAuth();
           }
-        } else {
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    } else {
+      // No valid session, check localStorage for saved user
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+        } catch (error) {
+          console.error('AuthContext - Failed to parse saved user:', error);
           clearAuth();
         }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      } else {
+        clearAuth();
+      }
+      setIsLoading(false);
+    }
   }, []);
 
   const clearAuth = () => {

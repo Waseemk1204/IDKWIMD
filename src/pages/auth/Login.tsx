@@ -109,34 +109,12 @@ export const Login: React.FC = () => {
       // Get the Google user data from the service with login mode
       const result = await googleAuthService.signIn('login');
       
-      if (result.success && result.user) {
-        // Login with Google user data
-        const user = await loginWithGoogle(result.user);
-        
-        // Redirect based on user role or intent
-        const params = new URLSearchParams(location.search);
-        const intent = params.get('intent');
-        
-        // Check for intended job ID from localStorage
-        const intendedJobId = localStorage.getItem('intendedJobId');
-        
-        if (intendedJobId) {
-          // Clear the intended job ID and redirect to the specific job
-          localStorage.removeItem('intendedJobId');
-          navigate(`/employee/jobs/${intendedJobId}`);
-        } else {
-          // Always redirect to dashboard based on user role or intent
-          if (intent === 'employer' || user?.role === 'employer') {
-            navigate('/employer');
-          } else if (intent === 'employee' || user?.role === 'employee') {
-            navigate('/employee');
-          } else if (user?.role === 'admin') {
-            navigate('/admin');
-          } else {
-            // Default to employee dashboard if no specific role
-            navigate('/employee');
-          }
-        }
+      if (result.success) {
+        // In redirect mode, the user will be redirected to Google
+        // The actual login will happen after Google redirects back
+        console.log('Google OAuth redirect initiated successfully');
+        // Don't try to login here as we're in redirect mode
+        return;
       } else {
         setError(result.error || 'Google authentication failed');
       }
