@@ -252,6 +252,9 @@ class ApiService {
     skills?: string[];
     minRate?: number;
     maxRate?: number;
+    minSalary?: number;
+    maxSalary?: number;
+    jobType?: string;
     experienceLevel?: string;
     isRemote?: boolean;
     search?: string;

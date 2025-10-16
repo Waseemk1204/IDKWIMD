@@ -1710,7 +1710,22 @@ app.get('/api/applications/job/:jobId', authenticate, async (req, res) => {
 // Jobs routes
 app.get('/api/jobs', async (req, res) => {
   try {
-    const { limit = 20, page = 1, search, location, skills } = req.query;
+    const { 
+      limit = 20, 
+      page = 1, 
+      search, 
+      category,
+      location, 
+      skills,
+      minSalary,
+      maxSalary,
+      minRate,
+      maxRate,
+      jobType,
+      experienceLevel,
+      isRemote,
+      sortBy = 'newest'
+    } = req.query;
     
     // Ensure MongoDB connection
     const connected = await ensureConnection();
@@ -1723,29 +1738,105 @@ app.get('/api/jobs', async (req, res) => {
 
     const query = { status: 'active' }; // Use status instead of isActive
 
+    // Text search across multiple fields
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
-        { company: { $regex: search, $options: 'i' } }
+        { company: { $regex: search, $options: 'i' } },
+        { skills: { $in: [new RegExp(search, 'i')] } }
       ];
     }
 
+    // Category filter
+    if (category) {
+      query.category = { $regex: category, $options: 'i' };
+    }
+
+    // Location filter
     if (location) {
       query.location = { $regex: location, $options: 'i' };
     }
 
+    // Skills filter
     if (skills) {
-      query.skills = { $in: skills.split(',') };
+      const skillsArray = Array.isArray(skills) ? skills : skills.split(',');
+      query.skills = { $in: skillsArray.map(skill => new RegExp(skill.trim(), 'i')) };
     }
 
-    const jobs = await Job.find(query)
-      .populate('employer', 'name email') // Use name instead of fullName
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+    // Salary range filters (support both minSalary/maxSalary and minRate/maxRate)
+    const salaryQuery = {};
+    if (minSalary || minRate) {
+      salaryQuery.$gte = parseInt(minSalary || minRate);
+    }
+    if (maxSalary || maxRate) {
+      salaryQuery.$lte = parseInt(maxSalary || maxRate);
+    }
+    if (Object.keys(salaryQuery).length > 0) {
+      query.hourlyRate = salaryQuery;
+    }
 
-    res.json({ success: true, data: { jobs } });
+    // Job type filter
+    if (jobType) {
+      query.jobType = { $regex: jobType, $options: 'i' };
+    }
+
+    // Experience level filter
+    if (experienceLevel) {
+      query.experienceLevel = experienceLevel;
+    }
+
+    // Remote work filter
+    if (isRemote === 'true') {
+      query.isRemote = true;
+    }
+
+    // Sort options
+    let sortOptions = {};
+    switch (sortBy) {
+      case 'newest':
+        sortOptions = { createdAt: -1 };
+        break;
+      case 'salary-high':
+        sortOptions = { hourlyRate: -1 };
+        break;
+      case 'salary-low':
+        sortOptions = { hourlyRate: 1 };
+        break;
+      case 'relevance':
+        // For relevance, we'll use a combination of featured status and creation date
+        sortOptions = { isFeatured: -1, createdAt: -1 };
+        break;
+      case 'deadline':
+        sortOptions = { applicationDeadline: 1 };
+        break;
+      default:
+        sortOptions = { createdAt: -1 };
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const jobs = await Job.find(query)
+      .populate('employer', 'name email profileImage phone location')
+      .sort(sortOptions)
+      .limit(parseInt(limit))
+      .skip(skip)
+      .lean();
+
+    const totalJobs = await Job.countDocuments(query);
+    const hasMore = skip + jobs.length < totalJobs;
+
+    res.json({ 
+      success: true, 
+      data: { 
+        jobs,
+        total: totalJobs,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        hasMore,
+        totalPages: Math.ceil(totalJobs / parseInt(limit))
+      } 
+    });
   } catch (error) {
     console.error('Get jobs error:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
