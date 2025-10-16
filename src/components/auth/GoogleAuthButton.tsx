@@ -30,7 +30,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       
       console.log('GoogleAuthButton - signIn result:', result);
       
-      if (result.success && result.user) {
+      if (result.success) {
         console.log('GoogleAuthButton - Success, calling onSuccess');
         onSuccess?.();
       } else {
