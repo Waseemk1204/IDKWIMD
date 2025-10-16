@@ -659,13 +659,19 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole 
           }
         }
         
-        // Generate JWT token
+        // Generate JWT tokens
         const token = jwt.sign(
           { 
-            userId: user._id, 
+            id: user._id, 
             email: user.email, 
             role: user.role 
           },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' }
+        );
+        
+        const refreshToken = jwt.sign(
+          { id: user._id },
           process.env.JWT_SECRET,
           { expiresIn: '7d' }
         );
@@ -987,8 +993,9 @@ app.post('/api/auth/register', [
 
     await user.save();
 
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Generate tokens
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
       success: true,
@@ -1003,7 +1010,9 @@ app.post('/api/auth/register', [
           role: user.role,
           isVerified: user.isVerified
         },
-        token
+        token,
+        refreshToken,
+        expiresIn: 3600 // 1 hour in seconds
       }
     });
   } catch (error) {
@@ -1063,8 +1072,9 @@ app.post('/api/auth/login', [
 
     console.log(`Login successful for user: ${user.email}`);
 
-    // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Generate tokens
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.json({
       success: true,
@@ -1080,7 +1090,9 @@ app.post('/api/auth/login', [
           isVerified: user.isVerified,
           profilePhoto: user.profilePhoto || user.profileImage
         },
-        token
+        token,
+        refreshToken,
+        expiresIn: 3600 // 1 hour in seconds
       }
     });
   } catch (error) {
