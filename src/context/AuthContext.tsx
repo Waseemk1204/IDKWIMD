@@ -96,7 +96,15 @@ export const AuthProvider: React.FC<{
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get('token');
     
+    console.log('AuthContext - URL check:', {
+      currentUrl: window.location.href,
+      searchParams: window.location.search,
+      tokenFromUrl: !!tokenFromUrl,
+      allParams: Object.fromEntries(urlParams.entries())
+    });
+    
     if (tokenFromUrl) {
+      console.log('AuthContext - Token found in URL, calling handleTokenFromUrl');
       handleTokenFromUrl(tokenFromUrl)
         .then(() => {
           // Remove token from URL
