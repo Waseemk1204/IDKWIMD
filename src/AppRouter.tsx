@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
-import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 // Layouts
 import { DashboardLayout } from './layouts/DashboardLayout';
 // Public pages
@@ -201,8 +200,5 @@ export function AppRouter() {
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      
-      {/* Sticky Feedback Button - Available on all routes */}
-      <StickyFeedbackButton />
     </BrowserRouter>;
 }

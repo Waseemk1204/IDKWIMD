@@ -8,7 +8,10 @@ import { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 
 export function App() {
+  console.log('App component rendering...');
+  
   useEffect(() => {
+    console.log('App useEffect running...');
     // Remove any scroll-to-top arrows that might be added by browser extensions
     const removeScrollArrows = () => {
       // Target common selectors for scroll-to-top buttons
