@@ -706,8 +706,16 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole 
         
         const fullRedirectUrl = `${redirectUrl}?token=${token}&google_auth=success&new_user=${isNewUser}`;
         console.log('Redirecting to:', fullRedirectUrl);
+        console.log('Token length:', token.length);
+        console.log('Redirect URL length:', fullRedirectUrl.length);
         
-        return res.redirect(fullRedirectUrl);
+        // Set additional headers to ensure redirect works
+        res.setHeader('Location', fullRedirectUrl);
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
+        return res.redirect(302, fullRedirectUrl);
         
       } catch (jwtError) {
         console.error('JWT processing error:', jwtError);

@@ -58,9 +58,20 @@ import { PostDetail } from './pages/community/PostDetail';
 import { CreatePost } from './pages/community/CreatePost';
 // Public Landing component that redirects logged-in users
 const PublicLanding: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   
-  if (isAuthenticated && user) {
+  // Check if there's a token in the URL (Google OAuth redirect)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('token');
+  
+  // If there's a token in the URL, don't redirect - let AuthContext handle it
+  if (tokenFromUrl) {
+    console.log('PublicLanding - Token found in URL, waiting for AuthContext to process');
+    return <Landing />;
+  }
+  
+  // Only redirect if user is authenticated and no token processing is happening
+  if (!isLoading && isAuthenticated && user) {
     // Redirect to appropriate dashboard based on user role
     if (user.role === 'employer') {
       return <Navigate to="/employer" replace />;
