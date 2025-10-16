@@ -65,6 +65,12 @@ class SessionService {
 
   // Set session data
   public setSession(token: string, refreshToken?: string, expiresIn: number = 3600): void {
+    console.log('SessionService - setSession called with:', {
+      hasToken: !!token,
+      hasRefreshToken: !!refreshToken,
+      expiresIn
+    });
+    
     const expiresAt = Date.now() + (expiresIn * 1000);
     this.sessionData = {
       token,
@@ -72,8 +78,16 @@ class SessionService {
       expiresAt,
     };
 
+    console.log('SessionService - Session data created:', {
+      hasToken: !!this.sessionData.token,
+      hasRefreshToken: !!this.sessionData.refreshToken,
+      expiresAt: this.sessionData.expiresAt
+    });
+
     // Save to localStorage as fallback
     this.saveSessionToStorage(this.sessionData);
+    
+    console.log('SessionService - Session saved to storage');
   }
 
   // Get current token

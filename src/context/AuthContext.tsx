@@ -245,18 +245,28 @@ export const AuthProvider: React.FC<{
         familyName: googleUser.family_name
       });
       
+      console.log('AuthContext - API response:', response);
+      
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
         
-        console.log('AuthContext - Google login successful, setting session');
+        console.log('AuthContext - Google login successful, setting session with:', {
+          hasToken: !!token,
+          hasRefreshToken: !!refreshToken,
+          expiresIn
+        });
+        
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
+        
+        // Verify session was set
+        console.log('AuthContext - Session set, verifying:', sessionService.isAuthenticated());
         
         setIsLoading(false);
         return userData;
