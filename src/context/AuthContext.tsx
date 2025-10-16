@@ -103,6 +103,11 @@ export const AuthProvider: React.FC<{
       allParams: Object.fromEntries(urlParams.entries())
     });
     
+    console.log('AuthContext - Full URL details:', window.location.href);
+    console.log('AuthContext - Search params:', window.location.search);
+    console.log('AuthContext - Token from URL:', tokenFromUrl);
+    console.log('AuthContext - All URL params:', Object.fromEntries(urlParams.entries()));
+    
     if (tokenFromUrl) {
       console.log('AuthContext - Token found in URL, calling handleTokenFromUrl');
       handleTokenFromUrl(tokenFromUrl)

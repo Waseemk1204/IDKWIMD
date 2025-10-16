@@ -687,22 +687,27 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole 
         });
         
         // Redirect to frontend with token as URL parameter
-        // New signup users go back to signup page to show animation
-        // Existing users go directly to dashboard
+        // Use absolute URLs to ensure proper redirect
+        const baseUrl = process.env.FRONTEND_URL || 'https://parttimepays.in';
+        
         let redirectUrl;
         if (isNewUser && isSignup) {
           console.log('Redirecting new signup user back to signup page for animation');
-          redirectUrl = '/signup';
+          redirectUrl = `${baseUrl}/signup`;
         } else if (isNewUser) {
           console.log('Redirecting new user to additional info page');
-          redirectUrl = '/additional-info';
+          redirectUrl = `${baseUrl}/additional-info`;
         } else {
           console.log('Redirecting existing user to dashboard');
-          redirectUrl = user.role === 'employer' ? '/employer' : 
-                        user.role === 'admin' ? '/admin' : '/employee';
+          const dashboardPath = user.role === 'employer' ? '/employer' : 
+                               user.role === 'admin' ? '/admin' : '/employee';
+          redirectUrl = `${baseUrl}${dashboardPath}`;
         }
         
-        return res.redirect(`${redirectUrl}?token=${token}&google_auth=success&new_user=${isNewUser}`);
+        const fullRedirectUrl = `${redirectUrl}?token=${token}&google_auth=success&new_user=${isNewUser}`;
+        console.log('Redirecting to:', fullRedirectUrl);
+        
+        return res.redirect(fullRedirectUrl);
         
       } catch (jwtError) {
         console.error('JWT processing error:', jwtError);
