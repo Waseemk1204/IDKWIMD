@@ -104,16 +104,23 @@ class GoogleAuthService {
       }
       
       console.log('Google OAuth redirect URI:', loginUri);
+      console.log('Google OAuth client ID:', GOOGLE_CLIENT_ID);
       
       // Reinitialize Google Auth with the specific login_uri for redirect mode
-      (window as any).google.accounts.id.initialize({
+      const config = {
         client_id: GOOGLE_CLIENT_ID,
         ux_mode: 'redirect',
         login_uri: loginUri, // This is where Google will POST the credential
         auto_select: false,
         cancel_on_tap_outside: true,
         use_fedcm_for_prompt: false
-      });
+      };
+      
+      console.log('Google OAuth config:', config);
+      
+      (window as any).google.accounts.id.initialize(config);
+      
+      console.log('Google OAuth initialized with redirect mode');
       
       // Create a temporary button element and trigger it
       const tempDiv = document.createElement('div');
@@ -135,9 +142,13 @@ class GoogleAuthService {
         const button = tempDiv.querySelector('div[role="button"]') as HTMLElement;
         if (button) {
           console.log('Clicking Google OAuth button programmatically');
+          console.log('Button element:', button);
+          console.log('Button clickable:', button.click);
           button.click();
+          console.log('Button clicked successfully');
         } else {
           console.error('Google OAuth button not found');
+          console.log('Available elements in tempDiv:', tempDiv.innerHTML);
           document.body.removeChild(tempDiv);
         }
       }, 100);
