@@ -112,36 +112,43 @@ export const AuthProvider: React.FC<{
       return; // Don't proceed with normal auth check
     }
     
-    // Normal authentication check (localStorage or cookie-based)
+    // Normal authentication check using sessionService
     const savedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const hasValidSession = sessionService.isAuthenticated();
     
-    // Always try to get current user to check cookie-based auth
+    console.log('AuthContext - Checking authentication:', { hasValidSession, savedUser: !!savedUser });
+    
+    // Always try to get current user to check session-based auth
     apiService.getCurrentUser()
       .then(response => {
+        console.log('AuthContext - getCurrentUser response:', response.success);
         if (response.success && response.data?.user) {
           setUser(response.data.user);
           localStorage.setItem('user', JSON.stringify(response.data.user));
-        } else if (savedUser && token) {
-          // Fallback to localStorage if cookie auth fails
+        } else if (savedUser && hasValidSession) {
+          // Fallback to localStorage if session auth fails but we have a valid session
           try {
             const parsedUser = JSON.parse(savedUser);
             setUser(parsedUser);
           } catch (error) {
+            console.error('AuthContext - Failed to parse saved user:', error);
             clearAuth();
           }
         } else {
           // No valid authentication found
+          console.log('AuthContext - No valid authentication found');
           clearAuth();
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('AuthContext - getCurrentUser failed:', error);
         // If API call fails, try localStorage fallback
-        if (savedUser && token) {
+        if (savedUser && hasValidSession) {
           try {
             const parsedUser = JSON.parse(savedUser);
             setUser(parsedUser);
-          } catch (error) {
+          } catch (parseError) {
+            console.error('AuthContext - Failed to parse saved user on fallback:', parseError);
             clearAuth();
           }
         } else {
@@ -154,10 +161,11 @@ export const AuthProvider: React.FC<{
   }, []);
 
   const clearAuth = () => {
+    console.log('AuthContext - Clearing authentication');
     setUser(null);
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    apiService.clearToken();
+    localStorage.removeItem('token'); // Keep for backward compatibility
+    sessionService.clearSession();
   };
 
   const login = async (email: string, password: string): Promise<User> => {

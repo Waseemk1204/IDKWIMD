@@ -28,18 +28,28 @@ class SessionService {
   private loadSessionFromStorage(): void {
     try {
       const stored = localStorage.getItem('session');
+      console.log('SessionService - Loading session from storage:', !!stored);
       if (stored) {
         const sessionData = JSON.parse(stored);
+        console.log('SessionService - Parsed session data:', { 
+          hasToken: !!sessionData.token, 
+          expiresAt: sessionData.expiresAt,
+          isExpired: sessionData.expiresAt <= Date.now()
+        });
         // Check if session is still valid
         if (sessionData.expiresAt && sessionData.expiresAt > Date.now()) {
           this.sessionData = sessionData;
+          console.log('SessionService - Session loaded successfully');
         } else {
           // Session expired, clear it
+          console.log('SessionService - Session expired, clearing');
           this.clearSession();
         }
+      } else {
+        console.log('SessionService - No session found in storage');
       }
     } catch (error) {
-      console.error('Failed to load session from storage:', error);
+      console.error('SessionService - Failed to load session from storage:', error);
       this.clearSession();
     }
   }
@@ -68,22 +78,27 @@ class SessionService {
 
   // Get current token
   public getToken(): string | null {
+    console.log('SessionService - getToken called, sessionData:', !!this.sessionData);
     if (!this.sessionData) {
+      console.log('SessionService - No session data available');
       return null;
     }
 
     // Check if token is expired
     if (this.sessionData.expiresAt <= Date.now()) {
+      console.log('SessionService - Token expired, attempting refresh');
       // Try to refresh if we have a refresh token
       if (this.sessionData.refreshToken) {
         this.refreshToken();
         return this.sessionData?.token || null;
       } else {
+        console.log('SessionService - No refresh token, clearing session');
         this.clearSession();
         return null;
       }
     }
 
+    console.log('SessionService - Returning valid token');
     return this.sessionData.token;
   }
 
