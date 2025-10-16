@@ -283,12 +283,18 @@ export const AuthProvider: React.FC<{
   const handleTokenFromUrl = async (token: string): Promise<User> => {
     setIsLoading(true);
     try {
-      // Store token in localStorage and set in API service
-      localStorage.setItem('token', token);
-      apiService.setToken(token);
+      console.log('AuthContext - handleTokenFromUrl called with token:', !!token);
+      
+      // Use sessionService for proper token management
+      // Set token with default 1 hour expiry (backend doesn't send refresh token in URL)
+      sessionService.setSession(token, undefined, 3600);
+      
+      console.log('AuthContext - Token set in sessionService, verifying:', sessionService.isAuthenticated());
       
       // Get user data using the token
       const response = await apiService.getCurrentUser();
+      
+      console.log('AuthContext - getCurrentUser response:', response.success);
       
       if (response.success && response.data?.user) {
         const userData = response.data.user;
@@ -300,9 +306,9 @@ export const AuthProvider: React.FC<{
         throw new Error('Failed to get user data with token');
       }
     } catch (error) {
-      console.error('Token handling error:', error);
+      console.error('AuthContext - handleTokenFromUrl error:', error);
       // Clear invalid token
-      localStorage.removeItem('token');
+      sessionService.clearSession();
       localStorage.removeItem('user');
       setIsLoading(false);
       throw error;
