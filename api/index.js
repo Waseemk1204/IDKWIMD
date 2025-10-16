@@ -410,35 +410,46 @@ const Application = mongoose.model('Application', applicationSchema);
 // Auth middleware
 const authenticate = async (req, res, next) => {
   try {
-    console.log('Auth middleware - Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Auth middleware - Cookies:', JSON.stringify(req.cookies, null, 2));
-    console.log('Auth middleware - Cookie header:', req.headers.cookie);
-    
     // Check for token in Authorization header (Bearer token)
     let token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     // If no Bearer token, check for cookie
     if (!token) {
       token = req.cookies?.token;
     }
-    
+
     console.log('Auth middleware - Token found:', !!token);
-    
+
     if (!token) {
-      return res.status(401).json({ success: false, message: 'No token, authorization denied' });
+      return res.status(401).json({ success: false, message: 'No token, authorization denied' });                                                               
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify token with better error handling
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      console.error('JWT verification error:', jwtError.message);
+      return res.status(401).json({ success: false, message: 'Token is not valid' });
+    }
+
+    // Check if decoded token has required fields
+    if (!decoded.id) {
+      console.error('Token missing id field:', decoded);
+      return res.status(401).json({ success: false, message: 'Token is not valid' });
+    }
+
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Token is not valid' });
+      console.error('User not found for token id:', decoded.id);
+      return res.status(401).json({ success: false, message: 'Token is not valid' });                                                                           
     }
 
     req.user = user;
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(401).json({ success: false, message: 'Token is not valid' });
+    res.status(401).json({ success: false, message: 'Token is not valid' });    
   }
 };
 
