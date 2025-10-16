@@ -10,7 +10,17 @@ import {
   MoreHorizontal,
   Reply,
   Edit,
-  Trash2
+  Trash2,
+  Smile,
+  Frown,
+  Zap,
+  Lightbulb,
+  CheckCircle,
+  HelpCircle,
+  Flame,
+  Rocket,
+  Eye,
+  PartyPopper
 } from 'lucide-react';
 
 interface Message {
@@ -56,17 +66,17 @@ const reactionIcons = {
   like: ThumbsUp,
   love: Heart,
   laugh: Laugh,
-  wow: Wow,
-  sad: Sad,
-  angry: Angry,
+  wow: Smile,
+  sad: Frown,
+  angry: Zap,
   thumbs_up: ThumbsUp,
   lightbulb: Lightbulb,
   checkmark: CheckCircle,
-  question: Question,
-  fire: Fire,
+  question: HelpCircle,
+  fire: Flame,
   rocket: Rocket,
   eyes: Eye,
-  party: Party
+  party: PartyPopper
 };
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
