@@ -23,16 +23,22 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   onError
 }) => {
   const handleGoogleAuth = async () => {
+    console.log('GoogleAuthButton - handleGoogleAuth called with mode:', mode, 'role:', role);
     try {
+      console.log('GoogleAuthButton - Calling googleAuthService.signIn');
       const result = await googleAuthService.signIn(mode, role);
       
+      console.log('GoogleAuthButton - signIn result:', result);
+      
       if (result.success && result.user) {
+        console.log('GoogleAuthButton - Success, calling onSuccess');
         onSuccess?.();
       } else {
+        console.log('GoogleAuthButton - Failed, calling onError');
         onError?.(result.error || 'Authentication failed');
       }
     } catch (error) {
-      console.error('Google OAuth error:', error);
+      console.error('GoogleAuthButton - Error:', error);
       onError?.(error instanceof Error ? error.message : 'Authentication failed');
     }
   };
