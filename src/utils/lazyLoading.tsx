@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, ComponentType } from 'react';
-import { Skeleton, SkeletonCard } from '../components/ui/Skeleton';
+// import { Skeleton, SkeletonCard } from '../components/ui/Skeleton';
 
 // Generic lazy loading wrapper with error boundary
 interface LazyWrapperProps {

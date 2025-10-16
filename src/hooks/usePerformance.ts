@@ -248,5 +248,5 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
     trackRender(renderStartTime);
   });
 
-  return <>{children}</>;
+  return null;
 };

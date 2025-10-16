@@ -467,7 +467,7 @@ export const Landing = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950 overflow-x-hidden pt-16 scrollbar-hide" style={{ overflowX: 'hidden' }}>
-      <SEO {...SEOConfigs.home} />
+      <SEO {...pageSEO.home} />
       
       {/* Development Notice Dialog - Only on Landing Page */}
       <DevelopmentNotice />
