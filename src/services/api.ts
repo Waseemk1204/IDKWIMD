@@ -1663,7 +1663,7 @@ class ApiService {
   async updateNotificationSettings(settings: any): Promise<ApiResponse> {
     return this.request('/v1/notifications-enhanced/preferences', {
       method: 'PUT',
-      body: JSON.stringify(preferences),
+      body: JSON.stringify(settings),
     });
   }
 

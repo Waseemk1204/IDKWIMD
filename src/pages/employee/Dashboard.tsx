@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/TrustBadge';
-import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
+import { Skeleton, SkeletonJobCard, SkeletonCard, SkeletonButton } from '../../components/ui/Skeleton';
 import { LazyLoad, LazyImage } from '../../components/ui/LazyLoad';
 import { ProfileCompletionWizard } from '../../components/profile/ProfileCompletionWizard';
 import { ProfileCompletionProgress, getProfileCompletionItems, calculateProfileCompletion } from '../../components/profile/ProfileCompletionProgress';
@@ -37,6 +37,13 @@ export const EmployeeDashboard: React.FC = () => {
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activeApplications: 0,
+    totalEarnings: 0,
+    hoursThisMonth: 0,
+    completedJobs: 0,
+    rating: 0
+  });
   
   // Calculate profile completion percentage
   const calculateProfileCompletion = () => {
@@ -95,17 +102,25 @@ export const EmployeeDashboard: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load jobs
-        const jobsResponse = await apiService.getJobs({ limit: 20 });
+        // Load jobs and stats in parallel
+        const [jobsResponse, statsResponse] = await Promise.all([
+          apiService.getJobs({ limit: 20 }),
+          apiService.getUserStats()
+        ]);
+        
         if (jobsResponse.success && jobsResponse.data?.jobs) {
           setJobs(jobsResponse.data.jobs);
         }
         
-        // TODO: Load user stats from API
-        // const statsResponse = await apiService.getUserStats();
-        // if (statsResponse.success) {
-        //   setStats(statsResponse.data.stats);
-        // }
+        if (statsResponse.success && statsResponse.data) {
+          setStats({
+            activeApplications: statsResponse.data.activeApplications || 0,
+            totalEarnings: statsResponse.data.totalEarnings || 0,
+            hoursThisMonth: statsResponse.data.hoursThisMonth || 0,
+            completedJobs: statsResponse.data.completedJobs || 0,
+            rating: statsResponse.data.rating || 0
+          });
+        }
         
       } catch (error) {
         console.error('Failed to load data:', error);
@@ -116,6 +131,24 @@ export const EmployeeDashboard: React.FC = () => {
 
     loadData();
   }, []);
+
+  // Calculate job match score based on user skills
+  const calculateMatchScore = (jobSkills: string[]) => {
+    if (!user?.skills || user.skills.length === 0 || !jobSkills || jobSkills.length === 0) {
+      return 0;
+    }
+    
+    const userSkills = user.skills.map(skill => skill.toLowerCase());
+    const jobSkillsLower = jobSkills.map(skill => skill.toLowerCase());
+    
+    const matchingSkills = jobSkillsLower.filter(skill => 
+      userSkills.some(userSkill => 
+        userSkill.includes(skill) || skill.includes(userSkill)
+      )
+    );
+    
+    return Math.round((matchingSkills.length / jobSkills.length) * 100);
+  };
 
   // Get recent jobs (first 3)
   const recentJobs = jobs.slice(0, 3).map(job => ({
@@ -131,7 +164,7 @@ export const EmployeeDashboard: React.FC = () => {
     type: job.type || 'Part-time',
     verified: true,
     urgent: job.urgency === 'high',
-    match: 85 // TODO: Calculate real match score based on skills
+    match: calculateMatchScore(job.skills || [])
   }));
 
   // Get all active jobs for expanded view
@@ -148,7 +181,7 @@ export const EmployeeDashboard: React.FC = () => {
     type: job.type || 'Part-time',
     verified: true,
     urgent: job.urgency === 'high',
-    match: 85 // TODO: Calculate real match score based on skills
+    match: calculateMatchScore(job.skills || [])
   }));
 
   // Get additional jobs (excluding the first 3 that are already shown)

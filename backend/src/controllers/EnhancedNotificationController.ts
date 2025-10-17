@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import { EnhancedNotificationService } from '../services/EnhancedNotificationService';
 import { NotificationPreferences } from '../models/NotificationPreferences';
@@ -24,11 +24,11 @@ export const getNotifications = async (req: AuthRequest, res: Response): Promise
     
     const {
       page = 1,
-      limit = 20,
-      unreadOnly = false,
-      type,
-      priority,
-      grouped = false
+      limit = 20
+      // unreadOnly = false,
+      // type,
+      // priority,
+      // grouped = false
     } = req.query;
 
     // For now, return empty notifications to test the endpoint
