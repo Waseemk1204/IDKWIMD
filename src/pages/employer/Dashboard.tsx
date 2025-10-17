@@ -41,13 +41,17 @@ export const EmployerDashboard: React.FC = () => {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // TODO: Implement API calls to load dashboard data
-        // const [statsResponse, applicationsResponse] = await Promise.all([
-        //   apiService.getEmployerStats(),
-        //   apiService.getRecentApplications()
-        // ]);
-        // setStats(statsResponse.data.stats);
-        // setRecentApplications(applicationsResponse.data.applications);
+        // Load user stats from API
+        const statsResponse = await apiService.getUserStats();
+        if (statsResponse.success && statsResponse.data?.stats) {
+          _setStats(statsResponse.data.stats);
+        }
+        
+        // TODO: Load recent applications
+        // const applicationsResponse = await apiService.getRecentApplications();
+        // if (applicationsResponse.success) {
+        //   setRecentApplications(applicationsResponse.data.applications);
+        // }
         
         // For now, set empty data
         setRecentApplications([]);

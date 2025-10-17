@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/TrustBadge';
-import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
+import { Skeleton, SkeletonJobCard, SkeletonCard, SkeletonButton } from '../../components/ui/Skeleton';
 import { LazyLoad, LazyImage } from '../../components/ui/LazyLoad';
 import { ProfileCompletionWizard } from '../../components/profile/ProfileCompletionWizard';
 import { ProfileCompletionProgress, getProfileCompletionItems, calculateProfileCompletion } from '../../components/profile/ProfileCompletionProgress';
@@ -37,6 +37,13 @@ export const EmployeeDashboard: React.FC = () => {
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    activeApplications: 0,
+    totalEarnings: 0,
+    hoursThisMonth: 0,
+    completedJobs: 0,
+    rating: 0
+  });
   
   // Calculate profile completion percentage
   const calculateProfileCompletion = () => {
@@ -56,6 +63,21 @@ export const EmployeeDashboard: React.FC = () => {
   };
 
   const profileCompletion = calculateProfileCompletion();
+  
+  // Calculate job match score based on skills
+  const calculateJobMatch = (jobSkills: string[], userSkills: string[]): number => {
+    if (!userSkills || userSkills.length === 0) return 0;
+    if (!jobSkills || jobSkills.length === 0) return 0;
+    
+    const matchingSkills = jobSkills.filter(skill => 
+      userSkills.some(userSkill => 
+        userSkill.toLowerCase().includes(skill.toLowerCase()) || 
+        skill.toLowerCase().includes(userSkill.toLowerCase())
+      )
+    );
+    
+    return Math.round((matchingSkills.length / jobSkills.length) * 100);
+  };
   
   // Profile completion checklist items
   const profileChecklist = [
@@ -101,11 +123,11 @@ export const EmployeeDashboard: React.FC = () => {
           setJobs(jobsResponse.data.jobs);
         }
         
-        // TODO: Load user stats from API
-        // const statsResponse = await apiService.getUserStats();
-        // if (statsResponse.success) {
-        //   setStats(statsResponse.data.stats);
-        // }
+        // Load user stats from API
+        const statsResponse = await apiService.getUserStats();
+        if (statsResponse.success && statsResponse.data?.stats) {
+          setStats(statsResponse.data.stats);
+        }
         
       } catch (error) {
         console.error('Failed to load data:', error);
@@ -131,7 +153,7 @@ export const EmployeeDashboard: React.FC = () => {
     type: job.type || 'Part-time',
     verified: true,
     urgent: job.urgency === 'high',
-    match: 85 // TODO: Calculate real match score based on skills
+    match: calculateJobMatch(job.skills, user?.skills || [])
   }));
 
   // Get all active jobs for expanded view
@@ -148,7 +170,7 @@ export const EmployeeDashboard: React.FC = () => {
     type: job.type || 'Part-time',
     verified: true,
     urgent: job.urgency === 'high',
-    match: 85 // TODO: Calculate real match score based on skills
+    match: calculateJobMatch(job.skills, user?.skills || [])
   }));
 
   // Get additional jobs (excluding the first 3 that are already shown)
