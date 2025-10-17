@@ -3,6 +3,8 @@ import { validationResult } from 'express-validator';
 import User, { IUser } from '../models/User';
 import Job from '../models/Job';
 import Application from '../models/Application';
+import { Wallet } from '../models/Wallet';
+import { Transaction } from '../models/Transaction';
 import { AuthRequest } from '../middlewares/auth';
 
 // Get all users (admin only)
@@ -459,6 +461,7 @@ export const getUserStats = async (req: AuthRequest, res: Response): Promise<voi
     let stats: any = {};
 
     if (user.role === 'employee') {
+      // Application statistics
       const applicationStats = await Application.aggregate([
         { $match: { applicant: userId } },
         {
@@ -470,17 +473,65 @@ export const getUserStats = async (req: AuthRequest, res: Response): Promise<voi
       ]);
 
       const totalApplications = await Application.countDocuments({ applicant: userId });
+      const activeApplications = await Application.countDocuments({ 
+        applicant: userId, 
+        status: { $in: ['pending', 'reviewed'] }
+      });
       const acceptedApplications = await Application.countDocuments({ 
         applicant: userId, 
         status: 'accepted' 
       });
 
+      // Wallet and earnings statistics
+      const wallet = await Wallet.findOne({ userId, isActive: true });
+      const walletBalance = wallet?.balance || 0;
+
+      // Monthly earnings calculation
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+
+      const monthlyEarnings = await Transaction.aggregate([
+        {
+          $match: {
+            userId: userId,
+            type: 'credit',
+            createdAt: { $gte: currentMonth }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalEarnings: { $sum: '$amount' }
+          }
+        }
+      ]);
+
+      // Hours worked this month (placeholder - would need timesheet integration)
+      const hoursThisMonth = 0; // TODO: Implement timesheet integration
+
+      // Completed jobs
+      const completedJobs = await Application.countDocuments({ 
+        applicant: userId, 
+        status: 'completed' 
+      });
+
+      // User rating (placeholder - would need rating system)
+      const rating = 4.5; // TODO: Implement rating system
+
       stats = {
+        activeApplications,
+        totalEarnings: monthlyEarnings[0]?.totalEarnings || 0,
+        hoursThisMonth,
+        completedJobs,
+        rating,
+        walletBalance,
         totalApplications,
         acceptedApplications,
         applicationStats
       };
     } else if (user.role === 'employer') {
+      // Job statistics
       const jobStats = await Job.aggregate([
         { $match: { employer: userId } },
         {
@@ -491,15 +542,53 @@ export const getUserStats = async (req: AuthRequest, res: Response): Promise<voi
         }
       ]);
 
+      const activeJobs = await Job.countDocuments({ 
+        employer: userId, 
+        status: 'active' 
+      });
       const totalJobs = await Job.countDocuments({ employer: userId });
-      const totalViews = await Job.aggregate([
-        { $match: { employer: userId } },
-        { $group: { _id: null, totalViews: { $sum: '$views' } } }
+      const totalApplications = await Application.countDocuments({
+        job: { $in: await Job.find({ employer: userId }).distinct('_id') }
+      });
+
+      // Wallet statistics
+      const wallet = await Wallet.findOne({ userId, isActive: true });
+      const walletBalance = wallet?.balance || 0;
+
+      // Total spent calculation
+      const totalSpent = await Transaction.aggregate([
+        {
+          $match: {
+            userId: userId,
+            type: 'debit'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalSpent: { $sum: '$amount' }
+          }
+        }
       ]);
 
+      // Pending timesheets (placeholder - would need timesheet integration)
+      const pendingTimesheets = 0; // TODO: Implement timesheet integration
+
+      // Average rating (placeholder - would need rating system)
+      const averageRating = 4.2; // TODO: Implement rating system
+
+      // Active workers (placeholder - would need worker tracking)
+      const activeWorkers = 0; // TODO: Implement worker tracking
+
       stats = {
+        activeJobs,
+        totalApplications,
+        pendingTimesheets,
+        walletBalance,
+        totalSpent: totalSpent[0]?.totalSpent || 0,
+        averageRating,
+        activeWorkers,
         totalJobs,
-        totalViews: totalViews[0]?.totalViews || 0,
         jobStats
       };
     }
