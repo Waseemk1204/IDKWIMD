@@ -1,3 +1,4 @@
+/* eslint-env node, es6 */
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -7,6 +8,7 @@ import compression from 'compression';
 import jwt from 'jsonwebtoken';
 
 // Load environment variables
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const dotenv = require('dotenv');
 dotenv.config();
 

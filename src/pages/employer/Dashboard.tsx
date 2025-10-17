@@ -23,8 +23,7 @@ import {
 export const EmployerDashboard: React.FC = () => {
   const { user } = useAuth();
   
-  // Real data will be loaded from API
-  const [stats, _setStats] = useState({
+  const [stats, setStats] = useState({
     activeJobs: 0,
     totalApplications: 0,
     pendingTimesheets: 0,
@@ -35,33 +34,45 @@ export const EmployerDashboard: React.FC = () => {
   });
 
   const [recentApplications, setRecentApplications] = useState<any[]>([]);
-  const [_isLoading, _setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Load dashboard data from API
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // TODO: Implement API calls to load dashboard data
-        // const [statsResponse, applicationsResponse] = await Promise.all([
-        //   apiService.getEmployerStats(),
-        //   apiService.getRecentApplications()
-        // ]);
-        // setStats(statsResponse.data.stats);
-        // setRecentApplications(applicationsResponse.data.applications);
+        // Load stats and recent applications in parallel
+        const [statsResponse, applicationsResponse] = await Promise.all([
+          apiService.getUserStats(),
+          apiService.getApplications({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
+        ]);
         
-        // For now, set empty data
-        setRecentApplications([]);
+        if (statsResponse.success && statsResponse.data) {
+          setStats({
+            activeJobs: statsResponse.data.activeJobs || 0,
+            totalApplications: statsResponse.data.totalApplications || 0,
+            pendingTimesheets: statsResponse.data.pendingTimesheets || 0,
+            walletBalance: statsResponse.data.walletBalance || 0,
+            totalSpent: statsResponse.data.totalSpent || 0,
+            averageRating: statsResponse.data.averageRating || 0,
+            activeWorkers: statsResponse.data.activeWorkers || 0
+          });
+        }
+        
+        if (applicationsResponse.success && applicationsResponse.data?.applications) {
+          setRecentApplications(applicationsResponse.data.applications);
+        }
+        
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {
-        _setIsLoading(false);
+        setIsLoading(false);
       }
     };
     
     loadDashboardData();
   }, []);
   
-  const [pendingTimesheets, _setPendingTimesheets] = useState<any[]>([]);
+  const [pendingTimesheets, setPendingTimesheets] = useState<any[]>([]);
 
   const quickActions = [
     {
@@ -93,6 +104,29 @@ export const EmployerDashboard: React.FC = () => {
       color: 'trust'
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-fade-in-up">
+        {/* Loading skeleton */}
+        <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-primary-200 rounded mb-2 w-1/2"></div>
+            <div className="h-4 bg-primary-200 rounded w-3/4"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white dark:bg-neutral-800 rounded-xl p-6 animate-pulse">
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+              <div className="h-8 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+              <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in-up">

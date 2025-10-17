@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { api } from './api';
+import { apiService } from './api';
 
 export interface Notification {
   _id: string;
@@ -122,7 +122,8 @@ class NotificationService {
       return;
     }
 
-    this.socket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    this.socket = io(apiUrl, {
       auth: { token },
       transports: ['websocket', 'polling']
     });
@@ -234,43 +235,59 @@ class NotificationService {
     };
     unreadCount: number;
   }> {
-    const queryParams = new URLSearchParams();
+    const response = await apiService.getNotifications(params);
     
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
-        queryParams.append(key, value.toString());
-      }
-    });
-
-    const response = await api.get(`/notifications?${queryParams.toString()}`);
-    return response.data.data;
+    if (response.success && response.data) {
+      return {
+        notifications: response.data.notifications || [],
+        pagination: response.data.pagination || {
+          page: 1,
+          limit: 10,
+          total: 0,
+          pages: 0
+        },
+        unreadCount: response.data.unreadCount || 0
+      };
+    }
+    
+    return {
+      notifications: [],
+      pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+      unreadCount: 0
+    };
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    await api.patch(`/notifications/${notificationId}/read`);
+    await apiService.markNotificationAsRead(notificationId);
   }
 
   async markAllAsRead(): Promise<void> {
-    await api.patch('/notifications/mark-all-read');
+    await apiService.markAllNotificationsAsRead();
   }
 
   async trackInteraction(notificationId: string, action: string): Promise<void> {
-    await api.post(`/notifications/${notificationId}/interaction`, { action });
+    await apiService.trackNotificationInteraction(notificationId, action);
   }
 
   async getPreferences(): Promise<NotificationPreferences> {
-    const response = await api.get('/notifications/preferences');
-    return response.data.data;
+    const response = await apiService.getNotificationSettings();
+    return response.data || {};
   }
 
   async updatePreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const response = await api.put('/notifications/preferences', preferences);
-    return response.data.data;
+    const response = await apiService.updateNotificationSettings(preferences);
+    return response.data || {};
   }
 
   async getStats(): Promise<NotificationStats> {
-    const response = await api.get('/notifications/stats');
-    return response.data.data;
+    const response = await apiService.getNotificationStats();
+    return response.data || {
+      total: 0,
+      unread: 0,
+      byType: [],
+      byPriority: [],
+      recentActivity: []
+    };
   }
 
   async createTestNotification(data: {
@@ -280,8 +297,8 @@ class NotificationService {
     priority?: 'low' | 'medium' | 'high' | 'urgent';
     channels?: Array<'push' | 'email' | 'sms' | 'inApp'>;
   }): Promise<Notification> {
-    const response = await api.post('/notifications/test', data);
-    return response.data.data;
+    const response = await apiService.createTestNotification(data);
+    return response.data || {} as Notification;
   }
 
   // Utility methods

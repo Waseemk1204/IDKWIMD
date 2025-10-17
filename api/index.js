@@ -1,3 +1,4 @@
+/* eslint-env node, es6 */
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
@@ -87,7 +88,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Connection state
-let isConnected = false;
+// let isConnected = false;
 
 // Connect to MongoDB at startup for better performance
 const connectDB = async () => {
@@ -124,7 +125,7 @@ const connectDB = async () => {
     });
     
     console.log('✅ MongoDB Connected successfully');
-    isConnected = true;
+    // isConnected = true;
     return true;
     
   } catch (error) {
@@ -344,7 +345,7 @@ const applicationSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Enhanced Notification Schema
-const enhancedNotificationSchema = new mongoose.Schema({
+// const enhancedNotificationSchema = new mongoose.Schema({
   recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   type: { type: String, required: true },
@@ -397,6 +398,15 @@ const enhancedNotificationSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Follow schema for employee-employer relationships
+const followSchema = new mongoose.Schema({
+  follower: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  following: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+followSchema.index({ follower: 1, following: 1 }, { unique: true });
+
 // Create models
 const Wallet = mongoose.model('Wallet', walletSchema);
 const Transaction = mongoose.model('Transaction', transactionSchema);
@@ -406,6 +416,45 @@ const Message = mongoose.model('Message', messageSchema);
 const Notification = mongoose.model('Notification', notificationSchema);
 const Verification = mongoose.model('Verification', verificationSchema);
 const Application = mongoose.model('Application', applicationSchema);
+const Follow = mongoose.model('Follow', followSchema);
+
+// Enhanced Notification schema
+const enhancedNotificationSchema = new mongoose.Schema({
+  recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type: { type: String, required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  richContent: {
+    metadata: mongoose.Schema.Types.Mixed,
+    actionButtons: [{
+      label: String,
+      action: String,
+      url: String,
+      style: { type: String, enum: ['primary', 'secondary', 'danger'], default: 'primary' }
+    }]
+  },
+  context: {
+    module: String,
+    relatedEntity: {
+      type: String,
+      id: String,
+      title: String,
+      url: String
+    }
+  },
+  smart: {
+    priority: { type: String, enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' },
+    relevanceScore: { type: Number, default: 0.5 }
+  },
+  interaction: {
+    isRead: { type: Boolean, default: false },
+    readAt: Date,
+    clickedAt: Date,
+    actionTaken: String
+  }
+}, { timestamps: true });
+
+const EnhancedNotification = mongoose.model('EnhancedNotification', enhancedNotificationSchema);
 
 // Auth middleware
 const authenticate = async (req, res, next) => {
@@ -670,11 +719,11 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole 
           { expiresIn: '1h' }
         );
         
-        const refreshToken = jwt.sign(
-          { id: user._id },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
+        // const refreshToken = jwt.sign(
+        //   { id: user._id },
+        //   process.env.JWT_SECRET,
+        //   { expiresIn: '7d' }
+        // );
         
         console.log('Google OAuth successful, redirecting with token');
         console.log('Final user details:', {
@@ -729,7 +778,7 @@ const handleGoogleOAuth = async (req, res, isSignupEndpoint = false, signupRole 
     
   } catch (error) {
     console.error('Google OAuth POST handler error:', error);
-    const redirectPath = isSignup ? '/signup' : '/login';
+    const redirectPath = isSignupEndpoint ? '/signup' : '/login';
     res.redirect(`${redirectPath}?google_auth=error&error=server_error`);
   }
 };
@@ -1211,7 +1260,7 @@ app.post('/api/auth/google', [
       });
     }
 
-    const { googleId, email, fullName, profilePhoto, givenName, familyName } = req.body;
+    const { googleId, email, fullName, profilePhoto } = req.body;
 
     console.log(`Google OAuth attempt for email: ${email}, Google ID: ${googleId}`);
 
