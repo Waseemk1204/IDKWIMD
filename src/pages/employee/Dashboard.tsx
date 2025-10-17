@@ -4,6 +4,7 @@ import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/TrustBadge';
 import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
+import { SkeletonButton } from '../../components/ui/SkeletonButton';
 import { LazyLoad, LazyImage } from '../../components/ui/LazyLoad';
 import { ProfileCompletionWizard } from '../../components/profile/ProfileCompletionWizard';
 import { ProfileCompletionProgress, getProfileCompletionItems, calculateProfileCompletion } from '../../components/profile/ProfileCompletionProgress';
@@ -37,6 +38,13 @@ export const EmployeeDashboard: React.FC = () => {
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    rating: 4.8,
+    activeApplications: 3,
+    totalEarnings: 12500,
+    hoursThisMonth: 24,
+    completedJobs: 8
+  });
   
   // Calculate profile completion percentage
   const calculateProfileCompletion = () => {
@@ -50,7 +58,7 @@ export const EmployeeDashboard: React.FC = () => {
     if (user.phone) completed++;
     if (user.about && user.about.length > 10) completed++;
     if (user.skills && user.skills.length > 0) completed++;
-    if (user.profileImage) completed++;
+    if (user.profilePhoto) completed++;
     
     return Math.round((completed / total) * 100);
   };
@@ -86,7 +94,7 @@ export const EmployeeDashboard: React.FC = () => {
     {
       id: 'photo',
       label: 'Profile Photo',
-      completed: !!user?.profileImage,
+      completed: !!user?.profilePhoto,
       icon: User
     }
   ];

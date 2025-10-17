@@ -1,73 +1,75 @@
-import React from 'react';
-import { cn } from '../../lib/utils';
+import React, { forwardRef } from 'react';
+import { AlertCircle } from 'lucide-react';
 
-export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
-  helperText?: string;
-  variant?: 'default' | 'filled' | 'outlined';
-  size?: 'sm' | 'md' | 'lg';
+  helpText?: string;
+  isFullWidth?: boolean;
+  variant?: 'default' | 'professional';
+  ariaDescribedBy?: string;
+  ariaInvalid?: boolean;
+  multiline?: boolean;
+  rows?: number;
 }
 
-export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
-  ({ 
-    className, 
-    label, 
-    error, 
-    helperText, 
-    variant = 'default', 
-    size = 'md',
-    id,
-    ...props 
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({
+    className = '',
+    label,
+    error,
+    helpText,
+    isFullWidth = false,
+    variant = 'default',
+    ariaDescribedBy,
+    ariaInvalid,
+    multiline = true,
+    rows = 3,
+    ...props
   }, ref) => {
-    const textAreaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
-
-    const baseStyles = 'w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200';
+    const baseClasses = 'block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200';
     
-    const variantStyles = {
-      default: 'border-neutral-300 dark:border-neutral-700',
-      filled: 'border-transparent bg-neutral-100 dark:bg-neutral-800',
-      outlined: 'border-2 border-neutral-300 dark:border-neutral-600'
+    const variantClasses = {
+      default: 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+      professional: 'border-gray-200 focus:ring-blue-600 focus:border-blue-600 bg-gray-50 focus:bg-white'
     };
 
-    const sizeStyles = {
-      sm: 'px-3 py-2 text-sm',
-      md: 'px-4 py-3 text-base',
-      lg: 'px-5 py-4 text-lg'
-    };
+    const errorClasses = error 
+      ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+      : variantClasses[variant];
 
-    const errorStyles = error ? 'border-red-500 dark:border-red-400 focus:ring-red-500' : '';
+    const widthClasses = isFullWidth ? 'w-full' : '';
 
     return (
-      <div className="w-full">
+      <div className={isFullWidth ? 'w-full' : ''}>
         {label && (
-          <label 
-            htmlFor={textAreaId}
-            className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2"
-          >
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {label}
           </label>
         )}
-        <textarea
-          id={textAreaId}
-          ref={ref}
-          className={cn(
-            baseStyles,
-            variantStyles[variant],
-            sizeStyles[size],
-            errorStyles,
-            className
+        <div className="relative">
+          <textarea
+            ref={ref}
+            className={`${baseClasses} ${errorClasses} ${widthClasses} ${className}`}
+            rows={rows}
+            aria-describedby={ariaDescribedBy}
+            aria-invalid={ariaInvalid}
+            {...props}
+          />
+          {error && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <AlertCircle className="h-5 w-5 text-red-500" />
+            </div>
           )}
-          {...props}
-        />
+        </div>
         {error && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400" id={ariaDescribedBy}>
             {error}
           </p>
         )}
-        {helperText && !error && (
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-            {helperText}
+        {helpText && !error && (
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400" id={ariaDescribedBy}>
+            {helpText}
           </p>
         )}
       </div>
@@ -75,5 +77,6 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   }
 );
 
-TextArea.displayName = 'TextArea';
+Textarea.displayName = 'Textarea';
 
+export default Textarea;

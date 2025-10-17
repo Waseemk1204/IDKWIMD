@@ -80,15 +80,15 @@ class ApiService {
         
         // Show user-friendly error messages
         if (response.status === 401) {
-          toast.error('Authentication Error', 'Please log in again');
+          toast.error('Please log in again');
         } else if (response.status === 403) {
-          toast.error('Access Denied', 'You don\'t have permission to perform this action');
+          toast.error('You don\'t have permission to perform this action');
         } else if (response.status === 404) {
-          toast.error('Not Found', 'The requested resource was not found');
+          toast.error('The requested resource was not found');
         } else if (response.status >= 500) {
-          toast.error('Server Error', 'Something went wrong on our end. Please try again later.');
+          toast.error('Something went wrong on our end. Please try again later.');
         } else {
-          toast.error('Request Failed', data.message || `Request failed with status ${response.status}`);
+          toast.error(data.message || `Request failed with status ${response.status}`);
         }
         
         throw new Error(data.message || `Request failed with status ${response.status}`);
@@ -100,14 +100,14 @@ class ApiService {
       
       // Handle network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        toast.error('Network Error', 'Please check your internet connection and try again');
+        toast.error('Please check your internet connection and try again');
       } else if (error instanceof Error) {
         // Only show toast if it's not already shown above
         if (!error.message.includes('Request failed with status')) {
-          toast.error('Error', error.message);
+          toast.error(error.message);
         }
       } else {
-        toast.error('Unexpected Error', 'An unexpected error occurred. Please try again.');
+        toast.error('An unexpected error occurred. Please try again.');
       }
       
       throw error;
@@ -141,7 +141,7 @@ class ApiService {
         tokenData.refreshToken,
         tokenData.expiresIn || 3600
       );
-      toast.success('Welcome back!', 'You have been successfully logged in');
+      toast.success('You have been successfully logged in');
     }
 
     return response;
@@ -169,7 +169,7 @@ class ApiService {
         tokenData.refreshToken,
         tokenData.expiresIn || 3600
       );
-      toast.success('Welcome!', 'You have been successfully logged in with Google');
+      toast.success('You have been successfully logged in with Google');
     } else {
       console.error('Google login failed:', response);
     }
@@ -196,7 +196,7 @@ class ApiService {
         tokenData.refreshToken,
         tokenData.expiresIn || 3600
       );
-      toast.success('Account Created!', 'Welcome to PartTimePays. Your account has been created successfully.');
+      toast.success('Welcome to PartTimePays. Your account has been created successfully.');
     }
 
     return response;
@@ -222,7 +222,7 @@ class ApiService {
     });
     
     if (response.success) {
-      toast.success('Profile Updated', 'Your profile has been updated successfully');
+      toast.success('Your profile has been updated successfully');
     }
     
     return response;
@@ -385,7 +385,7 @@ class ApiService {
     });
     
     if (response.success) {
-      toast.success('Application Submitted', 'Your job application has been submitted successfully');
+      toast.success('Your job application has been submitted successfully');
     }
     
     return response;
@@ -1595,6 +1595,17 @@ class ApiService {
     notes?: string;
   }): Promise<ApiResponse> {
     return this.request(`/verification/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateSkillVerification(skillId: string, data: {
+    status: 'pending' | 'approved' | 'rejected';
+    verificationMethod?: string;
+    notes?: string;
+  }): Promise<ApiResponse> {
+    return this.request(`/verification/skill/${skillId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });

@@ -423,6 +423,12 @@ export const NotificationSettings: React.FC = () => {
                           <Select
                             value={config.priority}
                             onValueChange={(value) => updateTypePreference(type, 'priority', value)}
+                            options={[
+                              { value: 'low', label: 'Low' },
+                              { value: 'medium', label: 'Medium' },
+                              { value: 'high', label: 'High' },
+                              { value: 'urgent', label: 'Urgent' }
+                            ]}
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue />
@@ -572,6 +578,11 @@ export const NotificationSettings: React.FC = () => {
                       <Select
                         value={preferences.timing.digest.frequency}
                         onValueChange={(value) => updateTimingPreference('digest', 'frequency', value)}
+                        options={[
+                          { value: 'daily', label: 'Daily' },
+                          { value: 'weekly', label: 'Weekly' },
+                          { value: 'monthly', label: 'Monthly' }
+                        ]}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue />

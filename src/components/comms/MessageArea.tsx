@@ -22,6 +22,8 @@ interface Message {
   isRead: boolean;
   isEdited: boolean;
   editedAt?: Date;
+  conversation?: string;
+  channel?: string;
   replyTo?: {
     content: string;
     sender: {
@@ -170,8 +172,8 @@ export const MessageArea: React.FC<MessageAreaProps> = ({
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     socketService.sendMessage({
-      conversationId,
-      channelId,
+      conversationId: conversationId || undefined,
+      channelId: channelId || undefined,
       content,
       attachments
     });
@@ -276,7 +278,7 @@ export const MessageArea: React.FC<MessageAreaProps> = ({
             <MessageBubble
               key={message._id}
               message={message}
-              isOwn={message.sender._id === user?.userId}
+              isOwn={message.sender._id === user?._id}
               onAddReaction={(reactionType) => {
                 socketService.addReaction(message._id, reactionType);
               }}

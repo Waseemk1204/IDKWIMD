@@ -12,6 +12,10 @@ export interface IUser extends Document {
   phone?: string;
   phoneNumber?: string; // Alternative field name for notifications
   profilePhoto?: string;
+  profileImage?: string; // Alternative field name for profile image
+  name?: string; // Alternative field name for full name
+  userId?: string; // Alternative field name for _id
+  token?: string; // Token field for notifications
   
   // Role & Status
   role: 'employee' | 'employer' | 'admin';

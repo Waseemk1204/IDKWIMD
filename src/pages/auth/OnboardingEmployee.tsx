@@ -112,7 +112,7 @@ export const OnboardingEmployee: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      toast.error('Please fix the errors below', 'Some required fields are missing or invalid');
+      toast.error('Some required fields are missing or invalid');
       return;
     }
 
@@ -128,11 +128,11 @@ export const OnboardingEmployee: React.FC = () => {
         isVerified: false
       });
       
-      toast.success('Profile Completed!', 'Welcome to PartTimePays! Your profile has been set up successfully.');
+      toast.success('Welcome to PartTimePays! Your profile has been set up successfully.');
       navigate('/employee');
     } catch (error) {
       console.error('Profile completion failed:', error);
-      toast.error('Profile Update Failed', 'There was an error completing your profile. Please try again.');
+      toast.error('There was an error completing your profile. Please try again.');
     } finally {
       setIsLoading(false);
     }

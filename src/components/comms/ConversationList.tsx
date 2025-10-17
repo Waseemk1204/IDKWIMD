@@ -144,7 +144,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     if (conversation.title) return conversation.title;
     
     const otherParticipants = conversation.participants.filter(
-      p => p._id !== user?.userId
+      p => p._id !== user?._id
     );
     
     if (otherParticipants.length === 1) {
@@ -158,7 +158,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   const getConversationAvatar = (conversation: Conversation) => {
     const otherParticipants = conversation.participants.filter(
-      p => p._id !== user?.userId
+      p => p._id !== user?._id
     );
     
     if (otherParticipants.length === 1) {
