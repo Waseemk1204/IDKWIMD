@@ -74,10 +74,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
 
   // Initialize socket connection
   useEffect(() => {
-    if (user?.token) {
+    const token = localStorage.getItem('token');
+    if (token) {
       const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
         auth: {
-          token: user.token
+          token: token
         }
       });
 
@@ -101,7 +102,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
         newSocket.disconnect();
       };
     }
-  }, [user?.token]);
+  }, []);
 
   // Request notification permission
   useEffect(() => {
@@ -246,7 +247,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
           <Badge 
-            variant="destructive" 
+            variant="danger" 
             className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
           >
             {unreadCount > 99 ? '99+' : unreadCount}

@@ -6,6 +6,7 @@ import { JobApplicationForm } from '../../components/jobs/JobApplicationForm';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Skeleton, SkeletonCard, SkeletonText } from '../../components/ui/Skeleton';
+import { SkeletonButton } from '../../components/ui/SkeletonButton';
 import { 
   MapPin, 
   Clock, 

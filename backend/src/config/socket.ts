@@ -12,6 +12,14 @@ export interface SocketUser {
 
 export interface AuthenticatedSocket extends Socket {
   user: SocketUser;
+  id: string;
+  join: (room: string) => void;
+  leave: (room: string) => void;
+  on: (event: string, listener: (...args: any[]) => void) => void;
+  to: (room: string) => AuthenticatedSocket;
+  broadcast: {
+    emit: (event: string, ...args: any[]) => void;
+  };
 }
 
 export const configureSocket = (server: HTTPServer): SocketIOServer => {

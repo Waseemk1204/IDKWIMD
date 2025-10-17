@@ -14,6 +14,10 @@ declare global {
 
 export interface AuthRequest extends Request {
   user: IUser;
+  query: any;
+  params: any;
+  body: any;
+  io?: any;
 }
 
 // Generate JWT token

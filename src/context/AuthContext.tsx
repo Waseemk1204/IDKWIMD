@@ -15,6 +15,8 @@ type User = {
   isVerified: boolean;
   verificationStatus: 'pending' | 'verified' | 'rejected';
   profilePhoto?: string;
+  profileImage?: string; // Alternative field name
+  name?: string; // Alternative field name for fullName
   phone?: string;
   location?: string;
   headline?: string;
