@@ -42,6 +42,9 @@ app.set('trust proxy', true);
 app.use(cors({
   origin: function (origin, callback) {
     console.log('CORS - Request origin:', origin);
+    console.log('CORS - Origin type:', typeof origin);
+    console.log('CORS - Origin length:', origin?.length);
+    console.log('CORS - FRONTEND_URL:', process.env.FRONTEND_URL);
     
     // Security: Do not allow requests with no origin in production
     if (!origin) {
@@ -70,7 +73,9 @@ app.use(cors({
       // Add common Vercel patterns
       /^https:\/\/.*\.vercel\.app$/,
       // Add common Heroku patterns
-      /^https:\/\/.*\.herokuapp\.com$/
+      /^https:\/\/.*\.herokuapp\.com$/,
+      // Add permissive pattern for parttimepays domain (catches www, ports, etc.)
+      /^https?:\/\/(www\.)?parttimepays\.in(:\d+)?$/
     ];
 
     // Check if origin matches any allowed pattern
@@ -81,6 +86,12 @@ app.use(cors({
         return allowedOrigin.test(origin);
       }
       return false;
+    });
+
+    console.log('CORS - isAllowed result:', isAllowed);
+    console.log('CORS - Checking origin against allowed list:', {
+      origin,
+      allowedOrigins: allowedOrigins.map(o => o instanceof RegExp ? o.toString() : o)
     });
 
     if (isAllowed) {
