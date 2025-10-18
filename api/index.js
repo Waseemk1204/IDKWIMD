@@ -56,6 +56,8 @@ app.use(cors({
     
     const allowedOrigins = [
       process.env.FRONTEND_URL,
+      'https://parttimepays.in',
+      'http://parttimepays.in',  // for development/testing
       'http://localhost:3000',
       'http://localhost:5173',
       'http://127.0.0.1:3000',
