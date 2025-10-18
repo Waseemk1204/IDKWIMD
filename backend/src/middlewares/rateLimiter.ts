@@ -24,6 +24,10 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  skip: (req) => {
+    // Skip rate limiting for Google OAuth callback to prevent blocking OAuth flow
+    return req.path === '/api/v1/auth/google' && req.method === 'POST';
+  }
 });
 
 // Moderate rate limiter for API endpoints - more lenient for development

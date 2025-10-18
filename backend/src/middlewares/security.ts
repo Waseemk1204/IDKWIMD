@@ -13,8 +13,8 @@ export const helmetConfig = helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       scriptSrc: ["'self'"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'none'"],
+      connectSrc: ["'self'", "https://accounts.google.com"],
+      frameSrc: ["'self'", "https://accounts.google.com"],
       objectSrc: ["'none'"],
       upgradeInsecureRequests: [],
     },
@@ -77,8 +77,15 @@ const sanitizeObject = (obj: any): any => {
 // CORS configuration
 export const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    // Security: Do not allow requests with no origin in production
+    if (!origin) {
+      if (config.NODE_ENV === 'development') {
+        return callback(null, true);
+      } else {
+        console.log('CORS blocked: Request with no origin in production');
+        return callback(new Error('Not allowed by CORS'));
+      }
+    }
 
     const allowedOrigins = [
       config.FRONTEND_URL,
