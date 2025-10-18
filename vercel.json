@@ -12,12 +12,12 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/index.js"
     },
     {
       "src": "/login",
       "methods": ["POST"],
-      "dest": "/api/index.js"
+      "dest": "/index.js"
     },
     {
       "src": "/login",
@@ -27,7 +27,7 @@
     {
       "src": "/signup",
       "methods": ["POST"],
-      "dest": "/api/index.js"
+      "dest": "/index.js"
     },
     {
       "src": "/signup",
@@ -37,12 +37,12 @@
     {
       "src": "/signup/employee",
       "methods": ["POST"],
-      "dest": "/api/index.js"
+      "dest": "/index.js"
     },
     {
       "src": "/signup/employer",
       "methods": ["POST"],
-      "dest": "/api/index.js"
+      "dest": "/index.js"
     },
     {
       "src": "/sitemap.xml",
