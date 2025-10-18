@@ -4,10 +4,7 @@ import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/TrustBadge';
 import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
-import { LazyLoad, LazyImage } from '../../components/ui/LazyLoad';
-import { ProfileCompletionWizard } from '../../components/profile/ProfileCompletionWizard';
-import { ProfileCompletionProgress, getProfileCompletionItems, calculateProfileCompletion } from '../../components/profile/ProfileCompletionProgress';
-import { SkillVerification } from '../../components/profile/SkillVerification';
+import { LazyLoad } from '../../components/ui/LazyLoad';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import { Job } from '../../components/jobs/JobCard';
@@ -21,15 +18,12 @@ import {
   MapPin, 
   Calendar,
   CheckCircle,
-  AlertCircle,
   Eye,
   Target,
   User,
   Phone,
   FileText,
-  Award,
-  Settings,
-  X
+  Award
 } from 'lucide-react';
 
 export const EmployeeDashboard: React.FC = () => {
@@ -37,6 +31,17 @@ export const EmployeeDashboard: React.FC = () => {
   const [showAllJobs, setShowAllJobs] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({ // TODO: Implement stats updates
+    rating: 4.8,
+    applications: 12,
+    interviews: 3,
+    offers: 1,
+    earnings: 2500,
+    hoursThisMonth: 32,
+    completedJobs: 8
+  });
+  
+  console.log('Dashboard stats:', stats, 'setStats:', setStats);
   
   // Calculate profile completion percentage
   const calculateProfileCompletion = () => {
@@ -50,7 +55,7 @@ export const EmployeeDashboard: React.FC = () => {
     if (user.phone) completed++;
     if (user.about && user.about.length > 10) completed++;
     if (user.skills && user.skills.length > 0) completed++;
-    if (user.profileImage) completed++;
+    if (user.profilePhoto) completed++;
     
     return Math.round((completed / total) * 100);
   };
@@ -86,7 +91,7 @@ export const EmployeeDashboard: React.FC = () => {
     {
       id: 'photo',
       label: 'Profile Photo',
-      completed: !!user?.profileImage,
+      completed: !!user?.profilePhoto,
       icon: User
     }
   ];
@@ -220,7 +225,7 @@ export const EmployeeDashboard: React.FC = () => {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <Skeleton height={28} width="40%" />
-            <SkeletonButton size="sm" />
+            <Skeleton height={32} width={80} />
           </div>
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
@@ -317,7 +322,7 @@ export const EmployeeDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Active Applications</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.activeApplications}</p>
+                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.applications}</p>
                 <p className="text-xs text-success-600 dark:text-success-400 flex items-center mt-1">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +2 this week
@@ -336,7 +341,7 @@ export const EmployeeDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">This Month's Earnings</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">₹{stats.totalEarnings.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">₹{stats.earnings.toLocaleString()}</p>
                 <p className="text-xs text-success-600 dark:text-success-400 flex items-center mt-1">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +15% from last month
@@ -437,7 +442,7 @@ export const EmployeeDashboard: React.FC = () => {
         
         <div className="space-y-4">
           {recentJobs.length > 0 ? (
-            recentJobs.map((job, index) => (
+            recentJobs.map((job) => (
               <LazyLoad
                 key={job.id}
                 fallback={<SkeletonJobCard />}

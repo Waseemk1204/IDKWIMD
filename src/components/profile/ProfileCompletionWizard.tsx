@@ -1,21 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { 
   User, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  GraduationCap, 
   Briefcase, 
-  Award, 
   CheckCircle, 
   ArrowRight, 
   ArrowLeft,
   Upload,
   X,
   Star,
-  Calendar,
   FileText
 } from 'lucide-react';
 import { toast } from 'sonner';

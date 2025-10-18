@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, ComponentType } from 'react';
-// import { Skeleton, SkeletonCard } from '../components/ui/Skeleton';
+import { SkeletonCard } from '../components/ui/Skeleton';
 
 // Generic lazy loading wrapper with error boundary
 interface LazyWrapperProps {
@@ -96,66 +96,42 @@ export const createLazyRoute = <P extends object>(
 
 // Specific lazy components for the application
 export const LazyJobDetails = createLazyComponent(
-  () => import('../pages/employee/JobDetails'),
+  () => import('../pages/employee/JobDetails').then(module => ({ default: module.JobDetails })),
   <SkeletonCard />
 );
 
 export const LazyProfile = createLazyComponent(
-  () => import('../pages/shared/Profile'),
+  () => import('../pages/shared/Profile').then(module => ({ default: module.Profile })),
   <SkeletonCard />
 );
 
 export const LazyMessaging = createLazyComponent(
-  () => import('../pages/Messaging'),
+  () => import('../pages/Messaging').then(module => ({ default: module.Messaging })),
   <SkeletonCard />
 );
 
 export const LazyConnections = createLazyComponent(
-  () => import('../pages/employee/Connections'),
+  () => import('../pages/employee/Connections').then(module => ({ default: module.Connections })),
   <SkeletonCard />
 );
 
-export const LazyBlogDetails = createLazyComponent(
-  () => import('../pages/shared/BlogDetails'),
-  <SkeletonCard />
-);
-
-export const LazyCommunityPost = createLazyComponent(
-  () => import('../pages/shared/CommunityPost'),
-  <SkeletonCard />
-);
+// Removed non-existent components
 
 // Admin components (loaded only when needed)
 export const LazyAdminDashboard = createLazyComponent(
-  () => import('../pages/admin/Dashboard'),
+  () => import('../pages/admin/Dashboard').then(module => ({ default: module.AdminDashboard })),
   <SkeletonCard />
 );
 
-export const LazyAdminUsers = createLazyComponent(
-  () => import('../pages/admin/Users'),
-  <SkeletonCard />
-);
-
-export const LazyAdminJobs = createLazyComponent(
-  () => import('../pages/admin/Jobs'),
-  <SkeletonCard />
-);
+// Removed non-existent admin components: Users, Jobs
 
 // Employer components
 export const LazyEmployerDashboard = createLazyComponent(
-  () => import('../pages/employer/Dashboard'),
+  () => import('../pages/employer/Dashboard').then(module => ({ default: module.EmployerDashboard })),
   <SkeletonCard />
 );
 
-export const LazyEmployerJobs = createLazyComponent(
-  () => import('../pages/employer/Jobs'),
-  <SkeletonCard />
-);
-
-export const LazyEmployerApplications = createLazyComponent(
-  () => import('../pages/employer/Applications'),
-  <SkeletonCard />
-);
+// Removed non-existent employer components: Jobs, Applications
 
 // Utility for preloading routes
 export const preloadRoute = (routeName: string) => {
@@ -164,14 +140,8 @@ export const preloadRoute = (routeName: string) => {
     'profile': () => import('../pages/shared/Profile'),
     'messaging': () => import('../pages/Messaging'),
     'connections': () => import('../pages/employee/Connections'),
-    'blog-details': () => import('../pages/shared/BlogDetails'),
-    'community-post': () => import('../pages/shared/CommunityPost'),
     'admin-dashboard': () => import('../pages/admin/Dashboard'),
-    'admin-users': () => import('../pages/admin/Users'),
-    'admin-jobs': () => import('../pages/admin/Jobs'),
     'employer-dashboard': () => import('../pages/employer/Dashboard'),
-    'employer-jobs': () => import('../pages/employer/Jobs'),
-    'employer-applications': () => import('../pages/employer/Applications'),
   };
 
   const preloadFunc = preloadMap[routeName];

@@ -37,12 +37,12 @@ export const GoogleAuthCallback: React.FC = () => {
             console.log('Decoded JWT payload:', payload);
             
             const googleUser = {
-              googleId: payload.sub,
+              id: payload.sub,
               email: payload.email,
-              fullName: payload.name,
-              profilePhoto: payload.picture,
-              givenName: payload.given_name,
-              familyName: payload.family_name
+              name: payload.name,
+              picture: payload.picture,
+              given_name: payload.given_name,
+              family_name: payload.family_name
             };
             
             console.log('Google user data:', googleUser);

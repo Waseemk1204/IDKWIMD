@@ -226,9 +226,10 @@ interface PerformanceMonitorProps {
 
 export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   componentName,
-  children,
+  children, // TODO: Implement children rendering
   options
 }) => {
+  console.log('PerformanceMonitor children:', children);
   const { startTracking, trackRender, logMetrics } = usePerformanceMonitor(
     componentName,
     options

@@ -6,11 +6,6 @@ import {
   Heart, 
   ThumbsUp, 
   Laugh, 
-  MessageSquare,
-  MoreHorizontal,
-  Reply,
-  Edit,
-  Trash2,
   Smile,
   Frown,
   Zap,
@@ -176,7 +171,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         {!isOwn && (
           <Avatar
             src={message.sender.profilePhoto}
-            alt={message.sender.fullName}
+            name={message.sender.fullName}
             size="sm"
             className="mr-2 mt-1"
           />

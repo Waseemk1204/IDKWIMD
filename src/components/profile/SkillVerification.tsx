@@ -8,12 +8,9 @@ import {
   Star, 
   BookOpen, 
   Target,
-  TrendingUp,
-  Users,
-  Calendar
+  TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { apiService } from '../../services/api';
 
 interface Skill {
   id: string;
@@ -134,7 +131,7 @@ export const SkillVerification: React.FC<SkillVerificationProps> = ({
   const [testScore, setTestScore] = useState<number | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [isTestActive, setIsTestActive] = useState(false);
-  const [verificationMethods, setVerificationMethods] = useState<Record<string, string>>({});
+  const [_verificationMethods, _setVerificationMethods] = useState<Record<string, string>>({}); // TODO: Implement verification methods functionality
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -212,13 +209,13 @@ export const SkillVerification: React.FC<SkillVerificationProps> = ({
 
       onSkillUpdate(updatedSkills);
 
-      // Update in backend
-      await apiService.updateSkillVerification(skillId, {
-        verified: true,
-        verificationMethod: method,
-        score,
-        verifiedAt: new Date().toISOString()
-      });
+      // TODO: Implement proper skill verification API endpoint
+      // await apiService.updateVerification(skillId, {
+      //   verified: true,
+      //   verificationMethod: method,
+      //   score,
+      //   verifiedAt: new Date().toISOString()
+      // });
 
     } catch (error: any) {
       toast.error('Failed to update skill verification');

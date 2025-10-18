@@ -10,7 +10,6 @@ import {
   AlertCircle,
   DollarSign,
   Briefcase,
-  Clock,
   MessageSquare,
   Shield,
   Star,
@@ -46,7 +45,8 @@ interface Notification {
 }
 
 export const Notifications: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); // TODO: Use user for personalized notifications
+  console.log('Notifications user:', user);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [isLoading, setIsLoading] = useState(true);

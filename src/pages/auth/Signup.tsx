@@ -40,12 +40,7 @@ export const Signup: React.FC = () => {
 
   // Enhanced validation
   const {
-    errors,
-    validateAll,
-    handleFieldChange,
-    handleFieldBlur,
-    getFieldError,
-    clearErrors
+    // TODO: Implement validation using errors and handleFieldChange
   } = useValidation(schemas.userRegistration);
 
   const handleGoogleSuccess = async () => {

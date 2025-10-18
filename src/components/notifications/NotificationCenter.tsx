@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, X, Check, Clock, AlertCircle, CheckCircle, DollarSign, MessageSquare, Users, Briefcase, Star, Settings } from 'lucide-react';
+import { Bell, X, Check, CheckCircle, DollarSign, MessageSquare, Users, Briefcase, Star } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService as api } from '../../services/api';
@@ -69,15 +68,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread' | 'high' | 'urgent'>('all');
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const notificationRef = useRef<HTMLDivElement>(null);
+  const [_socket, _setSocket] = useState<Socket | null>(null); // TODO: Use socket for real-time notifications
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _notificationRef = useRef<HTMLDivElement>(null); // TODO: Use ref for scroll management
 
   // Initialize socket connection
   useEffect(() => {
-    if (user?.token) {
+    if (user?._id) {
       const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
         auth: {
-          token: user.token
+          token: localStorage.getItem('token') || ''
         }
       });
 
@@ -95,13 +95,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
         }
       });
 
-      setSocket(newSocket);
+      _setSocket(newSocket);
 
       return () => {
         newSocket.disconnect();
       };
     }
-  }, [user?.token]);
+  }, [user?._id]);
 
   // Request notification permission
   useEffect(() => {
@@ -246,7 +246,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
           <Badge 
-            variant="destructive" 
+            variant="danger" 
             className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
           >
             {unreadCount > 99 ? '99+' : unreadCount}

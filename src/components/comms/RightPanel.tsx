@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Users, Settings, Hash } from 'lucide-react';
+import { X, Settings, Hash } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 interface RightPanelProps {
@@ -9,7 +9,7 @@ interface RightPanelProps {
 }
 
 export const RightPanel: React.FC<RightPanelProps> = ({
-  conversationId,
+  conversationId: _conversationId, // TODO: Use conversationId for conversation-specific features
   channelId,
   onClose
 }) => {

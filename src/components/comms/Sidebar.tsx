@@ -3,8 +3,6 @@ import {
   MessageSquare, 
   Hash, 
   Phone, 
-  Video, 
-  Users, 
   Settings, 
   Search,
   Plus,
@@ -32,30 +30,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedChannel
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-
-  const sidebarItems = [
-    {
-      id: 'direct-messages',
-      label: 'Direct Messages',
-      icon: MessageSquare,
-      type: 'section',
-      count: 5
-    },
-    {
-      id: 'channels',
-      label: 'Channels',
-      icon: Hash,
-      type: 'section',
-      count: 3
-    },
-    {
-      id: 'calls',
-      label: 'Calls',
-      icon: Phone,
-      type: 'section',
-      count: 2
-    }
-  ];
 
   const conversations = [
     { id: 'conv1', name: 'John Doe', lastMessage: 'Hey, how are you?', unread: 2, online: true },

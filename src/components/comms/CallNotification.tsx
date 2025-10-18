@@ -1,7 +1,6 @@
 import React from 'react';
 import { Phone, Video, X } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Avatar } from '../ui/Avatar';
 
 interface CallNotificationProps {
   call: {

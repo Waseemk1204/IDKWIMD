@@ -83,12 +83,12 @@ export const BrowseJobs: React.FC = () => {
         setHasMore(response.data.hasMore || false);
       } else {
         setError(response.message || 'Failed to load jobs');
-        toast.error('Error', 'Failed to load jobs');
+        toast.error('Failed to load jobs');
       }
     } catch (error) {
       console.error('Failed to load jobs:', error);
       setError('Failed to load jobs. Please try again.');
-      toast.error('Error', 'Failed to load jobs. Please try again.');
+      toast.error('Failed to load jobs. Please try again.');
     } finally {
       setIsLoading(false);
     }

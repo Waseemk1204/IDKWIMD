@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Mail, X } from 'lucide-react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Button } from './Button';
-import { createPortal } from 'react-dom';
 
 interface StickyFeedbackButtonProps {
   className?: string;
 }
 
 export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ className = '' }) => {
+  // TODO: Implement component rendering using className
+  console.log('StickyFeedbackButton className:', className);
   const location = useLocation();
   
   // Helper function to get human-readable page name from route

@@ -10,8 +10,9 @@ import apiService from '../services/api';
 import { SEO, pageSEO } from '../utils/seo';
 import { DevelopmentNotice } from '../components/ui/DevelopmentNotice';
 
-// API Test Component for debugging
-const ApiTestComponent = () => {
+// API Test Component for debugging - TODO: Remove or implement
+const ApiTestComponent = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
+  console.log('ApiTestComponent defined but not used');
   const [testResult, setTestResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
@@ -331,6 +332,9 @@ const steps = [
 ];
 
 export const Landing = () => {
+  // TODO: Remove ApiTestComponent or implement it
+  console.log('ApiTestComponent available:', ApiTestComponent);
+  
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);

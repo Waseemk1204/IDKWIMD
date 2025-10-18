@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Settings, CheckCircle, AlertCircle, Clock, DollarSign, MessageSquare, Users, Briefcase, Star, Shield, X } from 'lucide-react';
+import { Bell, Settings, CheckCircle, AlertCircle, Clock, DollarSign, MessageSquare, Users, Briefcase, Star, Shield } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Switch } from '../ui/Switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/Select';
+import { Select } from '../ui/Select';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService as api } from '../../services/api';
 
@@ -62,7 +62,7 @@ interface NotificationStats {
 }
 
 export const NotificationSettings: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth(); // TODO: Use user for personalized settings
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -423,17 +423,13 @@ export const NotificationSettings: React.FC = () => {
                           <Select
                             value={config.priority}
                             onValueChange={(value) => updateTypePreference(type, 'priority', value)}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="urgent">Urgent</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            options={[
+                              { value: 'low', label: 'Low' },
+                              { value: 'medium', label: 'Medium' },
+                              { value: 'high', label: 'High' },
+                              { value: 'urgent', label: 'Urgent' }
+                            ]}
+                          />
                         </div>
                       </div>
                     )}
@@ -572,16 +568,12 @@ export const NotificationSettings: React.FC = () => {
                       <Select
                         value={preferences.timing.digest.frequency}
                         onValueChange={(value) => updateTimingPreference('digest', 'frequency', value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        options={[
+                          { value: 'daily', label: 'Daily' },
+                          { value: 'weekly', label: 'Weekly' },
+                          { value: 'monthly', label: 'Monthly' }
+                        ]}
+                      />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">

@@ -33,16 +33,16 @@ export const CommsLayout: React.FC<CommsLayoutProps> = ({ className }) => {
     });
 
     // Listen for call events
-    socketService.on('call_answered', (data: any) => {
-      setActiveCall(data);
+    socketService.on('call_answered', () => {
+      setActiveCall(true);
       setIncomingCall(null);
     });
 
-    socketService.on('call_ended', (data: any) => {
+    socketService.on('call_ended', () => {
       setActiveCall(null);
     });
 
-    socketService.on('call_rejected', (data: any) => {
+    socketService.on('call_rejected', () => {
       setIncomingCall(null);
     });
 

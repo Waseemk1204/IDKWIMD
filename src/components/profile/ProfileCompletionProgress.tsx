@@ -32,7 +32,7 @@ export const ProfileCompletionProgress: React.FC<ProfileCompletionProgressProps>
   completionPercentage,
   items,
   onCompleteProfile,
-  onItemClick
+  onItemClick: _onItemClick // TODO: Implement item click functionality
 }) => {
   const completedItems = items.filter(item => item.completed).length;
   const totalItems = items.length;

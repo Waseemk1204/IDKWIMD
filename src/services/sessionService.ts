@@ -135,10 +135,10 @@ class SessionService {
   }
 
   // Refresh token
-  public async refreshToken(): Promise<string | null> {
+  public async refreshToken(): Promise<string> {
     if (!this.sessionData?.refreshToken) {
       this.clearSession();
-      return null;
+      throw new Error('No refresh token available');
     }
 
     // Prevent multiple simultaneous refresh attempts
@@ -150,6 +150,9 @@ class SessionService {
 
     try {
       const newToken = await this.refreshPromise;
+      if (!newToken) {
+        throw new Error('Token refresh failed');
+      }
       return newToken;
     } finally {
       this.refreshPromise = null;
@@ -157,7 +160,7 @@ class SessionService {
   }
 
   // Perform the actual token refresh
-  private async performTokenRefresh(): Promise<string | null> {
+  private async performTokenRefresh(): Promise<string> {
     try {
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
@@ -185,11 +188,11 @@ class SessionService {
 
       // Refresh failed, clear session
       this.clearSession();
-      return null;
+      throw new Error('Token refresh failed');
     } catch (error) {
       console.error('Token refresh failed:', error);
       this.clearSession();
-      return null;
+      throw new Error('Token refresh failed');
     }
   }
 

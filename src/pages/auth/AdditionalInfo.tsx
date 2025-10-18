@@ -28,9 +28,9 @@ export const AdditionalInfo: React.FC = () => {
     // Redirect to appropriate onboarding page based on role
     // Pass user data via state so onboarding can pre-fill fields
     const userState = {
-      fullName: user.fullName || user.name || '',
+      fullName: user.fullName || '',
       email: user.email || '',
-      profilePhoto: user.profilePhoto || user.profileImage || ''
+      profilePhoto: user.profilePhoto || ''
     };
     
     if (user.role === 'employer') {

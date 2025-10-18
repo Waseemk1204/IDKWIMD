@@ -14,9 +14,7 @@ import {
   AlertCircle,
   ExternalLink,
   TrendingUp,
-  Calendar,
   MessageSquare,
-  Download,
   Filter,
   Search,
   BarChart3,
@@ -90,12 +88,12 @@ export const MyApplications: React.FC = () => {
           calculateStats(response.data.applications);
         } else {
           setError(response.message || 'Failed to load applications');
-          toast.error('Error', 'Failed to load applications');
+          toast.error('Failed to load applications');
         }
       } catch (error) {
         console.error('Failed to load applications:', error);
         setError('Failed to load applications. Please try again.');
-        toast.error('Error', 'Failed to load applications. Please try again.');
+        toast.error('Failed to load applications. Please try again.');
       } finally {
         setIsLoading(false);
       }

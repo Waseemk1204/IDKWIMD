@@ -5,7 +5,7 @@ import { Job } from '../../components/jobs/JobCard';
 import { JobApplicationForm } from '../../components/jobs/JobApplicationForm';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
-import { Skeleton, SkeletonCard, SkeletonText } from '../../components/ui/Skeleton';
+import { Skeleton, SkeletonCard, SkeletonText, SkeletonButton } from '../../components/ui/Skeleton';
 import { 
   MapPin, 
   Clock, 

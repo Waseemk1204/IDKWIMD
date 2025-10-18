@@ -3,7 +3,6 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import { socketService } from '../../services/socketService';
 import { Avatar } from '../ui/Avatar';
-import { Button } from '../ui/Button';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Conversation {
@@ -144,7 +143,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     if (conversation.title) return conversation.title;
     
     const otherParticipants = conversation.participants.filter(
-      p => p._id !== user?.userId
+      p => p._id !== user?._id
     );
     
     if (otherParticipants.length === 1) {
@@ -158,14 +157,14 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   const getConversationAvatar = (conversation: Conversation) => {
     const otherParticipants = conversation.participants.filter(
-      p => p._id !== user?.userId
+      p => p._id !== user?._id
     );
     
     if (otherParticipants.length === 1) {
       return otherParticipants[0].profilePhoto;
     }
     
-    return null;
+    return undefined;
   };
 
   if (loading) {
@@ -224,7 +223,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 >
                   <Avatar
                     src={getConversationAvatar(conversation)}
-                    alt={getConversationName(conversation)}
+                    name={getConversationName(conversation)}
                     size="md"
                     className="mr-3"
                   />

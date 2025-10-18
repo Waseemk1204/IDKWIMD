@@ -1,5 +1,5 @@
 // Comprehensive validation utilities for client-side and server-side validation
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface ValidationRule {
   required?: boolean;
@@ -11,7 +11,7 @@ export interface ValidationRule {
   email?: boolean;
   url?: boolean;
   phone?: boolean;
-  custom?: (value: any) => string | null;
+  custom?: (value: any, formData?: any) => string | null;
 }
 
 export interface ValidationResult {
@@ -185,7 +185,7 @@ export const validators = {
 
 // Main validation function
 export const validateField = (field: FieldValidation): string | null => {
-  const { value, rules, fieldName } = field;
+  const { value, rules, fieldName: _fieldName } = field;
 
   // Required validation
   if (rules.required) {
@@ -239,7 +239,7 @@ export const validateField = (field: FieldValidation): string | null => {
     }
 
     if (rules.max !== undefined) {
-      const error = validators.max(value, max);
+      const error = validators.max(value, rules.max);
       if (error) return error;
     }
   }
@@ -400,7 +400,7 @@ export const useValidation = (schema: Record<string, ValidationRule>) => {
       field.rules.custom = (val: any) => validators.confirmPassword(formData.password, val);
     }
 
-    return validateField(field);
+    return validateField(fieldName, field.value, formData);
   }, [schema]);
 
   const validateAll = useCallback((formData: Record<string, any>) => {

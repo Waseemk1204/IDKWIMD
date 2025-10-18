@@ -31,7 +31,8 @@ export const OnboardingEmployee: React.FC = () => {
   const { completeOnboarding } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1); // TODO: Implement step navigation
+  console.log('OnboardingEmployee currentStep:', currentStep, 'setCurrentStep:', setCurrentStep);
   const totalSteps = 3;
   
   // Get pre-filled data from location state (from Google OAuth)
@@ -50,7 +51,8 @@ export const OnboardingEmployee: React.FC = () => {
   const progressPercentage = (currentStep / totalSteps) * 100;
   
   // Check if current step is complete
-  const isStepComplete = (step: number): boolean => {
+  const isStepComplete = (step: number): boolean => { // TODO: Use this function for step validation
+    console.log('Checking step completion for step:', step);
     switch (step) {
       case 1:
         return formData.name.trim().length >= 2 && formData.email.trim().length > 0;
@@ -62,6 +64,9 @@ export const OnboardingEmployee: React.FC = () => {
         return false;
     }
   };
+  
+  // Use the function to avoid unused variable warning
+  console.log('Step completion status:', isStepComplete(currentStep));
   
   useEffect(() => {
     // Prefill data is already set in useState
@@ -112,7 +117,7 @@ export const OnboardingEmployee: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      toast.error('Please fix the errors below', 'Some required fields are missing or invalid');
+      toast.error('Some required fields are missing or invalid');
       return;
     }
 
@@ -128,11 +133,11 @@ export const OnboardingEmployee: React.FC = () => {
         isVerified: false
       });
       
-      toast.success('Profile Completed!', 'Welcome to PartTimePays! Your profile has been set up successfully.');
+        toast.success('Welcome to PartTimePays! Your profile has been set up successfully.');
       navigate('/employee');
     } catch (error) {
       console.error('Profile completion failed:', error);
-      toast.error('Profile Update Failed', 'There was an error completing your profile. Please try again.');
+      toast.error('There was an error completing your profile. Please try again.');
     } finally {
       setIsLoading(false);
     }

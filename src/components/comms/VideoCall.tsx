@@ -59,7 +59,7 @@ export const VideoCall: React.FC<VideoCallProps> = ({
       }
     };
 
-    const createJitsiMeeting = (roomUrl: string) => {
+    const createJitsiMeeting = (_roomUrl: string) => {
       if (!jitsiContainerRef.current) return;
 
       const domain = 'meet.jit.si';

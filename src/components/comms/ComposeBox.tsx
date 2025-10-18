@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Send, Paperclip, Smile } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 
 interface ComposeBoxProps {
   onSendMessage: (content: string, attachments?: any[]) => void;
@@ -20,7 +19,7 @@ export const ComposeBox: React.FC<ComposeBoxProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setMessage(value);
 
@@ -111,13 +110,12 @@ export const ComposeBox: React.FC<ComposeBoxProps> = ({
       {/* Message Input */}
       <form onSubmit={handleSubmit} className="flex items-end space-x-2">
         <div className="flex-1 relative">
-          <Input
+          <textarea
             value={message}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             className="pr-20 resize-none"
-            multiline
             rows={1}
           />
           

@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { api } from './api';
+import apiService from './api';
 
 export interface Notification {
   _id: string;
@@ -167,11 +167,7 @@ class NotificationService {
         body: notification.message,
         icon: notification.richContent?.avatar || '/favicon.ico',
         tag: notification._id,
-        requireInteraction: notification.smart.priority === 'urgent',
-        actions: notification.richContent?.actionButtons?.map(button => ({
-          action: button.action,
-          title: button.label
-        })) || []
+        requireInteraction: notification.smart.priority === 'urgent'
       });
 
       browserNotification.onclick = () => {
@@ -242,35 +238,35 @@ class NotificationService {
       }
     });
 
-    const response = await api.get(`/notifications?${queryParams.toString()}`);
-    return response.data.data;
+    const response = await apiService.getUnifiedNotifications(params);
+    return response.data;
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    await api.patch(`/notifications/${notificationId}/read`);
+    await apiService.markUnifiedNotificationAsRead(notificationId);
   }
 
   async markAllAsRead(): Promise<void> {
-    await api.patch('/notifications/mark-all-read');
+    await apiService.markAllUnifiedNotificationsAsRead();
   }
 
   async trackInteraction(notificationId: string, action: string): Promise<void> {
-    await api.post(`/notifications/${notificationId}/interaction`, { action });
+    await apiService.trackNotificationInteraction(notificationId, action);
   }
 
   async getPreferences(): Promise<NotificationPreferences> {
-    const response = await api.get('/notifications/preferences');
-    return response.data.data;
+    const response = await apiService.getNotificationPreferences();
+    return response.data;
   }
 
   async updatePreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const response = await api.put('/notifications/preferences', preferences);
-    return response.data.data;
+    const response = await apiService.updateNotificationPreferences(preferences);
+    return response.data;
   }
 
   async getStats(): Promise<NotificationStats> {
-    const response = await api.get('/notifications/stats');
-    return response.data.data;
+    const response = await apiService.getNotificationStats();
+    return response.data;
   }
 
   async createTestNotification(data: {
@@ -280,7 +276,7 @@ class NotificationService {
     priority?: 'low' | 'medium' | 'high' | 'urgent';
     channels?: Array<'push' | 'email' | 'sms' | 'inApp'>;
   }): Promise<Notification> {
-    const response = await api.post('/notifications/test', data);
+    const response = await apiService.createTestNotification(data);
     return response.data.data;
   }
 
