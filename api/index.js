@@ -39,7 +39,7 @@ const allowedOrigins = [
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', true);
 
-// Force rebuild marker - CORS debug version
+// Force rebuild marker - CORS debug version (DEPLOYED)
 console.log('🚀 API Server starting with CORS debug logging enabled');
 
 app.use(cors({
