@@ -1,9 +1,8 @@
 {
-  "name": "part-time-pay-frontend",
+  "name": "part-time-pay-fullstack",
   "version": "1.0.0",
-  "description": "Part-Time Pay$ - Frontend for part-time job marketplace",
+  "description": "Part-Time Pay$ - Full-stack part-time job marketplace",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
