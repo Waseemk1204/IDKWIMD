@@ -43,45 +43,56 @@ app.use(cors({
   origin: function (origin, callback) {
     console.log('CORS - Request origin:', origin);
     
-    // Allow requests with no origin (OAuth POST from Google)
+    // Security: Do not allow requests with no origin in production
     if (!origin) {
-      console.log('CORS - Allowing request with no origin');
-      return callback(null, true);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('CORS - Allowing request with no origin (development)');
+        return callback(null, true);
+      } else {
+        console.log('CORS blocked: Request with no origin in production');
+        return callback(new Error('Not allowed by CORS'));
+      }
     }
     
-    // Allow whitelisted origins
-    if (allowedOrigins.includes(origin)) {
-      console.log('CORS - Allowing whitelisted origin:', origin);
-      return callback(null, true);
-    }
-    
-    // Allow any parttimepays domain
-    if (origin && origin.includes('parttimepays')) {
-      console.log('CORS - Allowing parttimepays domain:', origin);
-      return callback(null, true);
-    }
-    
-    // Allow Google OAuth requests (more permissive)
-    if (origin && (origin.includes('google') || origin.includes('accounts.google.com') || origin.includes('googleusercontent.com') || origin.includes('googleapis.com'))) {
-      console.log('CORS - Allowing Google OAuth origin:', origin);
-      return callback(null, true);
-    }
-    
-    // DEBUG: Log all origins for Google OAuth debugging
-    console.log('CORS - DEBUG: Origin details:', {
-      origin: origin,
-      type: typeof origin,
-      includesGoogle: origin && origin.includes('google'),
-      includesAccounts: origin && origin.includes('accounts'),
-      includesGoogleapis: origin && origin.includes('googleapis'),
-      includesGoogleusercontent: origin && origin.includes('googleusercontent')
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173',
+      // Add common Netlify patterns
+      /^https:\/\/.*\.netlify\.app$/,
+      /^https:\/\/.*\.netlify\.com$/,
+      // Add common Railway patterns
+      /^https:\/\/.*\.railway\.app$/,
+      // Add common Vercel patterns
+      /^https:\/\/.*\.vercel\.app$/,
+      // Add common Heroku patterns
+      /^https:\/\/.*\.herokuapp\.com$/
+    ];
+
+    // Check if origin matches any allowed pattern
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
     });
-    
-    // TEMPORARY: Allow all origins for Google OAuth debugging
-    console.log('CORS - DEBUG: Temporarily allowing all origins for Google OAuth debugging');
-    return callback(null, true);
+
+    if (isAllowed) {
+      console.log('CORS - Allowing origin:', origin);
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
   },
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
