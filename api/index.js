@@ -42,74 +42,16 @@ app.set('trust proxy', true);
 // FORCE REBUILD - CORS FIXES DEPLOYED - CACHE BUSTER v2
 console.log('🚀 API Server starting with CORS debug logging enabled');
 
+// TEMPORARY: Allow all origins for debugging
 app.use(cors({
-  origin: function (origin, callback) {
-    console.log('CORS - Request origin:', origin);
-    console.log('CORS - Origin type:', typeof origin);
-    console.log('CORS - Origin length:', origin?.length);
-    console.log('CORS - FRONTEND_URL:', process.env.FRONTEND_URL);
-    
-    // Security: Do not allow requests with no origin in production
-    if (!origin) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('CORS - Allowing request with no origin (development)');
-        return callback(null, true);
-      } else {
-        console.log('CORS blocked: Request with no origin in production');
-        return callback(new Error('Not allowed by CORS'));
-      }
-    }
-    
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      'https://parttimepays.in',
-      'http://parttimepays.in',  // for development/testing
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173',
-      // Add common Netlify patterns
-      /^https:\/\/.*\.netlify\.app$/,
-      /^https:\/\/.*\.netlify\.com$/,
-      // Add common Railway patterns
-      /^https:\/\/.*\.railway\.app$/,
-      // Add common Vercel patterns
-      /^https:\/\/.*\.vercel\.app$/,
-      // Add common Heroku patterns
-      /^https:\/\/.*\.herokuapp\.com$/,
-      // Add permissive pattern for parttimepays domain (catches www, ports, etc.)
-      /^https?:\/\/(www\.)?parttimepays\.in(:\d+)?$/
-    ];
-
-    // Check if origin matches any allowed pattern
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (typeof allowedOrigin === 'string') {
-        return allowedOrigin === origin;
-      } else if (allowedOrigin instanceof RegExp) {
-        return allowedOrigin.test(origin);
-      }
-      return false;
-    });
-
-    console.log('CORS - isAllowed result:', isAllowed);
-    console.log('CORS - Checking origin against allowed list:', {
-      origin,
-      allowedOrigins: allowedOrigins.map(o => o instanceof RegExp ? o.toString() : o)
-    });
-
-    if (isAllowed) {
-      console.log('CORS - Allowing origin:', origin);
-      callback(null, true);
-    } else {
-      console.log(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins temporarily
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
+
+console.log('⚠️ TEMPORARY: CORS configured to allow all origins');
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
