@@ -1,6 +1,6 @@
 // LinkedIn OAuth configuration
-const LINKEDIN_CLIENT_ID = import.meta.env.VITE_LINKEDIN_CLIENT_ID || 'your-linkedin-client-id';
-const LINKEDIN_REDIRECT_URI = import.meta.env.VITE_LINKEDIN_REDIRECT_URI || window.location.origin + '/auth/linkedin/callback';
+const LINKEDIN_CLIENT_ID = import.meta.env.VITE_LINKEDIN_CLIENT_ID || '77jk73v91g8a9p';
+const LINKEDIN_REDIRECT_URI = import.meta.env.VITE_LINKEDIN_REDIRECT_URI || 'https://parttimepays.in/auth/linkedin/callback';
 const LINKEDIN_SCOPE = 'r_liteprofile r_emailaddress';
 
 export interface LinkedInUserInfo {
