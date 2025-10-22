@@ -1,0 +1,699 @@
+/* PLEASE NOTE: THESE TAILWIND IMPORTS SHOULD NEVER BE DELETED */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+/* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
+
+/* CSS Linter Configuration - Suppress Tailwind CSS warnings */
+/* stylelint-disable at-rule-no-unknown */
+/* stylelint-disable property-no-vendor-prefix */
+/* stylelint-disable declaration-block-no-redundant-longhand-properties */
+
+/* 
+ * This file uses Tailwind CSS @apply directives which are processed at build time.
+ * The CSS linter warnings about @apply are expected and can be safely ignored.
+ * All @apply directives are valid Tailwind CSS syntax.
+ */
+
+/* Import Inter font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Base styles for better typography and user experience */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  }
+  
+  body {
+    @apply text-neutral-900 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -ms-overflow-style: none; /* IE and Edge */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  }
+
+  /* Improved focus styles for accessibility */
+  *:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+  }
+
+  /* Hide scrollbar while maintaining scroll functionality */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+
+  /* Custom Animation Keyframes */
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    0% {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+      animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+      transform: translate3d(0,0,0);
+    }
+    40%, 43% {
+      animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
+      transform: translate3d(0, -30px, 0);
+    }
+    70% {
+      animation-timing-function: cubic-bezier(0.755, 0.050, 0.855, 0.060);
+      transform: translate3d(0, -15px, 0);
+    }
+    90% {
+      transform: translate3d(0,-4px,0);
+    }
+  }
+
+  /* Animation Utility Classes */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.6s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce {
+    animation: bounce 1s infinite;
+  }
+
+
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Mobile scroll lock support (less aggressive) */
+  body.scroll-locked {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
+
+  html.scroll-locked {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
+
+  /* Utility class to hide scrollbars */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
+  /* Hide any scroll-to-top arrows that might be added by browser extensions */
+  [class*="scroll-to-top"],
+  [class*="back-to-top"],
+  [class*="scrolltop"],
+  [id*="scroll-to-top"],
+  [id*="back-to-top"],
+  [id*="scrolltop"] {
+    display: none !important;
+  }
+
+  /* Hide any floating arrows near the top of the page */
+  .fixed.top-16,
+  .fixed.top-20,
+  .absolute.top-16,
+  .absolute.top-20 {
+    display: none !important;
+  }
+
+  /* Hide scroll-to-top arrows that appear below navbar */
+  [style*="position: fixed"][style*="top: 64px"],
+  [style*="position: fixed"][style*="top: 80px"],
+  [style*="position: fixed"][style*="top: 96px"],
+  [style*="position: fixed"][style*="top: 112px"],
+  [style*="position: fixed"][style*="top: 128px"] {
+    display: none !important;
+  }
+
+  /* Hide any elements with arrow-like content positioned near top */
+  [class*="arrow"]:not([class*="navbar"]):not([class*="button"]):not([class*="icon"]) {
+    display: none !important;
+  }
+
+  /* Specifically hide any floating arrow elements that might appear below navbar */
+  [style*="position: fixed"][style*="top: 64px"][style*="right: 20px"],
+  [style*="position: fixed"][style*="top: 80px"][style*="right: 20px"],
+  [style*="position: fixed"][style*="top: 96px"][style*="right: 20px"] {
+    display: none !important;
+  }
+
+  /* More aggressive hiding for scroll-to-top elements */
+  div[style*="position: fixed"][style*="right: 20px"],
+  div[style*="position: fixed"][style*="right: 24px"],
+  div[style*="position: fixed"][style*="right: 16px"] {
+    display: none !important;
+  }
+
+  /* Hide any element that looks like a scroll-to-top arrow */
+  [data-scroll-to-top],
+  [data-back-to-top],
+  [aria-label*="scroll to top"],
+  [aria-label*="back to top"],
+  [title*="scroll to top"],
+  [title*="back to top"] {
+    display: none !important;
+  }
+
+  /* Hide any arrows that might appear during scroll events */
+  [class*="scroll-arrow"],
+  [id*="scroll-arrow"],
+  [class*="scroll-indicator"],
+  [id*="scroll-indicator"] {
+    display: none !important;
+  }
+
+  /* Hide any elements with arrow symbols or chevron icons */
+  [class*="chevron"],
+  [id*="chevron"],
+  [class*="arrow-up"],
+  [id*="arrow-up"],
+  [class*="arrow-down"],
+  [id*="arrow-down"] {
+    display: none !important;
+  }
+
+  /* Hide any floating elements that might be arrows */
+  .floating-arrow,
+  .scroll-arrow,
+  .back-to-top-arrow {
+    display: none !important;
+  }
+
+  /* Hide arrows in the top-right area of the page */
+  [style*="position: fixed"][style*="top: 0"],
+  [style*="position: fixed"][style*="top: 10px"],
+  [style*="position: fixed"][style*="top: 20px"],
+  [style*="position: fixed"][style*="top: 30px"],
+  [style*="position: fixed"][style*="top: 40px"],
+  [style*="position: fixed"][style*="top: 50px"],
+  [style*="position: fixed"][style*="top: 60px"],
+  [style*="position: fixed"][style*="top: 70px"],
+  [style*="position: fixed"][style*="top: 80px"],
+  [style*="position: fixed"][style*="top: 90px"],
+  [style*="position: fixed"][style*="top: 100px"] {
+    display: none !important;
+  }
+
+  /* Hide any elements positioned in the top-right corner */
+  [style*="position: absolute"][style*="top: 0"],
+  [style*="position: absolute"][style*="top: 10px"],
+  [style*="position: absolute"][style*="top: 20px"],
+  [style*="position: absolute"][style*="top: 30px"],
+  [style*="position: absolute"][style*="top: 40px"],
+  [style*="position: absolute"][style*="top: 50px"],
+  [style*="position: absolute"][style*="top: 60px"],
+  [style*="position: absolute"][style*="top: 70px"],
+  [style*="position: absolute"][style*="top: 80px"],
+  [style*="position: absolute"][style*="top: 90px"],
+  [style*="position: absolute"][style*="top: 100px"] {
+    display: none !important;
+  }
+
+  /* Hide any elements with arrow-like content in the top-right */
+  [style*="right: 0"],
+  [style*="right: 10px"],
+  [style*="right: 20px"],
+  [style*="right: 30px"],
+  [style*="right: 40px"],
+  [style*="right: 50px"] {
+    display: none !important;
+  }
+
+  /* Smooth transitions for interactive elements (excluding scroll containers) */
+  *:not(html):not(body) {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+}
+
+/* Component layer for reusable styles */
+@layer components {
+  /* Trust indicators and badges */
+  .trust-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300;
+  }
+
+  .verification-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-trust-100 text-trust-800 dark:bg-trust-900 dark:text-trust-300;
+  }
+
+  .pending-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300;
+  }
+
+  /* Professional card styles */
+  .card-professional {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-soft border border-neutral-200 dark:border-neutral-700;
+  }
+
+  .card-elevated {
+    @apply bg-white dark:bg-neutral-800 rounded-2xl shadow-large border border-neutral-200 dark:border-neutral-700;
+  }
+
+  /* Gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600;
+  }
+
+  .gradient-secondary {
+    @apply bg-gradient-to-r from-secondary-500 to-secondary-600;
+  }
+
+  .gradient-trust {
+    @apply bg-gradient-to-r from-trust-500 to-trust-600;
+  }
+
+  .gradient-hero {
+    @apply bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950;
+  }
+
+  /* Button enhancements */
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-to-r from-secondary-500 to-secondary-600 hover:from-secondary-600 hover:to-secondary-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2;
+  }
+
+  /* Professional input styling */
+  .input-professional {
+    @apply w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-soft placeholder-neutral-400 dark:placeholder-neutral-500 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+  }
+
+  /* Text gradient utility */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+  }
+
+  /* Loading skeleton */
+  .loading-skeleton {
+    @apply animate-pulse bg-neutral-200 dark:bg-neutral-700 rounded;
+  }
+
+  /* Line clamp utilities - vendor prefixes required for cross-browser support */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1; /* stylelint-disable-line property-no-vendor-prefix */
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* stylelint-disable-line property-no-vendor-prefix */
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* stylelint-disable-line property-no-vendor-prefix */
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 font-medium px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  /* Input field enhancements */
+  .input-professional {
+    @apply block w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+  }
+
+  /* Loading states */
+  .loading-skeleton {
+    @apply animate-pulse bg-neutral-200 dark:bg-neutral-700 rounded;
+  }
+
+  /* Professional shadows */
+  .shadow-trust {
+    @apply shadow-soft ring-1 ring-primary-100 dark:ring-primary-900/20;
+  }
+
+  .shadow-elevated {
+    @apply shadow-medium ring-1 ring-neutral-200 dark:ring-neutral-700;
+  }
+}
+
+/* Utility layer for custom animations and effects */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-trust {
+    @apply bg-gradient-to-r from-trust-600 to-primary-600 bg-clip-text text-transparent;
+  }
+
+  .backdrop-blur-soft {
+    backdrop-filter: blur(8px);
+  }
+
+  .backdrop-blur-medium {
+    backdrop-filter: blur(12px);
+  }
+
+  /* Animation utilities */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.6s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.4s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  /* Keyframe animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Hover effects - only use on clickable elements */
+  .hover-lift {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-200 hover:shadow-glow;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+
+  /* Modern micro-interactions */
+  .interactive-card {
+    @apply transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 hover:border-primary-300 dark:hover:border-primary-700;
+  }
+
+  .button-press {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+
+  .smooth-bounce {
+    @apply transition-all duration-500 ease-in-out;
+    animation: smooth-bounce 2s infinite;
+  }
+
+  @keyframes smooth-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .fade-in-slow {
+    animation: fadeIn 1s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Shimmer effect for loading states */
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Progress animations */
+  .progress-fill {
+    @apply transition-all duration-700 ease-out;
+  }
+
+  /* Ripple effect */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .ripple:active::after {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Stagger animation for lists */
+  .stagger-fade-in {
+    animation: fadeIn 0.5s ease-out both;
+  }
+
+  .stagger-fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-fade-in:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-fade-in:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-fade-in:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-fade-in:nth-child(5) { animation-delay: 0.5s; }
+
+  /* Smooth color transitions */
+  .smooth-color-transition {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply backdrop-blur-md bg-white/70 dark:bg-neutral-900/70 border border-white/20 dark:border-neutral-700/20;
+  }
+
+  /* Gradient border animation */
+  .gradient-border {
+    position: relative;
+    background: linear-gradient(var(--gradient-angle), #667eea 0%, #764ba2 100%);
+    animation: borderRotate 3s linear infinite;
+  }
+
+  @keyframes borderRotate {
+    0% {
+      --gradient-angle: 0deg;
+    }
+    100% {
+      --gradient-angle: 360deg;
+    }
+  }
+
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-15px);
+    }
+  }
+
+  /* Skeleton loading with gradient */
+  .skeleton-gradient {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  .dark .skeleton-gradient {
+    background: linear-gradient(90deg, #2a2a2a 25%, #1a1a1a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+  }
+
+  @keyframes loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Pulse glow effect */
+  .pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/login",
+      "methods": ["POST"],
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/login",
+      "methods": ["GET"],
+      "dest": "/index.html"
+    },
+    {
+      "src": "/signup",
+      "methods": ["POST"],
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/signup",
+      "methods": ["GET"],
+      "dest": "/index.html"
+    },
+    {
+      "src": "/signup/employee",
+      "methods": ["POST"],
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/signup/employer",
+      "methods": ["POST"],
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml",
+      "headers": {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt",
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/((?!api|assets|sitemap.xml|robots.txt|favicon.*|apple-touch-icon.*|android-chrome.*|mstile.*|og-image.*|site.webmanifest|browserconfig.xml).*)",
+      "dest": "/index.html"
+    }
+  ]
+}
