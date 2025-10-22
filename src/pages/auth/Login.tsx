@@ -131,6 +131,29 @@ export const Login: React.FC = () => {
     setError(error);
   };
 
+  const handleLinkedInSuccess = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      console.log('Initiating LinkedIn OAuth login');
+      // LinkedIn auth redirect handled by linkedinAuthService
+      // The actual login will happen after LinkedIn redirects back
+      console.log('LinkedIn OAuth redirect initiated successfully');
+      // Don't try to login here as we're in redirect mode
+      return;
+    } catch (error) {
+      console.error('LinkedIn OAuth error:', error);
+      setError(error instanceof Error ? error.message : 'LinkedIn authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLinkedInError = (error: string) => {
+    setError(error);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -374,8 +397,8 @@ export const Login: React.FC = () => {
                       text="Continue with LinkedIn"
                       className="w-full"
                       mode="login"
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
+                      onSuccess={handleLinkedInSuccess}
+                      onError={handleLinkedInError}
                     />
                   </div>
                 </div>
