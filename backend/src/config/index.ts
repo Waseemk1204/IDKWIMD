@@ -7,7 +7,7 @@ export const config = {
   // Server Configuration
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '5000', 10),
-  HOST: process.env.HOST || 'localhost',
+  HOST: process.env.NODE_ENV === 'production' ? '0.0.0.0' : (process.env.HOST || 'localhost'),
 
   // Database Configuration
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/parttimepay',
