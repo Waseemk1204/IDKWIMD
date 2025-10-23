@@ -92,8 +92,17 @@ GOOGLE_CALLBACK_URL=https://YOUR-RAILWAY-URL/api/v1/auth/google/callback
 - **Your usage:** ~$1-3/month
 - **Net cost:** $0/month (within free tier) 🎉
 
+## ✅ File Uploads
+Railway uses **local file storage** (no Cloudinary needed):
+- Resume uploads save to `/uploads/resumes/`
+- Files persist across deployments
+- No external service required
+- Works out of the box!
+
 ## Auto-Deploy
 After setup, every `git push` to `main` auto-deploys to Railway in ~2 minutes!
+
+**Your recent fix is already pushed!** Railway will auto-deploy the latest code once you connect the repo.
 
 ## Troubleshooting
 
