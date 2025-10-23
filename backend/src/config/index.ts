@@ -68,12 +68,10 @@ const requiredEnvVars = [
 
 if (config.NODE_ENV === 'production') {
   requiredEnvVars.push(
-    'MONGODB_URI',
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
-    'CLOUDINARY_CLOUD_NAME',
-    'CLOUDINARY_API_KEY',
-    'CLOUDINARY_API_SECRET'
+    'MONGODB_URI'
+    // OAuth and Cloudinary are optional
+    // Google OAuth: Only needed if using Google login
+    // Cloudinary: Only needed if using cloud storage (Railway uses local storage)
   );
 }
 
