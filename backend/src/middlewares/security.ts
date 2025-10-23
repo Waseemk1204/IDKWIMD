@@ -77,18 +77,14 @@ const sanitizeObject = (obj: any): any => {
 // CORS configuration
 export const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Security: Do not allow requests with no origin in production
+    // Allow requests with no origin (direct browser access, health checks, monitoring tools)
     if (!origin) {
-      if (config.NODE_ENV === 'development') {
-        return callback(null, true);
-      } else {
-        console.log('CORS blocked: Request with no origin in production');
-        return callback(new Error('Not allowed by CORS'));
-      }
+      return callback(null, true);
     }
 
     const allowedOrigins = [
       config.FRONTEND_URL,
+      'https://parttimepays.in',
       'http://localhost:3000',
       'http://localhost:5173',
       'http://127.0.0.1:3000',
