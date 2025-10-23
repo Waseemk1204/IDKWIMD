@@ -49,6 +49,10 @@ class Server {
 
   constructor() {
     this.app = express();
+    
+    // Trust Railway proxy for accurate client IPs
+    this.app.set('trust proxy', true);
+    
     this.server = createServer(this.app);
     this.io = configureSocket(this.server);
 
