@@ -38,6 +38,13 @@ export const ExperienceStep: React.FC = () => {
 
   const handleAddExperience = () => {
     setExperiences([...experiences, { company: '', title: '', description: '', current: false }]);
+    // Scroll to the newly added experience field
+    setTimeout(() => {
+      const experienceCards = document.querySelectorAll('[data-experience-card]');
+      if (experienceCards.length > 0) {
+        experienceCards[experienceCards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const handleRemoveExperience = (index: number) => {
@@ -54,6 +61,13 @@ export const ExperienceStep: React.FC = () => {
 
   const handleAddEducation = () => {
     setEducation([...education, { institution: '', degree: '', field: '', current: false }]);
+    // Scroll to the newly added education field
+    setTimeout(() => {
+      const educationCards = document.querySelectorAll('[data-education-card]');
+      if (educationCards.length > 0) {
+        educationCards[educationCards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const handleRemoveEducation = (index: number) => {
@@ -110,6 +124,7 @@ export const ExperienceStep: React.FC = () => {
           {experiences.map((exp, index) => (
             <div
               key={index}
+              data-experience-card
               className="p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700"
             >
               <div className="flex items-start justify-between mb-4">
@@ -254,6 +269,7 @@ export const ExperienceStep: React.FC = () => {
           {education.map((edu, index) => (
             <div
               key={index}
+              data-education-card
               className="p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700"
             >
               <div className="flex items-start justify-between mb-4">
