@@ -3,12 +3,12 @@ import { toast } from 'sonner';
 import sessionService from './sessionService';
 
 const getApiBaseUrl = () => {
-  // In production, use relative URLs for Vercel API routes
-  if (import.meta.env.PROD) {
-    return '/api';
+  // Always use VITE_API_URL if set (Railway backend in production)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
-  // In development, use the environment variable or default
-  return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  // Fallback for local development
+  return 'http://localhost:3001/api/v1';
 };
 
 const API_BASE_URL = getApiBaseUrl();
