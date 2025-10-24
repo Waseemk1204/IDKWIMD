@@ -23,9 +23,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const { fullName, username, email, password, role } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
+    let existingUser;
+    try {
+      existingUser = await User.findOne({ 
+        $or: [{ email }, { username }] 
+      });
+    } catch (dbError) {
+      console.error('Database query error during user lookup:', dbError);
+      res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again later.',
+        error: 'database_unavailable'
+      });
+      return;
+    }
+    
     if (existingUser) {
       res.status(400).json({
         success: false,
@@ -456,17 +468,48 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     }
 
     // Check if user already exists with this Google ID
-    let user = await User.findOne({ googleId });
+    let user;
+    try {
+      user = await User.findOne({ googleId });
+    } catch (dbError) {
+      console.error('Database error during Google ID lookup:', dbError);
+      res.status(503).json({
+        success: false,
+        message: 'Database temporarily unavailable',
+        error: 'database_unavailable'
+      });
+      return;
+    }
     
     if (!user) {
       // Check if user exists with this email
-      user = await User.findOne({ email });
+      try {
+        user = await User.findOne({ email });
+      } catch (dbError) {
+        console.error('Database error during email lookup:', dbError);
+        res.status(503).json({
+          success: false,
+          message: 'Database temporarily unavailable',
+          error: 'database_unavailable'
+        });
+        return;
+      }
       
       if (user) {
         // Link Google account to existing user
         user.googleId = googleId;
         user.profilePhoto = profilePhoto || user.profilePhoto;
-        await user.save();
+        try {
+          await user.save();
+        } catch (dbError) {
+          console.error('Database error saving user:', dbError);
+          res.status(503).json({
+            success: false,
+            message: 'Database temporarily unavailable',
+            error: 'database_unavailable'
+          });
+          return;
+        }
       } else {
         // Create new user with Google data
         const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
@@ -474,9 +517,24 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         // Ensure username is unique
         let uniqueUsername = username;
         let counter = 1;
-        while (await User.findOne({ username: uniqueUsername })) {
-          uniqueUsername = `${username}${counter}`;
-          counter++;
+        let usernameExists = true;
+        while (usernameExists) {
+          try {
+            const existingUser = await User.findOne({ username: uniqueUsername });
+            usernameExists = !!existingUser;
+            if (usernameExists) {
+              uniqueUsername = `${username}${counter}`;
+              counter++;
+            }
+          } catch (dbError) {
+            console.error('Database error during username check:', dbError);
+            res.status(503).json({
+              success: false,
+              message: 'Database temporarily unavailable',
+              error: 'database_unavailable'
+            });
+            return;
+          }
         }
 
         user = new User({
