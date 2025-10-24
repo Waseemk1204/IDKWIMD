@@ -35,8 +35,7 @@ export interface ICallHistory extends Document {
 const callHistorySchema = new Schema<ICallHistory>({
   callId: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   participants: [{
     user: {
@@ -130,7 +129,7 @@ const callHistorySchema = new Schema<ICallHistory>({
 });
 
 // Indexes for better query performance
-callHistorySchema.index({ callId: 1 });
+callHistorySchema.index({ callId: 1 }, { unique: true });
 callHistorySchema.index({ 'participants.user': 1 });
 callHistorySchema.index({ conversation: 1 });
 callHistorySchema.index({ channel: 1 });

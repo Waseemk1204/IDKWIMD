@@ -35,8 +35,7 @@ const connectionAnalyticsSchema = new Schema<IConnectionAnalytics>({
   connectionId: {
     type: Schema.Types.ObjectId,
     ref: 'Connection',
-    required: true,
-    unique: true
+    required: true
   },
   user1: {
     type: Schema.Types.ObjectId,
@@ -101,7 +100,7 @@ const connectionAnalyticsSchema = new Schema<IConnectionAnalytics>({
 });
 
 // Indexes for better query performance
-connectionAnalyticsSchema.index({ connectionId: 1 });
+connectionAnalyticsSchema.index({ connectionId: 1 }, { unique: true });
 connectionAnalyticsSchema.index({ user1: 1, user2: 1 });
 connectionAnalyticsSchema.index({ strength: -1 });
 connectionAnalyticsSchema.index({ lastInteraction: -1 });

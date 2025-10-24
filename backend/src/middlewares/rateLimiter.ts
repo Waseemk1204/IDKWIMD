@@ -1,6 +1,17 @@
 import rateLimit from 'express-rate-limit';
 import { config } from '../config';
 
+// Secure key generator for proxied environments
+const secureKeyGenerator = (req: any) => {
+  // Use X-Forwarded-For header in production (Railway), real IP in development
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    // Take the first IP if multiple are present
+    return typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : forwarded[0];
+  }
+  return req.ip || req.connection.remoteAddress || 'unknown';
+};
+
 // General rate limiter - more lenient for development
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -11,6 +22,8 @@ export const generalLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: secureKeyGenerator,
+  validate: { trustProxy: false }, // Disable trust proxy validation since we handle it manually
 });
 
 // Strict rate limiter for authentication - more lenient for development
@@ -23,6 +36,8 @@ export const authLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: secureKeyGenerator,
+  validate: { trustProxy: false },
   skipSuccessfulRequests: true,
   skip: (req) => {
     // Skip rate limiting for Google OAuth callback to prevent blocking OAuth flow
@@ -40,6 +55,8 @@ export const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: secureKeyGenerator,
+  validate: { trustProxy: false },
 });
 
 // Upload rate limiter
@@ -52,6 +69,8 @@ export const uploadLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: secureKeyGenerator,
+  validate: { trustProxy: false },
 });
 
 // Password reset rate limiter
@@ -64,4 +83,6 @@ export const passwordResetLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: secureKeyGenerator,
+  validate: { trustProxy: false },
 });

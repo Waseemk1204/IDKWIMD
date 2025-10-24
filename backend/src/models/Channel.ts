@@ -43,8 +43,7 @@ const channelSchema = new Schema<IChannel>({
     type: String,
     required: [true, 'Channel name is required'],
     maxlength: [50, 'Channel name cannot be more than 50 characters'],
-    trim: true,
-    unique: true
+    trim: true
   },
   description: {
     type: String,
@@ -166,7 +165,7 @@ const channelSchema = new Schema<IChannel>({
 });
 
 // Indexes for better query performance
-channelSchema.index({ name: 1 });
+channelSchema.index({ name: 1 }, { unique: true });
 channelSchema.index({ type: 1 });
 channelSchema.index({ 'members.user': 1 });
 channelSchema.index({ isArchived: 1 });

@@ -12,8 +12,7 @@ export interface IAnalytics extends Document {
 const analyticsSchema = new Schema<IAnalytics>({
   date: {
     type: Date,
-    required: true,
-    index: true
+    required: true
   },
   metric: {
     type: String,

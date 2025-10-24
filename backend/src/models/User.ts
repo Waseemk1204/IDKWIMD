@@ -325,16 +325,13 @@ const userSchema = new Schema<IUser>({
   
   // OAuth
   googleId: {
-    type: String,
-    sparse: true
+    type: String
   },
   facebookId: {
-    type: String,
-    sparse: true
+    type: String
   },
   linkedInId: {
-    type: String,
-    sparse: true
+    type: String
   },
   
   // Security

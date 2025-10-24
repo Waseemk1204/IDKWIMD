@@ -65,12 +65,10 @@ const transactionSchema = new Schema<ITransaction>({
   
   // Payment specific fields
   razorpayOrderId: {
-    type: String,
-    sparse: true
+    type: String
   },
   razorpayPaymentId: {
-    type: String,
-    sparse: true
+    type: String
   },
   razorpaySignature: {
     type: String
