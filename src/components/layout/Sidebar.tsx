@@ -337,6 +337,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
    */
   const renderVerificationStatus = () => {
     const isVerified = user.isVerified;
+    const verificationStatus = user.verificationStatus || 'pending';
+    
+    // Don't show anything for new users who haven't started verification
+    if (!isVerified && verificationStatus === 'pending' && !user.verificationDocs) {
+      return null;
+    }
     
     if (collapsed) {
       return (
@@ -345,12 +351,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             w-8 h-8 rounded-lg flex items-center justify-center
             ${isVerified 
               ? 'bg-success-50 dark:bg-success-900/20' 
-              : 'bg-warning-50 dark:bg-warning-900/20'
+              : 'bg-neutral-50 dark:bg-neutral-800'
             }
           `}>
             <ShieldCheckIcon className={`
               w-4 h-4 
-              ${isVerified ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'}
+              ${isVerified ? 'text-success-600 dark:text-success-400' : 'text-neutral-400 dark:text-neutral-500'}
             `} />
           </div>
         </div>
@@ -362,20 +368,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         flex items-center p-3 rounded-lg
         ${isVerified 
           ? 'bg-success-50 dark:bg-success-900/20' 
-          : 'bg-warning-50 dark:bg-warning-900/20'
+          : 'bg-neutral-50 dark:bg-neutral-800'
         }
       `}>
         <ShieldCheckIcon className={`
           w-4 h-4 mr-2 
-          ${isVerified ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'}
+          ${isVerified ? 'text-success-600 dark:text-success-400' : 'text-neutral-400 dark:text-neutral-500'}
         `} />
         <div>
           <div className={`
             text-xs font-medium 
-            ${isVerified ? 'text-success-700 dark:text-success-400' : 'text-warning-700 dark:text-warning-400'}
+            ${isVerified ? 'text-success-700 dark:text-success-400' : 'text-neutral-600 dark:text-neutral-400'}
           `}>
-            {isVerified ? 'Verified' : 'Pending'}
+            {isVerified ? 'Verified Account' : 'Verification Available'}
           </div>
+          {!isVerified && (
+            <div className="text-[10px] text-neutral-500 dark:text-neutral-500 mt-0.5">
+              Get verified for more opportunities
+            </div>
+          )}
         </div>
       </div>
     );
