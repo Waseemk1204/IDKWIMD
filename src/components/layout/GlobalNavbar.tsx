@@ -160,10 +160,10 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
               </button>
             )}
             
-            {/* Logo */}
+            {/* Logo - Standardized Size */}
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="flex items-center">
-                <span className="text-2xl font-bold text-primary-500 transition-colors duration-150 hover:text-primary-600">
+                <span className="text-xl font-bold text-primary-500 transition-colors duration-150 hover:text-primary-600">
                   PART-TIME PAY$
                 </span>
               </Link>

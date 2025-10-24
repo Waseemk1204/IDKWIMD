@@ -337,13 +337,10 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center group">
-                <div className="relative">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-200">
-                    PART-TIME PAY$
-                  </span>
-                  <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                </div>
+              <Link to="/" className="flex items-center">
+                <span className="text-xl font-bold text-primary-500 transition-colors duration-150 hover:text-primary-600">
+                  PART-TIME PAY$
+                </span>
               </Link>
             </div>
 

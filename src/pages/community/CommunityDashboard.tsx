@@ -187,22 +187,15 @@ export const CommunityDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            Community Dashboard
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
-            Welcome back, {user?.fullName}! Here's what's happening in your professional community.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Link to="/community-enhanced/create">
-            <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2">
-              <MessageSquareIcon className="h-4 w-4" />
-              Create Post
-            </button>
-          </Link>
-        </div>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          Community
+        </h1>
+        <Link to="/community-enhanced/create">
+          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 text-sm">
+            <MessageSquareIcon className="h-4 w-4" />
+            Create Post
+          </button>
+        </Link>
       </div>
 
       {/* Stats Overview */}
