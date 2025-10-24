@@ -234,9 +234,14 @@ export const AuthProvider: React.FC<{
   const signup = async (email: string, password: string, role: UserRole): Promise<void> => {
     setIsLoading(true);
     try {
+      // Generate a unique username by adding random suffix
+      const baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      const uniqueUsername = `${baseUsername}_${randomSuffix}`;
+      
       const response = await apiService.register({
         fullName: email.split('@')[0], // Default name from email
-        username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, ''), // Generate username from email
+        username: uniqueUsername, // Generate unique username with random suffix
         email,
         password,
         role: role || 'employee'
