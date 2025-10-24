@@ -9,9 +9,15 @@ import bcrypt from 'bcryptjs';
 // Register user
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Log the incoming request for debugging
+    console.log('=== REGISTRATION REQUEST ===');
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Headers:', req.headers['content-type']);
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Validation failed:', JSON.stringify(errors.array(), null, 2));
       res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -21,6 +27,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { fullName, username, email, password, role } = req.body;
+    console.log('✅ Validation passed, creating user:', { fullName, username, email, role });
 
     // Check if user already exists
     let existingUser;
@@ -39,11 +46,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
     
     if (existingUser) {
+      const errorMessage = existingUser.email === email 
+        ? 'User already exists with this email'
+        : 'Username is already taken';
+      console.log('❌ User exists:', errorMessage, { email: existingUser.email, username: existingUser.username });
       res.status(400).json({
         success: false,
-        message: existingUser.email === email 
-          ? 'User already exists with this email'
-          : 'Username is already taken'
+        message: errorMessage
       });
       return;
     }
@@ -114,9 +123,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // Login user
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Log the incoming request for debugging
+    console.log('=== LOGIN REQUEST ===');
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Email provided:', req.body.email);
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Login validation failed:', JSON.stringify(errors.array(), null, 2));
       res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -129,7 +144,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Find user and include password for comparison
     const user = await User.findOne({ email }).select('+password');
+    console.log('User lookup result:', user ? `Found user: ${user.email}` : 'User not found');
+    
     if (!user) {
+      console.log('❌ No user found with email:', email);
       res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -139,6 +157,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Check if user is active
     if (!user.isActive) {
+      console.log('❌ User account is deactivated:', email);
       res.status(401).json({
         success: false,
         message: 'Account is deactivated'
@@ -147,14 +166,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Compare password
+    console.log('Comparing password...');
     const isPasswordValid = await user.comparePassword(password);
+    console.log('Password validation result:', isPasswordValid);
+    
     if (!isPasswordValid) {
+      console.log('❌ Invalid password for user:', email);
       res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
       return;
     }
+    
+    console.log('✅ Login successful for user:', email);
 
     // Update last login without triggering full validation
     await User.findByIdAndUpdate(user._id, { lastLogin: new Date() }, { runValidators: false });
