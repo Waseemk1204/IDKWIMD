@@ -14,8 +14,7 @@ const walletSchema = new Schema<IWallet>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    unique: true
+    required: true
   },
   balance: {
     type: Number,
@@ -38,7 +37,7 @@ const walletSchema = new Schema<IWallet>({
 });
 
 // Indexes
-walletSchema.index({ userId: 1 });
+walletSchema.index({ userId: 1 }, { unique: true });
 walletSchema.index({ isActive: 1 });
 
 export const Wallet = mongoose.model<IWallet>('Wallet', walletSchema);
