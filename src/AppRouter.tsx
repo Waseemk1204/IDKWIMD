@@ -167,6 +167,7 @@ export function AppRouter() {
               <DashboardLayout />
             </ProtectedRoute>}>
           <Route index element={<EmployeeDashboard />} />
+          <Route path="dashboard" element={<EmployeeDashboard />} />
           <Route path="jobs" element={<BrowseJobs />} />
           <Route path="jobs/:id" element={<JobDetails />} />
           <Route path="applications" element={<MyApplications />} />
@@ -194,6 +195,9 @@ export function AppRouter() {
 
         {/* Messaging Routes - Available to all authenticated users */}
         <Route path="/comms" element={<ProtectedRoute>
+              <Comms />
+            </ProtectedRoute>} />
+        <Route path="/messaging" element={<ProtectedRoute>
               <Comms />
             </ProtectedRoute>} />
 

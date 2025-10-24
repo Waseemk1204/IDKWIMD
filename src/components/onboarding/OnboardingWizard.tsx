@@ -39,6 +39,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
   const CurrentStepComponent = steps[currentStep]?.component;
   const isFirstStep = currentStep === 0;
@@ -47,11 +48,16 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   // Load saved progress on mount
   useEffect(() => {
     loadProgress();
+    // Set a flag after initial load to prevent showing unsaved changes on first render
+    const timer = setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [loadProgress]);
 
-  // Auto-save progress when data changes
+  // Auto-save progress when data changes (but not on initial load)
   useEffect(() => {
-    if (Object.keys(data).length > 0) {
+    if (Object.keys(data).length > 0 && !isInitialLoad) {
       setHasUnsavedChanges(true);
       const timer = setTimeout(() => {
         saveProgress();
@@ -60,7 +66,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
       return () => clearTimeout(timer);
     }
-  }, [data, saveProgress]);
+  }, [data, saveProgress, isInitialLoad]);
 
   // Warn before leaving page with unsaved changes
   useEffect(() => {
@@ -200,7 +206,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                {getCompletionPercentage()}% complete
+                {Math.round((currentStep / totalSteps) * 100)}% complete
               </span>
               <Button
                 variant="ghost"
@@ -268,14 +274,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       </div>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28">
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-8">
           {CurrentStepComponent && <CurrentStepComponent />}
         </div>
       </div>
 
       {/* Navigation footer */}
-      <div className="sticky bottom-0 bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 shadow-lg">
+      <div className="sticky bottom-0 z-30 bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Button

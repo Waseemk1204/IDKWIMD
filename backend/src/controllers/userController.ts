@@ -113,7 +113,7 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
     const userId = req.user._id;
     const allowedUpdates = [
       'fullName', 'displayName', 'username', 'phone', 'location', 'about', 'headline', 'website', 'skills', 
-      'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo'
+      'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo', 'jobPreferences'
     ];
 
     console.log('=== UPDATE USER PROFILE - RAW BODY ===', JSON.stringify(req.body, null, 2));

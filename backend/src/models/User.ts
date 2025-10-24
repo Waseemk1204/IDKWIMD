@@ -52,6 +52,16 @@ export interface IUser extends Document {
     current: boolean;
   }>;
   
+  // Job Preferences (Employee specific)
+  jobPreferences?: {
+    jobType?: string[];
+    categories?: string[];
+    locations?: string[];
+    salaryMin?: number;
+    salaryMax?: number;
+    availability?: string;
+  };
+  
   // Employer Specific
   companyInfo?: {
     companyName: string;
@@ -282,6 +292,34 @@ const userSchema = new Schema<IUser>({
       default: false
     }
   }],
+  
+  // Job Preferences (Employee specific)
+  jobPreferences: {
+    jobType: [{
+      type: String,
+      trim: true
+    }],
+    categories: [{
+      type: String,
+      trim: true
+    }],
+    locations: [{
+      type: String,
+      trim: true
+    }],
+    salaryMin: {
+      type: Number,
+      min: [0, 'Minimum salary cannot be negative']
+    },
+    salaryMax: {
+      type: Number,
+      min: [0, 'Maximum salary cannot be negative']
+    },
+    availability: {
+      type: String,
+      trim: true
+    }
+  },
   
   // Employer Specific
   companyInfo: {
