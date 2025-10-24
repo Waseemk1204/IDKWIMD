@@ -157,7 +157,7 @@ class ApiService {
     familyName?: string;
   }): Promise<ApiResponse> {
     console.log('API Service - loginWithGoogle called with:', googleData);
-    const response = await this.request('/api/auth/google', {
+    const response = await this.request('/auth/google', {
       method: 'POST',
       body: JSON.stringify(googleData),
     });
