@@ -18,9 +18,7 @@ export const validateRegister = [
     .withMessage('Please provide a valid email'),
   body('password')
     .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+    .withMessage('Password must be at least 6 characters long'),
   body('role')
     .optional()
     .isIn(['employee', 'employer', 'admin'])
@@ -85,8 +83,6 @@ export const validateChangePassword = [
   body('newPassword')
     .isLength({ min: 6 })
     .withMessage('New password must be at least 6 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('New password must contain at least one lowercase letter, one uppercase letter, and one number')
 ];
 
 // Job validation rules
