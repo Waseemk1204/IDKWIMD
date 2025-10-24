@@ -142,6 +142,7 @@ export function AppRouter() {
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogPostPage />} />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/help" element={<CustomerSupport />} />
         <Route path="/search" element={<SearchPage />} />
