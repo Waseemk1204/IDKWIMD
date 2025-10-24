@@ -22,25 +22,27 @@ export const Card: React.FC<CardProps> = ({
   size = 'md',
   style,
 }) => {
+  // Industry-standard card styling (LinkedIn/Naukri)
   const baseStyles = `
     bg-white dark:bg-gray-800 
     rounded-lg 
-    transition-all duration-150
+    border border-gray-200 dark:border-gray-700
+    transition-all duration-200
     ${onClick ? 'cursor-pointer' : ''}
   `;
 
   const variantStyles = {
-    default: 'shadow-sm border border-gray-200 dark:border-gray-700',
-    elevated: 'shadow-md border border-gray-200 dark:border-gray-700',
+    default: '',
+    elevated: 'shadow-sm', // Very subtle shadow, no heavy elevation
   };
 
   const sizeStyles = {
     sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8',
+    md: 'p-5',  // Reduced from p-6 for more compact look
+    lg: 'p-6',  // Reduced from p-8
   };
 
-  const hoverStyles = hover ? 'hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600' : '';
+  const hoverStyles = hover ? 'hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm' : '';
 
   return (
     <div 
@@ -69,7 +71,7 @@ export const CardHeader: React.FC<{
   withDivider = false,
 }) => {
   return (
-    <div className={`mb-6 ${withDivider ? 'pb-4 border-b border-gray-200 dark:border-gray-700' : ''} ${className}`}>
+    <div className={`mb-4 ${withDivider ? 'pb-3 border-b border-gray-200 dark:border-gray-700' : ''} ${className}`}>
       {children}
     </div>
   );
@@ -84,15 +86,16 @@ export const CardTitle: React.FC<{
   className = '',
   size = 'md',
 }) => {
+  // Industry-standard typography
   const sizeStyles = {
-    sm: 'text-base font-semibold',
-    md: 'text-lg font-semibold',
-    lg: 'text-xl font-bold',
-    xl: 'text-2xl font-bold',
+    sm: 'text-sm font-semibold',
+    md: 'text-base font-semibold',  // 16px - standard for card titles
+    lg: 'text-lg font-semibold',     // 18px
+    xl: 'text-xl font-semibold',     // 20px - reduced from 2xl/bold
   };
 
   return (
-    <h3 className={`${sizeStyles[size]} text-gray-900 dark:text-gray-100 ${className}`}>
+    <h3 className={`${sizeStyles[size]} text-gray-900 dark:text-white ${className}`}>
       {children}
     </h3>
   );
@@ -157,7 +160,7 @@ export const CardFooter: React.FC<{
 
   return (
     <div className={`
-      mt-6 pt-4 
+      mt-4 pt-3
       ${withDivider ? 'border-t border-gray-200 dark:border-gray-700' : ''}
       flex items-center ${alignStyles[align]}
       ${className}

@@ -102,8 +102,9 @@ export const JobCard: React.FC<JobCardProps> = ({
     }
   };
 
-  const baseClasses = "bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-150";
-  const hoverClasses = "hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600";
+  // Industry-standard card styling
+  const baseClasses = "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-200";
+  const hoverClasses = "hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm";
   const clickableClasses = showActions ? "" : "cursor-pointer";
 
   if (variant === 'compact') {
@@ -143,9 +144,9 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
         </div>
         {!showActions && (
-          <div className="mt-4">
+          <div className="mt-3">
             <Link to={isAuthenticated ? `/employee/jobs/${job.id}` : '/login'}>
-              <button className="w-full px-4 py-2 text-sm font-semibold rounded-lg text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-150">
+              <button className="w-full px-4 py-2 text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200">
                 View Details
               </button>
             </Link>
@@ -273,17 +274,17 @@ export const JobCard: React.FC<JobCardProps> = ({
     );
   }
 
-  // Default variant - Clean, Naukri.com inspired design
+  // Default variant - Clean, Industry-standard design
   return (
     <div className={`${baseClasses} ${clickableClasses} ${hoverClasses} ${className}`} onClick={!showActions ? handleJobClick : undefined}>
       {/* Header */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-start justify-between gap-4 mb-3">
+      <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-start justify-between gap-4 mb-2">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
               {job.title}
             </h3>
-            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <Building2 className="w-4 h-4" />
               <span className="font-medium">{job.company}</span>
             </div>
@@ -295,7 +296,7 @@ export const JobCard: React.FC<JobCardProps> = ({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
           {job.experienceLevel && (
             <div className="flex items-center gap-1">
               <Briefcase className="w-3.5 h-3.5" />
@@ -321,19 +322,19 @@ export const JobCard: React.FC<JobCardProps> = ({
       </div>
 
       {/* Description */}
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
           {job.description}
         </p>
       </div>
 
       {/* Skills */}
-      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
         <div className="flex flex-wrap gap-1.5">
           {job.skills.slice(0, 6).map((skill, skillIndex) => (
             <span 
               key={skillIndex}
-              className="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded"
+              className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded"
             >
               {skill}
             </span>
@@ -347,12 +348,12 @@ export const JobCard: React.FC<JobCardProps> = ({
       </div>
       
       {/* Footer */}
-      <div className="px-5 py-4">
+      <div className="px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <DollarSign className="w-4 h-4 text-success-600 dark:text-success-400" />
-              <span className="text-base font-semibold text-success-600 dark:text-success-400">
+              <span className="text-sm font-semibold text-success-600 dark:text-success-400">
                 {formatPayRate(job)}
               </span>
             </div>
@@ -366,7 +367,7 @@ export const JobCard: React.FC<JobCardProps> = ({
         </div>
         
         {!isAuthenticated && !showActions && (
-          <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+          <div className="mt-3 p-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
             <p className="text-xs text-primary-700 dark:text-primary-400 text-center font-medium">
               Sign in to apply and view full details
             </p>
