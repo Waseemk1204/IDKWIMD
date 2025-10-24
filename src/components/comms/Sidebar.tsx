@@ -31,17 +31,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
+  // TODO: Fetch real conversations and channels from API
+  const conversations: any[] = [];
+  /*
   const conversations = [
     { id: 'conv1', name: 'John Doe', lastMessage: 'Hey, how are you?', unread: 2, online: true },
     { id: 'conv2', name: 'Jane Smith', lastMessage: 'Thanks for the update', unread: 0, online: false },
     { id: 'conv3', name: 'Mike Johnson', lastMessage: 'See you tomorrow', unread: 1, online: true }
   ];
+  */
 
+  // TODO: Fetch real channels from API
+  const channels: any[] = [];
+  /*
   const channels = [
     { id: 'channel1', name: 'general', description: 'General discussion', unread: 5 },
     { id: 'channel2', name: 'development', description: 'Dev team chat', unread: 0 },
     { id: 'channel3', name: 'design', description: 'Design team', unread: 2 }
   ];
+  */
 
   if (collapsed) {
     return (
@@ -119,35 +127,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           
           <div className="space-y-1">
-            {conversations.map((conv) => (
-              <button
-                key={conv.id}
-                onClick={() => onConversationSelect(conv.id)}
-                className={`w-full flex items-center p-2 rounded-lg text-left hover:bg-gray-700 transition-colors ${
-                  selectedConversation === conv.id ? 'bg-gray-700' : ''
-                }`}
-              >
-                <div className="relative">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {conv.name.charAt(0)}
-                  </div>
-                  {conv.online && (
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
-                  )}
-                </div>
-                <div className="ml-3 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-white truncate">{conv.name}</p>
-                    {conv.unread > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                        {conv.unread}
-                      </span>
+            {conversations.length === 0 ? (
+              <div className="text-center py-4 text-gray-400 text-sm">
+                No conversations yet
+              </div>
+            ) : (
+              conversations.map((conv) => (
+                <button
+                  key={conv.id}
+                  onClick={() => onConversationSelect(conv.id)}
+                  className={`w-full flex items-center p-2 rounded-lg text-left hover:bg-gray-700 transition-colors ${
+                    selectedConversation === conv.id ? 'bg-gray-700' : ''
+                  }`}
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {conv.name.charAt(0)}
+                    </div>
+                    {conv.online && (
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 truncate">{conv.lastMessage}</p>
-                </div>
-              </button>
-            ))}
+                  <div className="ml-3 flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-white truncate">{conv.name}</p>
+                      {conv.unread > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                          {conv.unread}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">{conv.lastMessage}</p>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -163,28 +177,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           
           <div className="space-y-1">
-            {channels.map((channel) => (
-              <button
-                key={channel.id}
-                onClick={() => onChannelSelect(channel.id)}
-                className={`w-full flex items-center p-2 rounded-lg text-left hover:bg-gray-700 transition-colors ${
-                  selectedChannel === channel.id ? 'bg-gray-700' : ''
-                }`}
-              >
-                <Hash className="h-4 w-4 text-gray-400 mr-3" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-white truncate">#{channel.name}</p>
-                    {channel.unread > 0 && (
-                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                        {channel.unread}
-                      </span>
-                    )}
+            {channels.length === 0 ? (
+              <div className="text-center py-4 text-gray-400 text-sm">
+                No channels yet
+              </div>
+            ) : (
+              channels.map((channel) => (
+                <button
+                  key={channel.id}
+                  onClick={() => onChannelSelect(channel.id)}
+                  className={`w-full flex items-center p-2 rounded-lg text-left hover:bg-gray-700 transition-colors ${
+                    selectedChannel === channel.id ? 'bg-gray-700' : ''
+                  }`}
+                >
+                  <Hash className="h-4 w-4 text-gray-400 mr-3" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-white truncate">#{channel.name}</p>
+                      {channel.unread > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                          {channel.unread}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">{channel.description}</p>
                   </div>
-                  <p className="text-xs text-gray-400 truncate">{channel.description}</p>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>
