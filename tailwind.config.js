@@ -8,104 +8,76 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary brand colors - professional yet youthful
+        // Professional LinkedIn-inspired color system
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6', // Main blue
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: '#e7f3ff',
+          100: '#d0e7ff',
+          200: '#a8d4ff',
+          300: '#7ab8f5',
+          400: '#4d9de8',
+          500: '#0A66C2', // LinkedIn Blue - main brand color
+          600: '#095399',
+          700: '#084073',
+          800: '#062e52',
+          900: '#041f38',
+          950: '#021426',
         },
-        // Secondary purple for accents
-        secondary: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7c3aed',
-          800: '#6b21a8',
-          900: '#581c87',
-          950: '#3b0764',
-        },
-        // Success green
+        // Success green for verification, earnings, positive actions
         success: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
+          50: '#e6f7ed',
+          100: '#ccefdb',
+          200: '#99dfb7',
+          300: '#66cf93',
+          400: '#33bf6f',
+          500: '#057642', // Professional green
+          600: '#045e35',
+          700: '#034728',
+          800: '#022f1a',
+          900: '#01180d',
+          950: '#000c06',
         },
-        // Warning amber
-        warning: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
-          950: '#451a03',
-        },
-        // Error red
+        // Error red for warnings and critical actions
         error: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
-          950: '#450a0a',
+          50: '#ffeaea',
+          100: '#ffd5d5',
+          200: '#ffabab',
+          300: '#ff8181',
+          400: '#ff5757',
+          500: '#CC1016', // Clear professional red
+          600: '#a30d12',
+          700: '#7a0a0d',
+          800: '#520609',
+          900: '#290304',
+          950: '#140102',
         },
-        // Neutral grays with better contrast and deeper dark mode
-        neutral: {
-          50: '#fafafa',
-          100: '#f5f5f5',
-          200: '#e5e5e5',
-          300: '#d4d4d4',
-          400: '#a3a3a3',
-          500: '#737373',
-          600: '#525252',
-          700: '#404040',
-          800: '#1a1a1a', // Deeper black for dark mode
-          900: '#0f0f0f', // Very deep black
-          950: '#000000', // Pure black
+        // Warning amber for notifications
+        warning: {
+          50: '#fef6e7',
+          100: '#fdedcf',
+          200: '#fbdb9f',
+          300: '#f9c96f',
+          400: '#f7b73f',
+          500: '#F5A623', // Professional amber
+          600: '#c4851c',
+          700: '#936415',
+          800: '#62420e',
+          900: '#312107',
+          950: '#181103',
         },
-        // Trust and credibility colors
-        trust: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
-        }
+        // Professional gray scale - the backbone of the design
+        gray: {
+          50: '#FAFAFA',   // Lightest background
+          100: '#F3F2EF',  // Light surface (LinkedIn-inspired)
+          200: '#E0DFDC',  // Subtle borders
+          300: '#CFCDC9',  // Light borders
+          400: '#999999',  // Secondary text
+          500: '#666666',  // Primary text (light mode)
+          600: '#4D4D4D',  // Darker text
+          700: '#333333',  // Very dark text
+          800: '#1B1F23',  // Dark surface
+          900: '#0A0A0A',  // Near black
+          950: '#000000',  // True black for dark mode
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -113,24 +85,23 @@ export default {
         mono: ['JetBrains Mono', 'monospace'],
       },
       fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'base': ['1rem', { lineHeight: '1.5rem' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-        '7xl': ['4.5rem', { lineHeight: '1' }],
-        '8xl': ['6rem', { lineHeight: '1' }],
-        '9xl': ['8rem', { lineHeight: '1' }],
+        // Simplified professional typography scale
+        'xs': ['0.75rem', { lineHeight: '1rem' }],      // 12px - Labels, badges
+        'sm': ['0.875rem', { lineHeight: '1.25rem' }],  // 14px - Meta information
+        'base': ['1rem', { lineHeight: '1.5rem' }],     // 16px - Body text (default)
+        'lg': ['1.125rem', { lineHeight: '1.75rem' }],  // 18px - Card titles
+        'xl': ['1.5rem', { lineHeight: '2rem' }],       // 24px - Section titles
+        '2xl': ['2rem', { lineHeight: '2.5rem' }],      // 32px - Page titles
+        '3xl': ['3rem', { lineHeight: '3.5rem' }],      // 48px - Hero headlines
       },
       spacing: {
+        // 4px unit system for consistent spacing
         '18': '4.5rem',
         '88': '22rem',
         '128': '32rem',
+      },
+      maxWidth: {
+        'container': '1200px', // Standard container width
       },
       borderRadius: {
         'xl': '0.75rem',
@@ -138,59 +109,39 @@ export default {
         '3xl': '1.5rem',
       },
       boxShadow: {
-        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-        'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        'large': '0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 2px 10px -2px rgba(0, 0, 0, 0.04)',
-        'glow': '0 0 20px rgba(59, 130, 246, 0.15)',
-        'glow-lg': '0 0 40px rgba(59, 130, 246, 0.2)',
+        // Simplified professional shadow system
+        'sm': '0 1px 3px 0 rgba(0, 0, 0, 0.1)',          // Subtle elevation
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',       // Standard elevation
+        'lg': '0 10px 25px -5px rgba(0, 0, 0, 0.1)',     // High elevation
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'fade-in-up': 'fadeInUp 0.5s ease-out',
-        'fade-in-down': 'fadeInDown 0.5s ease-out',
-        'slide-in-right': 'slideInRight 0.3s ease-out',
-        'slide-in-left': 'slideInLeft 0.3s ease-out',
-        'scale-in': 'scaleIn 0.2s ease-out',
-        'bounce-gentle': 'bounceGentle 2s infinite',
-        'pulse-soft': 'pulseSoft 2s infinite',
-        'float': 'float 3s ease-in-out infinite',
+        // Minimal, professional animations only
+        'fade-in': 'fadeIn 0.2s ease',
+        'slide-in': 'slideIn 0.3s ease-out',
+        'blob': 'blob 7s infinite',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+        slideIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        fadeInDown: {
-          '0%': { opacity: '0', transform: 'translateY(-20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(20px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
-        },
-        slideInLeft: {
-          '0%': { opacity: '0', transform: 'translateX(-20px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
-        },
-        scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
-        },
-        bounceGentle: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' },
-        },
-        pulseSoft: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.8' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
+        blob: {
+          '0%': {
+            transform: 'translate(0px, 0px) scale(1)',
+          },
+          '33%': {
+            transform: 'translate(30px, -50px) scale(1.1)',
+          },
+          '66%': {
+            transform: 'translate(-20px, 20px) scale(0.9)',
+          },
+          '100%': {
+            transform: 'translate(0px, 0px) scale(1)',
+          },
         },
       },
       backdropBlur: {

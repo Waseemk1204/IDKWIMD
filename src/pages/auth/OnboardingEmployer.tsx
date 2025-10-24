@@ -5,7 +5,6 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Building2, Briefcase, Mail, Phone, MapPin } from 'lucide-react';
-import { VerifiedBadge, TrustBadge } from '../../components/ui/TrustBadge';
 
 interface FormData {
   companyName: string;
@@ -142,11 +141,11 @@ export const OnboardingEmployer: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 animate-fade-in-up">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl mb-4">
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-lg mb-4">
             <Building2 className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
@@ -155,11 +154,6 @@ export const OnboardingEmployer: React.FC = () => {
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">
             Tell us about your business to start hiring talent
           </p>
-          <div className="flex items-center justify-center space-x-4 text-sm text-neutral-500 dark:text-neutral-400">
-            <VerifiedBadge size="sm" />
-            <TrustBadge variant="secure" size="sm" text="Secure" />
-            <TrustBadge variant="protected" size="sm" text="Protected" />
-          </div>
         </div>
 
         {/* Skip link */}
@@ -358,12 +352,11 @@ export const OnboardingEmployer: React.FC = () => {
               <div className="pt-4">
                 <Button
                   type="submit"
-                  variant="gradient"
+                  variant="primary"
                   size="lg"
                   className="w-full"
                   isLoading={isLoading}
                   loadingText="Completing Profile..."
-                  trustIndicator
                 >
                   Complete Profile & Start Hiring
                 </Button>

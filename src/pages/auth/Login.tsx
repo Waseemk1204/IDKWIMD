@@ -3,11 +3,10 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
-import { VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 import { LinkedInAuthButton } from '../../components/auth/LinkedInAuthButton';
 import { googleAuthService } from '../../services/googleAuth';
-import { Eye, EyeOff, Mail, Lock, Shield, CheckCircle, Users, Briefcase } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -191,233 +190,162 @@ export const Login: React.FC = () => {
     }
   };
 
-  const trustFeatures = [
-    { icon: Shield, text: 'Bank-level security' },
-    { icon: CheckCircle, text: 'Verified employers' },
-    { icon: Users, text: '50,000+ students' },
-  ];
-
   return (
-    <div className="min-h-screen gradient-hero flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          
-          {/* Left side - Branding and trust elements */}
-          <div className="hidden lg:block space-y-8 animate-fade-in-left">
-            <div>
-              <h1 className="text-4xl font-bold text-gradient mb-4">
-                Welcome Back
-              </h1>
-              <p className="text-xl text-neutral-600 dark:text-neutral-400 mb-8">
-                Connect with verified part-time opportunities or find reliable student talent.
-              </p>
-            </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-block">
+            <h1 className="text-2xl font-bold text-primary-500">PART-TIME PAY$</h1>
+          </Link>
+          <h2 className="mt-6 text-2xl font-semibold text-gray-900 dark:text-white">
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Sign in to access your account
+          </p>
+        </div>
 
-            {/* Trust indicators */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <VerifiedBadge size="lg" />
-                <SecureBadge size="lg" />
+        <Card variant="elevated" className="animate-fade-in">
+          <CardContent className="p-6">
+            {error && (
+              <div className="mb-6 p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-700 rounded-lg">
+                <p className="text-sm text-error-700 dark:text-error-400">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="input-professional pl-10"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    className="input-professional pl-10 pr-10"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Remember me
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                isFullWidth
+                isLoading={isLoading}
+                loadingText="Signing in..."
+              >
+                Sign In
+              </Button>
+            </form>
+
+            {/* Social Sign-In Options */}
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300 dark:border-gray-700" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    Or continue with
+                  </span>
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 gap-4">
-                {trustFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm">
-                    <feature.icon className="h-5 w-5 text-primary-600" />
-                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {feature.text}
-                    </span>
-                  </div>
-                ))}
+              <div className="mt-6 space-y-3">
+                <GoogleAuthButton 
+                  text="Continue with Google"
+                  className="w-full"
+                  mode="login"
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
+                <LinkedInAuthButton 
+                  text="Continue with LinkedIn"
+                  className="w-full"
+                  mode="login"
+                  onSuccess={handleLinkedInSuccess}
+                  onError={handleLinkedInError}
+                />
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary-600">Growing</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Community</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-secondary-600">Active</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Job Market</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-trust-600">Trusted</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Platform</div>
-              </div>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Don't have an account?{' '}
+                <Link 
+                  to="/signup" 
+                  className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                >
+                  Sign up for free
+                </Link>
+              </p>
             </div>
-          </div>
-
-          {/* Right side - Login form */}
-          <div className="animate-fade-in-right">
-            <Card variant="elevated" size="lg" className="max-w-md mx-auto">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mb-4">
-                  <Briefcase className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle size="xl">Sign In</CardTitle>
-                <CardDescription>
-                  Access your account to continue your journey
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent>
-                {error && (
-                  <div className="mb-6 p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
-                    <p className="text-sm text-error-700 dark:text-error-300">{error}</p>
-                    {error.includes('Account not found') && (
-                      <div className="mt-3">
-                        <Link 
-                          to="/signup" 
-                          className="inline-flex items-center text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
-                        >
-                          <Users className="w-4 h-4 mr-2" />
-                          Create a new account
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Mail className="h-5 w-5 text-neutral-400" />
-                        </div>
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          autoComplete="email"
-                          required
-                          className="input-professional pl-10"
-                          placeholder="Enter your email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="password" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                        Password
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-neutral-400" />
-                        </div>
-                        <input
-                          id="password"
-                          name="password"
-                          type={showPassword ? 'text' : 'password'}
-                          autoComplete="current-password"
-                          required
-                          className="input-professional pl-10 pr-10"
-                          placeholder="Enter your password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button
-                          type="button"
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5 text-neutral-400 hover:text-neutral-600" />
-                          ) : (
-                            <Eye className="h-5 w-5 text-neutral-400 hover:text-neutral-600" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <input
-                        id="remember-me"
-                        name="remember-me"
-                        type="checkbox"
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
-                      />
-                      <label htmlFor="remember-me" className="ml-2 block text-sm text-neutral-700 dark:text-neutral-300">
-                        Remember me
-                      </label>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="text-sm text-primary-600 hover:text-primary-500 font-medium"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    variant="gradient"
-                    size="lg"
-                    isFullWidth
-                    isLoading={isLoading}
-                    loadingText="Signing in..."
-                    trustIndicator
-                  >
-                    Sign In
-                  </Button>
-                </form>
-
-                {/* Social Sign-In Options */}
-                <div className="mt-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-neutral-300 dark:border-neutral-600" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                        Or continue with
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 space-y-3">
-                    <GoogleAuthButton 
-                      text="Continue with Google"
-                      className="w-full"
-                      mode="login"
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
-                    />
-                    <LinkedInAuthButton 
-                      text="Continue with LinkedIn"
-                      className="w-full"
-                      mode="login"
-                      onSuccess={handleLinkedInSuccess}
-                      onError={handleLinkedInError}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Don't have an account?{' '}
-                    <Link 
-                      to="/signup" 
-                      className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
-                    >
-                      Sign up for free
-                    </Link>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

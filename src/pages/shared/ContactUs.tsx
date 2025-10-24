@@ -377,7 +377,7 @@ export const ContactUs: React.FC = () => {
             </div>
 
             {/* Quick Help */}
-            <div className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-2xl p-8 border border-primary-200 dark:border-primary-800">
+            <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-8 border border-primary-200 dark:border-primary-800">
               <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
                 Need Quick Help?
               </h3>

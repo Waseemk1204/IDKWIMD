@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
+import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { TrustBadge, VerifiedBadge } from '../../components/ui/TrustBadge';
+import { VerifiedBadge } from '../../components/ui/StatusBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { 
   Briefcase, 
@@ -95,38 +95,44 @@ export const EmployerDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.fullName || 'Company'}!</h1>
-            <p className="text-primary-100 text-lg">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 shadow-sm">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Welcome back, {user?.fullName || 'Company'}!
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
               Manage your team and find new talent to grow your business.
             </p>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
-            <VerifiedBadge size="lg" text="Verified Employer" />
-            <div className="text-right">
-              <div className="text-2xl font-bold">{stats.averageRating}★</div>
-              <div className="text-sm text-primary-100">Company Rating</div>
-            </div>
+          <div className="hidden md:flex items-center gap-6">
+            <VerifiedBadge size="md" />
+            {stats.averageRating > 0 && (
+              <div className="text-right">
+                <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {stats.averageRating.toFixed(1)}★
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Company Rating</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Wallet Balance Alert */}
       {stats.walletBalance < 10000 && (
-        <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl p-4">
-          <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 text-warning-600 dark:text-warning-400 mr-3" />
+        <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-700 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-warning-600 dark:text-warning-400 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-warning-800 dark:text-warning-200">
+              <p className="text-sm font-medium text-warning-800 dark:text-warning-300">
                 Your wallet balance is running low. Add funds to ensure uninterrupted service.
               </p>
             </div>
             <Link to="/employer/wallet">
-              <Button variant="outline" size="sm">
+              <Button variant="secondary" size="sm">
                 Add Funds
               </Button>
             </Link>
@@ -136,76 +142,60 @@ export const EmployerDashboard: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Active Jobs</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.activeJobs}</p>
-                <p className="text-xs text-success-600 dark:text-success-400 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +1 this week
-                </p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Jobs</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{stats.activeJobs}</p>
               </div>
-              <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-                <Briefcase className="h-6 w-6 text-primary-600" />
+              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                <Briefcase className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
           </CardContent>
         </ElevatedCard>
 
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-success-100 dark:bg-success-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Total Applications</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.totalApplications}</p>
-                <p className="text-xs text-success-600 dark:text-success-400 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +8 this week
-                </p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Applications</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{stats.totalApplications}</p>
               </div>
-              <div className="p-3 bg-success-100 dark:bg-success-900/30 rounded-xl">
-                <Users className="h-6 w-6 text-success-600" />
+              <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg">
+                <Users className="h-6 w-6 text-success-600 dark:text-success-400" />
               </div>
             </div>
           </CardContent>
         </ElevatedCard>
 
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-warning-100 dark:bg-warning-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Pending Timesheets</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.pendingTimesheets}</p>
-                <p className="text-xs text-warning-600 dark:text-warning-400 flex items-center mt-1">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Needs review
-                </p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Timesheets</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{stats.pendingTimesheets}</p>
               </div>
-              <div className="p-3 bg-warning-100 dark:bg-warning-900/30 rounded-xl">
-                <Clock className="h-6 w-6 text-warning-600" />
+              <div className="p-3 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
+                <Clock className="h-6 w-6 text-warning-600 dark:text-warning-400" />
               </div>
             </div>
           </CardContent>
         </ElevatedCard>
 
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-trust-100 dark:bg-trust-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Wallet Balance</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">₹{stats.walletBalance.toLocaleString()}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                  Total spent: ₹{stats.totalSpent.toLocaleString()}
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Wallet Balance</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">₹{stats.walletBalance.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Spent: ₹{stats.totalSpent.toLocaleString()}
                 </p>
               </div>
-              <div className="p-3 bg-trust-100 dark:bg-trust-900/30 rounded-xl">
-                <Wallet className="h-6 w-6 text-trust-600" />
+              <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg">
+                <Wallet className="h-6 w-6 text-success-600 dark:text-success-400" />
               </div>
             </div>
           </CardContent>
@@ -214,29 +204,19 @@ export const EmployerDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">Quick Actions</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
             <Link key={index} to={action.href}>
               <ElevatedCard hover className="h-full">
                 <CardContent className="p-6 text-center">
-                  <div className={`w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center ${
-                    action.color === 'primary' ? 'bg-primary-100 dark:bg-primary-900/30' :
-                    action.color === 'secondary' ? 'bg-secondary-100 dark:bg-secondary-900/30' :
-                    action.color === 'warning' ? 'bg-warning-100 dark:bg-warning-900/30' :
-                    'bg-trust-100 dark:bg-trust-900/30'
-                  }`}>
-                    <action.icon className={`h-6 w-6 ${
-                      action.color === 'primary' ? 'text-primary-600' :
-                      action.color === 'secondary' ? 'text-secondary-600' :
-                      action.color === 'warning' ? 'text-warning-600' :
-                      'text-trust-600'
-                    }`} />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <action.icon className="h-6 w-6 text-gray-700 dark:text-gray-300" />
                   </div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                     {action.title}
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {action.description}
                   </p>
                 </CardContent>

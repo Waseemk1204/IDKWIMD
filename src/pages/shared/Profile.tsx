@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard, TrustCard } from '../../components/ui/Card';
+import { CardContent, CardHeader, CardTitle, CardDescription, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { TrustBadge, VerifiedBadge } from '../../components/ui/TrustBadge';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import { 
   User, 
   Mail, 
@@ -458,9 +458,9 @@ export const Profile: React.FC = () => {
                 </p>
                 
                 {user.isVerified ? (
-                  <VerifiedBadge size="lg" text="Verified Account" />
+                  <StatusBadge variant="verified" size="md" text="Verified Account" />
                 ) : (
-                  <TrustBadge variant="pending" size="lg" text="Verification Pending" />
+                  <StatusBadge variant="pending" size="md" text="Verification Pending" />
                 )}
                 
                 {/* Messaging Integration */}
@@ -690,7 +690,7 @@ export const Profile: React.FC = () => {
               </ElevatedCard>
 
               {/* Documents */}
-              <TrustCard>
+              <ElevatedCard>
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <FileText className="h-5 w-5 mr-2 text-trust-600" />
@@ -731,7 +731,7 @@ export const Profile: React.FC = () => {
                     )}
                   </div>
                 </CardContent>
-              </TrustCard>
+              </ElevatedCard>
             </>
           )}
         </div>

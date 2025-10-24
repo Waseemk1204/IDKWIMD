@@ -439,7 +439,7 @@ export const ParsedDataReview: React.FC<ParsedDataReviewProps> = ({
             </Button>
           )}
           <Button
-            variant="gradient"
+            variant="primary"
             onClick={handleSave}
             leftIcon={<Save className="w-4 h-4" />}
           >

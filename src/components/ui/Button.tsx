@@ -4,14 +4,9 @@ import { Loader2 } from 'lucide-react';
 type ButtonVariant = 
   | 'primary' 
   | 'secondary' 
-  | 'outline' 
-  | 'ghost' 
-  | 'danger' 
-  | 'success' 
-  | 'trust' 
-  | 'gradient';
+  | 'ghost';
 
-type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -21,7 +16,6 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   loadingText?: string;
-  trustIndicator?: boolean;
   ariaLabel?: string;
   ariaDescribedBy?: string;
 }
@@ -35,7 +29,6 @@ export const Button: React.FC<ButtonProps> = ({
   leftIcon,
   rightIcon,
   loadingText,
-  trustIndicator = false,
   ariaLabel,
   ariaDescribedBy,
   className = '',
@@ -43,79 +36,32 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles = `
-    inline-flex items-center justify-center font-medium rounded-lg 
-    transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
-    disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
-    active:scale-95
+    inline-flex items-center justify-center font-semibold rounded-lg 
+    transition-colors duration-150 outline-none
+    disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
   const variantStyles = {
     primary: `
-      bg-gradient-to-r from-primary-500 to-primary-600 
-      hover:from-primary-600 hover:to-primary-700 
-      text-white shadow-soft hover:shadow-medium
-      focus:ring-primary-500
-      hover:scale-105
+      bg-primary-500 hover:bg-primary-600 
+      text-white shadow-sm hover:shadow-md
     `,
     secondary: `
-      bg-gradient-to-r from-secondary-500 to-secondary-600 
-      hover:from-secondary-600 hover:to-secondary-700 
-      text-white shadow-soft hover:shadow-medium
-      focus:ring-secondary-500
-      hover:scale-105
-    `,
-    outline: `
-      border-2 border-primary-500 
-      bg-transparent hover:bg-primary-50 dark:hover:bg-primary-900/20 
-      text-primary-600 dark:text-primary-400 
-      hover:text-primary-700 dark:hover:text-primary-300
-      focus:ring-primary-500
-      hover:scale-105
+      bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700
+      text-gray-700 dark:text-gray-200
+      border border-gray-300 dark:border-gray-600
+      hover:border-gray-400 dark:hover:border-gray-500
     `,
     ghost: `
-      bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 
-      text-neutral-700 dark:text-neutral-300 
-      hover:text-neutral-900 dark:hover:text-neutral-100
-      focus:ring-neutral-500
-      hover:scale-105
-    `,
-    danger: `
-      bg-gradient-to-r from-error-500 to-error-600 
-      hover:from-error-600 hover:to-error-700 
-      text-white shadow-soft hover:shadow-medium
-      focus:ring-error-500
-      hover:scale-105
-    `,
-    success: `
-      bg-gradient-to-r from-success-500 to-success-600 
-      hover:from-success-600 hover:to-success-700 
-      text-white shadow-soft hover:shadow-medium
-      focus:ring-success-500
-      hover:scale-105
-    `,
-    trust: `
-      bg-gradient-to-r from-trust-500 to-trust-600 
-      hover:from-trust-600 hover:to-trust-700 
-      text-white shadow-trust hover:shadow-glow
-      focus:ring-trust-500
-      hover:scale-105
-    `,
-    gradient: `
-      bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-600 
-      hover:from-primary-600 hover:via-secondary-600 hover:to-primary-700 
-      text-white shadow-soft hover:shadow-glow-lg
-      focus:ring-primary-500
-      hover:scale-105
+      bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 
+      text-gray-700 dark:text-gray-300 
     `,
   };
 
   const sizeStyles = {
-    xs: 'text-xs px-2.5 py-1.5 gap-1',
-    sm: 'text-sm px-3 py-2 gap-1.5',
-    md: 'text-base px-4 py-2.5 gap-2',
-    lg: 'text-lg px-6 py-3 gap-2.5',
-    xl: 'text-xl px-8 py-4 gap-3',
-    icon: 'p-2 w-10 h-10',
+    sm: 'text-sm px-4 py-2 gap-1.5',     // 36px height
+    md: 'text-base px-5 py-2.5 gap-2',   // 40px height
+    lg: 'text-base px-6 py-3 gap-2',     // 48px height
   };
 
   const widthStyles = isFullWidth ? 'w-full' : '';
@@ -151,10 +97,6 @@ export const Button: React.FC<ButtonProps> = ({
       
       {!isLoading && rightIcon && (
         <span className="flex-shrink-0">{rightIcon}</span>
-      )}
-
-      {trustIndicator && !isLoading && (
-        <span className="ml-1 text-xs opacity-75">🔒</span>
       )}
     </button>
   );

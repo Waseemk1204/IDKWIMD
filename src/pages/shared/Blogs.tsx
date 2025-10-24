@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
 import { 
   BookOpen, 
   Calendar, 
@@ -118,17 +117,17 @@ export const Blogs: React.FC = () => {
   // formatDate and formatViews are now imported from unified data source
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 px-4 py-2 rounded-full">
+        <div className="inline-flex items-center space-x-2 bg-primary-50 dark:bg-primary-900/20 px-4 py-2 rounded-full">
           <BookOpen className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           <span className="text-primary-700 dark:text-primary-300 font-medium">PART-TIME PAY$ Blog</span>
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
           Insights for
-          <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"> Smart Workers</span>
+          <span className="text-primary-600 dark:text-primary-400"> Smart Workers</span>
         </h1>
         
         <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
@@ -192,13 +191,15 @@ export const Blogs: React.FC = () => {
                   alt={featuredPost.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:bg-gradient-to-r md:from-transparent md:to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </div>
               
               <div className="p-8 flex flex-col justify-center">
                 <div className="space-y-4">
                   <div className="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-400">
-                    <Badge variant="secondary">{featuredPost.category}</Badge>
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
+                      {featuredPost.category}
+                    </span>
                     <div className="flex items-center space-x-1">
                       <Calendar className="h-4 w-4" />
                       <span>{blogService.formatBlogDate(featuredPost.publishedDate)}</span>
@@ -219,7 +220,7 @@ export const Blogs: React.FC = () => {
                   
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
                         {featuredPost.author.name.charAt(0)}
                       </div>
                       <div>
@@ -233,7 +234,7 @@ export const Blogs: React.FC = () => {
                     </div>
                     
                     <Link to={`/blogs/${featuredPost._id}`}>
-                      <Button variant="gradient" className="flex items-center space-x-2">
+                      <Button variant="primary" className="flex items-center space-x-2">
                         <span>Read Article</span>
                         <ArrowRight className="h-4 w-4" />
                       </Button>
@@ -293,11 +294,9 @@ export const Blogs: React.FC = () => {
                     alt={post.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="secondary" size="sm">
-                      {post.category}
-                    </Badge>
-                  </div>
+                  <span className="absolute top-3 left-3 px-2.5 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
+                    {post.category}
+                  </span>
                 </div>
                 
                 <CardContent className="p-6">
@@ -323,7 +322,7 @@ export const Blogs: React.FC = () => {
                     
                     <div className="flex items-center justify-between pt-2">
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                        <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                           {post.author.name.charAt(0)}
                         </div>
                         <div>
@@ -363,7 +362,7 @@ export const Blogs: React.FC = () => {
       )}
 
       {/* Newsletter Signup */}
-      <ElevatedCard className="text-center bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20">
+      <ElevatedCard className="text-center bg-primary-50 dark:bg-primary-900/20">
         <CardContent className="py-12">
           <div className="space-y-6 max-w-2xl mx-auto">
             <div className="inline-flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-full">
@@ -385,7 +384,7 @@ export const Blogs: React.FC = () => {
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
-              <Button variant="gradient" className="px-6">
+              <Button variant="primary" className="px-6">
                 Subscribe
               </Button>
             </div>

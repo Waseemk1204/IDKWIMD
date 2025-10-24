@@ -267,3 +267,5 @@ Each file is a serverless function.
 1. **Now:** Railway for backend (zero changes, 10 min setup)
 2. **Later:** Gradually refactor to Vercel serverless (better scalability)
 
+
+

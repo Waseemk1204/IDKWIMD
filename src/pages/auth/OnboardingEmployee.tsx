@@ -5,7 +5,6 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { User, GraduationCap, Briefcase, Mail, Phone, CheckCircle } from 'lucide-react';
-import { VerifiedBadge, TrustBadge } from '../../components/ui/TrustBadge';
 import { toast } from 'sonner';
 
 interface FormData {
@@ -148,17 +147,17 @@ export const OnboardingEmployee: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 animate-fade-in-up">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl mb-4">
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-lg mb-4">
             <User className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Complete Your Profile
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             Tell us about your skills and experience to get started
           </p>
           
@@ -169,52 +168,43 @@ export const OnboardingEmployee: React.FC = () => {
                 <div key={index} className="flex items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     index + 1 < currentStep 
-                      ? 'bg-green-500 text-white' 
+                      ? 'bg-success-500 text-white' 
                       : index + 1 === currentStep 
                         ? 'bg-primary-500 text-white' 
-                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                   }`}>
                     {index + 1 < currentStep ? <CheckCircle className="h-4 w-4" /> : index + 1}
                   </div>
                   {index < totalSteps - 1 && (
                     <div className={`w-8 h-0.5 mx-1 ${
-                      index + 1 < currentStep ? 'bg-green-500' : 'bg-neutral-200 dark:bg-neutral-700'
+                      index + 1 < currentStep ? 'bg-success-500' : 'bg-gray-200 dark:bg-gray-700'
                     }`} />
                   )}
                 </div>
               ))}
             </div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               Step {currentStep} of {totalSteps} • {Math.round(progressPercentage)}% Complete
             </div>
-          </div>
-          
-          <div className="flex items-center justify-center space-x-4 text-sm text-neutral-500 dark:text-neutral-400">
-            <VerifiedBadge size="sm" />
-            <TrustBadge variant="secure" size="sm" text="Secure" />
-            <TrustBadge variant="protected" size="sm" text="Protected" />
           </div>
         </div>
 
         {/* Skip link */}
-        <div className="text-right mb-4 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+        <div className="text-right mb-4">
           <button
             onClick={handleSkip}
-            className="inline-flex items-center text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors group"
+            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
             disabled={isLoading}
           >
-            <span>Skip for now</span>
-            <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            Skip for now →
           </button>
         </div>
 
         {/* Form */}
-        <Card className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <Card variant="elevated" className="animate-fade-in">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <GraduationCap className="h-5 w-5 mr-2 text-primary-500" />
+            <CardTitle className="flex items-center text-lg">
+              <GraduationCap className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" />
               Student Profile Setup
             </CardTitle>
             <CardDescription>
@@ -358,12 +348,11 @@ export const OnboardingEmployee: React.FC = () => {
               <div className="pt-4">
                 <Button
                   type="submit"
-                  variant="gradient"
+                  variant="primary"
                   size="lg"
                   className="w-full"
                   isLoading={isLoading}
                   loadingText="Completing Profile..."
-                  trustIndicator
                 >
                   Complete Profile & Get Started
                 </Button>

@@ -47,7 +47,7 @@ export const DashboardLayout: React.FC = () => {
   }, [mobileSidebarOpen]);
   
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50 dark:bg-neutral-900">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <GlobalNavbar 
         onToggleSidebar={toggleSidebar} 
         onToggleMobileSidebar={toggleMobileSidebar}
@@ -81,7 +81,7 @@ export const DashboardLayout: React.FC = () => {
             />
           </>
         )}
-        <main className={`flex-1 p-4 md:p-6 overflow-auto transition-all duration-300 ${
+        <main className={`flex-1 p-6 md:p-8 overflow-auto transition-all duration-150 ${
           sidebarCollapsed ? 'lg:ml-0' : 'lg:ml-0'
         }`}>
           <Outlet />

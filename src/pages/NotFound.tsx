@@ -32,7 +32,7 @@ export const NotFound: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/">
                 <Button
-                  variant="gradient"
+                  variant="primary"
                   size="lg"
                   leftIcon={<Home className="h-4 w-4" />}
                   className="w-full sm:w-auto"

@@ -124,7 +124,7 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
   }, []);
 
   return (
-    <nav className={`${isScrolled ? 'bg-white/90 dark:bg-neutral-950/95 shadow-xl' : 'bg-white/70 dark:bg-neutral-950/80 shadow-lg'} backdrop-blur-lg border-b border-neutral-200/30 dark:border-neutral-800/50 sticky top-0 z-50 transition-all duration-300`}>
+    <nav className={`bg-white dark:bg-gray-950 shadow-sm border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-150`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           
@@ -162,16 +162,11 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
             
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center group">
-                <div className="relative">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-800 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-200">
-                    PART-TIME PAY$
-                  </span>
-                  <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-primary-600 to-secondary-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                </div>
+              <Link to="/" className="flex items-center">
+                <span className="text-2xl font-bold text-primary-500 transition-colors duration-150 hover:text-primary-600">
+                  PART-TIME PAY$
+                </span>
               </Link>
-              {/* Debug indicator */}
-              <div className={`ml-2 w-2 h-2 rounded-full ${isScrolled ? 'bg-green-500' : 'bg-red-500'} transition-colors duration-300`}></div>
             </div>
 
             {/* Global Navigation Links */}
@@ -180,9 +175,8 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all duration-200"
+                  className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-150"
                 >
-                  {link.icon}
                   <span>{link.name}</span>
                 </Link>
               ))}
@@ -201,15 +195,13 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                 {/* Notifications */}
                 <Link
                   to="/notifications"
-                  className="relative p-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <span className="sr-only">View notifications</span>
                   <div className="relative">
                     <BellIcon className="h-5 w-5" />
                     {hasNotifications && (
-                      <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-gradient-to-r from-error-500 to-error-600 text-xs text-white font-bold shadow-lg">
-                        !
-                      </span>
+                      <span className="absolute -top-1 -right-1 flex items-center justify-center h-2 w-2 rounded-full bg-error-500"></span>
                     )}
                   </div>
                 </Link>
@@ -217,13 +209,13 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                 {/* Messages */}
                 <Link
                   to="/messaging"
-                  className="relative p-2 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <span className="sr-only">View messages</span>
                   <div className="relative">
                     <MessageSquareIcon className="h-5 w-5" />
                     {unreadMessageCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 text-xs text-white font-bold shadow-lg">
+                      <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary-500 text-[10px] text-white font-semibold">
                         {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
                       </span>
                     )}
@@ -234,40 +226,40 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                 <div className="relative">
                   <button
                     type="button"
-                    className="flex items-center space-x-2 p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                   >
                     <Avatar name={user?.fullName} src={user?.profilePhoto} size="sm" />
-                    <ChevronDownIcon className={`w-4 h-4 text-neutral-500 transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-150 ${profileMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Profile Dropdown Menu */}
                   {profileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl py-2 bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 border border-neutral-200 dark:border-neutral-700 transform transition-all duration-200 origin-top-right">
+                    <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                       {/* User Info Header */}
-                      <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{user?.fullName}</p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">{user?.role}</p>
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.fullName}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
                       </div>
                       
                       {/* Menu Items */}
                       <Link
                         to="/profile"
-                        className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors duration-150"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         Your Profile
                       </Link>
                       <Link
                         to="/community"
-                        className="block px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors duration-150"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         Community Hub
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left block px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors duration-150"
+                        className="w-full text-left block px-4 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
                       >
                         Sign out
                       </button>
@@ -302,17 +294,16 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-neutral-200/30 dark:border-neutral-800/50 bg-white/80 dark:bg-neutral-950/85 backdrop-blur-lg">
+        <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
           {/* Mobile Navigation Links */}
-          <div className="px-4 pt-3 pb-3 space-y-2">
+          <div className="px-4 pt-3 pb-3 space-y-1">
             {globalNavLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.href}
-                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors duration-150"
+                className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-150"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.icon}
                 <span>{link.name}</span>
               </Link>
             ))}
@@ -320,17 +311,17 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
 
           {/* Mobile User Section */}
           {isAuthenticated && user && (
-            <div className="pt-4 pb-3 border-t border-neutral-200 dark:border-neutral-700">
+            <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-800">
               {/* User Info */}
               <div className="flex items-center px-4 mb-4">
                 <div className="flex-shrink-0">
                   <Avatar name={user?.fullName} src={user?.profilePhoto} size="md" />
                 </div>
                 <div className="ml-3 flex-1">
-                  <div className="text-base font-medium text-neutral-800 dark:text-neutral-100">
+                  <div className="text-base font-semibold text-gray-900 dark:text-gray-100">
                     {user?.fullName}
                   </div>
-                  <div className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     {user?.email}
                   </div>
                 </div>
@@ -340,14 +331,14 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
               <div className="space-y-1 px-4">
                 <Link
                   to="/profile"
-                  className="block px-3 py-2 rounded-lg text-base font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150"
+                  className="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Your Profile
                 </Link>
                 <Link
                   to="/community"
-                  className="block px-3 py-2 rounded-lg text-base font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150"
+                  className="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Community Hub
@@ -357,7 +348,7 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                     handleLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full text-left block px-3 py-2 rounded-lg text-base font-medium text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors duration-150"
+                  className="w-full text-left block px-3 py-2 rounded-lg text-base font-medium text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150"
                 >
                   Sign out
                 </button>
@@ -366,9 +357,9 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
           )}
 
           {/* Mobile Theme Toggle */}
-          <div className="mt-4 px-4 flex items-center">
+          <div className="mt-4 px-4 pb-4 flex items-center">
             <ThemeToggle />
-            <span className="ml-3 text-sm text-neutral-600 dark:text-neutral-300">
+            <span className="ml-3 text-sm text-gray-600 dark:text-gray-300">
               {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             </span>
           </div>

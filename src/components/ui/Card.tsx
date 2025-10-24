@@ -1,6 +1,6 @@
 import React from 'react';
 
-type CardVariant = 'default' | 'elevated' | 'outlined' | 'trust' | 'gradient';
+type CardVariant = 'default' | 'elevated';
 type CardSize = 'sm' | 'md' | 'lg';
 
 interface CardProps {
@@ -10,7 +10,6 @@ interface CardProps {
   onClick?: () => void;
   variant?: CardVariant;
   size?: CardSize;
-  trustIndicator?: boolean;
   style?: React.CSSProperties;
 }
 
@@ -21,22 +20,18 @@ export const Card: React.FC<CardProps> = ({
   onClick,
   variant = 'default',
   size = 'md',
-  trustIndicator = false,
   style,
 }) => {
   const baseStyles = `
-    bg-white dark:bg-neutral-800 
-    rounded-xl 
-    transition-all duration-200
+    bg-white dark:bg-gray-800 
+    rounded-lg 
+    transition-all duration-150
     ${onClick ? 'cursor-pointer' : ''}
   `;
 
   const variantStyles = {
-    default: 'shadow-soft border border-neutral-200 dark:border-neutral-700',
-    elevated: 'shadow-medium border border-neutral-200 dark:border-neutral-700',
-    outlined: 'border-2 border-neutral-300 dark:border-neutral-600 shadow-none',
-    trust: 'shadow-trust border border-trust-200 dark:border-trust-700 bg-gradient-to-br from-trust-50 to-white dark:from-trust-900/20 dark:to-neutral-800',
-    gradient: 'shadow-large border border-primary-200 dark:border-primary-700 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20',
+    default: 'shadow-sm border border-gray-200 dark:border-gray-700',
+    elevated: 'shadow-md border border-gray-200 dark:border-gray-700',
   };
 
   const sizeStyles = {
@@ -45,7 +40,7 @@ export const Card: React.FC<CardProps> = ({
     lg: 'p-8',
   };
 
-  const hoverStyles = hover ? 'hover:shadow-medium hover:-translate-y-1 hover:scale-[1.02]' : '';
+  const hoverStyles = hover ? 'hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600' : '';
 
   return (
     <div 
@@ -59,11 +54,6 @@ export const Card: React.FC<CardProps> = ({
       onClick={onClick}
       style={style}
     >
-      {trustIndicator && (
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-trust-500 to-primary-500 rounded-full flex items-center justify-center">
-          <span className="text-white text-xs">🔒</span>
-        </div>
-      )}
       {children}
     </div>
   );
@@ -79,7 +69,7 @@ export const CardHeader: React.FC<{
   withDivider = false,
 }) => {
   return (
-    <div className={`mb-6 ${withDivider ? 'pb-4 border-b border-neutral-200 dark:border-neutral-700' : ''} ${className}`}>
+    <div className={`mb-6 ${withDivider ? 'pb-4 border-b border-gray-200 dark:border-gray-700' : ''} ${className}`}>
       {children}
     </div>
   );
@@ -102,7 +92,7 @@ export const CardTitle: React.FC<{
   };
 
   return (
-    <h3 className={`${sizeStyles[size]} text-neutral-900 dark:text-neutral-100 ${className}`}>
+    <h3 className={`${sizeStyles[size]} text-gray-900 dark:text-gray-100 ${className}`}>
       {children}
     </h3>
   );
@@ -118,7 +108,7 @@ export const CardDescription: React.FC<{
   muted = false,
 }) => {
   return (
-    <p className={`text-sm ${muted ? 'text-neutral-400 dark:text-neutral-500' : 'text-neutral-600 dark:text-neutral-400'} ${className}`}>
+    <p className={`text-sm ${muted ? 'text-gray-400 dark:text-gray-500' : 'text-gray-600 dark:text-gray-400'} ${className}`}>
       {children}
     </p>
   );
@@ -168,7 +158,7 @@ export const CardFooter: React.FC<{
   return (
     <div className={`
       mt-6 pt-4 
-      ${withDivider ? 'border-t border-neutral-200 dark:border-neutral-700' : ''}
+      ${withDivider ? 'border-t border-gray-200 dark:border-gray-700' : ''}
       flex items-center ${alignStyles[align]}
       ${className}
     `}>
@@ -177,15 +167,7 @@ export const CardFooter: React.FC<{
   );
 };
 
-// Specialized card components
-export const TrustCard: React.FC<Omit<CardProps, 'variant'>> = (props) => (
-  <Card variant="trust" trustIndicator {...props} />
-);
-
-export const GradientCard: React.FC<Omit<CardProps, 'variant'>> = (props) => (
-  <Card variant="gradient" {...props} />
-);
-
+// Specialized card component
 export const ElevatedCard: React.FC<Omit<CardProps, 'variant'>> = (props) => (
   <Card variant="elevated" hover {...props} />
 );

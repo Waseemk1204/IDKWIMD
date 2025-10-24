@@ -287,26 +287,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         key={item.name}
         to={item.href}
         className={`
-          group relative flex items-center ${collapsed ? 'justify-center px-2' : 'px-3'} py-3 text-sm font-medium rounded-xl
-          transition-all duration-300 ease-in-out
-          transform hover:scale-[1.02] hover:shadow-lg
-          ${isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}
+          group relative flex items-center ${collapsed ? 'justify-center px-2' : 'px-3'} py-2.5 text-sm font-medium rounded-lg
+          transition-colors duration-150
           ${isActive 
-            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
-            : 'text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-700 dark:hover:to-gray-600 hover:text-gray-900 dark:hover:text-white'
+            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-l-4 border-primary-500' 
+            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-l-4 border-transparent'
           }
         `}
-        style={{
-          transitionDelay: `${index * 50}ms` // Stagger animation
-        }}
         title={collapsed ? item.name : undefined}
       >
         {/* Icon Container */}
         <div className={`
-          flex-shrink-0 ${collapsed ? '' : 'mr-3'} transition-all duration-200
+          flex-shrink-0 ${collapsed ? '' : 'mr-3'}
           ${isActive 
-            ? 'text-white' 
-            : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+            ? 'text-primary-600 dark:text-primary-400' 
+            : 'text-gray-500 dark:text-gray-400'
           }
         `}>
           {item.icon}
@@ -320,36 +315,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Badges and Indicators - Hidden when collapsed */}
         {!collapsed && (
           <div className="flex items-center space-x-2">
-            {/* New Feature Badge */}
-            {item.isNew && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-400 to-emerald-500 text-white">
-                <StarIcon className="w-3 h-3 mr-1" />
-                New
-              </span>
-            )}
-
             {/* Notification Badge */}
             {item.badge && item.badge > 0 && (
-              <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-xs font-bold text-white shadow-md">
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary-500 text-[10px] font-semibold text-white">
                 {item.badge > 9 ? '9+' : item.badge}
               </span>
-            )}
-
-            {/* Active Indicator Arrow */}
-            {isActive && (
-              <ChevronRightIcon className="w-4 h-4 text-white" />
             )}
           </div>
         )}
 
         {/* Notification Badge for collapsed state */}
         {collapsed && item.badge && item.badge > 0 && (
-          <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-gradient-to-r from-red-500 to-pink-500 border-2 border-white dark:border-gray-900"></div>
-        )}
-
-        {/* Active Background Glow Effect */}
-        {isActive && (
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-600/20 blur-sm -z-10"></div>
+          <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary-500 border-2 border-white dark:border-gray-900"></div>
         )}
       </Link>
     );
@@ -365,15 +342,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       return (
         <div className="flex justify-center">
           <div className={`
-            w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
+            w-8 h-8 rounded-lg flex items-center justify-center
             ${isVerified 
-              ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700' 
-              : 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700'
+              ? 'bg-success-50 dark:bg-success-900/20' 
+              : 'bg-warning-50 dark:bg-warning-900/20'
             }
           `}>
             <ShieldCheckIcon className={`
               w-4 h-4 
-              ${isVerified ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}
+              ${isVerified ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'}
             `} />
           </div>
         </div>
@@ -382,29 +359,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
     
     return (
       <div className={`
-        flex items-center p-3 rounded-xl transition-all duration-300
+        flex items-center p-3 rounded-lg
         ${isVerified 
-          ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700' 
-          : 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700'
+          ? 'bg-success-50 dark:bg-success-900/20' 
+          : 'bg-warning-50 dark:bg-warning-900/20'
         }
       `}>
-        <div className="flex items-center">
-          <ShieldCheckIcon className={`
-            w-4 h-4 mr-2 
-            ${isVerified ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}
-          `} />
-          <div>
-            <div className={`
-              text-xs font-medium 
-              ${isVerified ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'}
-            `}>
-              {isVerified ? 'Verified Account' : 'Verification Pending'}
-            </div>
-            {!isVerified && (
-              <div className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
-                Complete verification to unlock all features
-              </div>
-            )}
+        <ShieldCheckIcon className={`
+          w-4 h-4 mr-2 
+          ${isVerified ? 'text-success-600 dark:text-success-400' : 'text-warning-600 dark:text-warning-400'}
+        `} />
+        <div>
+          <div className={`
+            text-xs font-medium 
+            ${isVerified ? 'text-success-700 dark:text-success-400' : 'text-warning-700 dark:text-warning-400'}
+          `}>
+            {isVerified ? 'Verified' : 'Pending'}
           </div>
         </div>
       </div>
@@ -416,21 +386,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Mobile sidebar
   if (isMobile) {
     return (
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-r border-gray-200/20 dark:border-gray-700/20 transform transition-transform duration-300 ease-in-out lg:hidden ${
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out lg:hidden ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
           {/* Mobile Header with Close Button */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold text-lg">
                 {user.fullName?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
                   {user.fullName || 'Company Name'}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">
+                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
                   {user.role}
                 </p>
               </div>
@@ -450,7 +420,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
 
           {/* Footer */}
-          <div className="flex-shrink-0 p-4 border-t border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-gray-50/50 to-blue-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
+          <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
             {renderVerificationStatus()}
           </div>
         </div>
@@ -460,23 +430,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Desktop sidebar
   return (
-    <aside className={`hidden lg:flex flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-r border-gray-200/20 dark:border-gray-700/20 transition-all duration-300 ${
+    <aside className={`hidden lg:flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
       collapsed ? 'w-16' : 'w-72'
     }`}>
       <div className="flex flex-col flex-grow overflow-y-auto">
         
-        {/* ===== OPTIMIZED USER INFO SECTION (REPLACING EMPTY HEADER) ===== */}
-        <div className="p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
-          <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} mb-3`}>
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+        {/* ===== USER INFO SECTION ===== */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+            <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold text-lg">
               {user.fullName?.charAt(0).toUpperCase() || 'U'}
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
                   {user.fullName || 'Company Name'}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 capitalize font-medium">
+                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
                   {user.role}
                 </p>
               </div>
@@ -500,8 +470,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* ===== COMPACT SIDEBAR FOOTER ===== */}
-      <div className="flex-shrink-0 p-4 border-t border-gray-200/30 dark:border-gray-700/30 bg-gradient-to-r from-gray-50/50 to-blue-50/50 dark:from-gray-800/50 dark:to-gray-700/50">
+      {/* ===== SIDEBAR FOOTER ===== */}
+      <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
         {renderVerificationStatus()}
       </div>
     </aside>

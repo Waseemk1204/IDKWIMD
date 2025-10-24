@@ -75,3 +75,4 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 export const VerifiedBadge: React.FC<Omit<StatusBadgeProps, 'variant'>> = (props) => (
   <StatusBadge variant="verified" {...props} />
 );
+

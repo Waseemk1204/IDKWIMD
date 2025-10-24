@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { CardContent, CardHeader, CardTitle, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
-import { VerifiedBadge, SecureBadge } from '../../components/ui/TrustBadge';
 import { useAuth } from '../../hooks/useAuth';
 import { 
   Shield, 
@@ -36,37 +34,37 @@ export const AboutUs: React.FC = () => {
       icon: Shield,
       title: 'Verified Jobs',
       description: 'Every job posting is verified by our team to ensure legitimacy and quality.',
-      color: 'text-blue-600 dark:text-blue-400'
+      color: 'text-primary-600 dark:text-primary-400'
     },
     {
       icon: DollarSign,
       title: 'Payment Security',
       description: 'Secure escrow system ensures payments are protected and released on time.',
-      color: 'text-green-600 dark:text-green-400'
+      color: 'text-success-600 dark:text-success-400'
     },
     {
       icon: Clock,
       title: 'Smart Timesheets',
       description: 'Digital timesheet system for accurate work tracking and transparent billing.',
-      color: 'text-purple-600 dark:text-purple-400'
+      color: 'text-primary-600 dark:text-primary-400'
     },
     {
       icon: Users,
       title: 'Trust Network',
       description: 'Rating and review system builds trust between employers and workers.',
-      color: 'text-orange-600 dark:text-orange-400'
+      color: 'text-gray-600 dark:text-gray-400'
     },
     {
       icon: MessageSquare,
       title: 'Community Hub',
       description: 'Connect with peers, share experiences, and grow your professional network.',
-      color: 'text-pink-600 dark:text-pink-400'
+      color: 'text-gray-600 dark:text-gray-400'
     },
     {
       icon: TrendingUp,
       title: 'Career Growth',
       description: 'Skills development and career guidance to help you advance professionally.',
-      color: 'text-indigo-600 dark:text-indigo-400'
+      color: 'text-success-600 dark:text-success-400'
     }
   ];
 
@@ -105,17 +103,17 @@ export const AboutUs: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in">
       {/* Header Section */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 px-4 py-2 rounded-full">
+        <div className="inline-flex items-center space-x-2 bg-primary-50 dark:bg-primary-900/20 px-4 py-2 rounded-full">
           <Building2 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
           <span className="text-primary-700 dark:text-primary-300 font-medium">About PART-TIME PAY$</span>
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
           Empowering India's
-          <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"> Future Workforce</span>
+          <span className="text-primary-600 dark:text-primary-400"> Future Workforce</span>
         </h1>
         
         <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
@@ -165,18 +163,18 @@ export const AboutUs: React.FC = () => {
             every interaction on our platform is safe, transparent, and mutually beneficial.
           </p>
           <div className="flex flex-wrap gap-3 pt-4">
-            <Badge variant="primary" className="flex items-center space-x-1">
-              <GraduationCap className="h-3 w-3" />
-              <span>Student-Focused</span>
-            </Badge>
-            <Badge variant="secondary" className="flex items-center space-x-1">
-              <Building2 className="h-3 w-3" />
-              <span>Business-Friendly</span>
-            </Badge>
-            <Badge variant="success" className="flex items-center space-x-1">
-              <Shield className="h-3 w-3" />
-              <span>Secure Platform</span>
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-full text-sm font-medium">
+              <GraduationCap className="h-3.5 w-3.5" />
+              Student-Focused
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
+              <Building2 className="h-3.5 w-3.5" />
+              Business-Friendly
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 rounded-full text-sm font-medium">
+              <Shield className="h-3.5 w-3.5" />
+              Secure Platform
+            </span>
           </div>
         </CardContent>
       </ElevatedCard>
@@ -252,7 +250,7 @@ export const AboutUs: React.FC = () => {
       <ElevatedCard>
         <CardHeader>
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 rounded-lg">
+            <div className="p-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
               <Zap className="h-6 w-6 text-primary-600 dark:text-primary-400" />
             </div>
             <CardTitle size="lg">What Makes Us Different</CardTitle>
@@ -273,14 +271,14 @@ export const AboutUs: React.FC = () => {
             ))}
           </div>
           
-          <div className="mt-8 p-6 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl">
+          <div className="mt-8 p-6 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center space-x-4">
-                <VerifiedBadge size="lg" text="Verified Platform" />
-                <SecureBadge size="lg" text="Bank-Level Security" />
-              </div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">
+              <div className="text-sm text-gray-900 dark:text-gray-100 font-medium">
                 Trusted by 50,000+ users across India
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-success-600 dark:text-success-400" />
+                <span className="text-sm text-gray-600 dark:text-gray-400">Verified & Secure Platform</span>
               </div>
             </div>
           </div>
@@ -305,7 +303,7 @@ export const AboutUs: React.FC = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {teamMembers.map((member, index) => (
               <div key={index} className="text-center space-y-4">
-                <div className="relative mx-auto w-24 h-24 rounded-full overflow-hidden bg-gradient-to-r from-primary-500 to-secondary-500 p-0.5">
+                <div className="relative mx-auto w-24 h-24 rounded-full overflow-hidden bg-primary-500 p-0.5">
                   <img
                     src={member.image}
                     alt={member.name}
@@ -329,7 +327,7 @@ export const AboutUs: React.FC = () => {
       <ElevatedCard className="text-center">
         <CardContent className="py-12">
           <div className="space-y-6">
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-4 py-2 rounded-full">
+            <div className="inline-flex items-center space-x-2 bg-primary-500 text-white px-4 py-2 rounded-full">
               <Award className="h-5 w-5" />
               <span className="font-medium">Join Our Community</span>
             </div>
@@ -347,7 +345,7 @@ export const AboutUs: React.FC = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
-                variant="gradient" 
+                variant="primary" 
                 size="lg"
                 className="flex items-center space-x-2"
               >

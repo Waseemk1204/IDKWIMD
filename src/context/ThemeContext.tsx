@@ -5,7 +5,7 @@ type ThemeContextType = {
   toggleTheme: () => void;
 };
 export const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {}
 });
 export const ThemeProvider: React.FC<{
@@ -15,7 +15,7 @@ export const ThemeProvider: React.FC<{
 }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme as Theme || 'light';
+    return savedTheme as Theme || 'dark';
   });
   useEffect(() => {
     if (theme === 'dark') {

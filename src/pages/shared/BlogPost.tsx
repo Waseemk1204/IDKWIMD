@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
 import { ToastContainer, useToast } from '../../components/ui/Toast';
 import { 
   ArrowLeft, 
@@ -260,7 +259,9 @@ export const BlogPostPage: React.FC = () => {
         {/* Article Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <Badge variant="primary">{currentPost.category}</Badge>
+            <span className="px-3 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-full text-sm font-medium">
+              {currentPost.category}
+            </span>
             <div className="flex items-center space-x-4 text-sm text-neutral-600 dark:text-neutral-400">
               <div className="flex items-center space-x-1">
                 <Calendar className="h-4 w-4" />
@@ -542,7 +543,7 @@ export const BlogPostPage: React.FC = () => {
                         navigate('/login');
                       }
                     }}
-                    variant="gradient"
+                    variant="primary"
                   >
                     Sign In to Comment
                   </Button>

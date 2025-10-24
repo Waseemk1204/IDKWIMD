@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CardContent, ElevatedCard } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { VerifiedBadge } from '../../components/ui/TrustBadge';
+import { VerifiedBadge } from '../../components/ui/StatusBadge';
 import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
 import { LazyLoad } from '../../components/ui/LazyLoad';
 import { useAuth } from '../../hooks/useAuth';
@@ -238,46 +238,52 @@ export const EmployeeDashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 lg:p-8 text-white">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 lg:p-8 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Welcome back, {user?.fullName || 'Student'}!</h1>
-            <p className="text-primary-100 text-base lg:text-lg">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Welcome back, {user?.fullName || 'Student'}!
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
               Ready to find your next opportunity? Let's make today productive.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-0 lg:space-y-2">
-            <VerifiedBadge size="lg" text="Verified Student" />
-            <div className="text-right">
-              <div className="text-xl lg:text-2xl font-bold">{stats.rating}★</div>
-              <div className="text-sm text-primary-100">Your Rating</div>
-            </div>
+          <div className="flex items-center gap-6">
+            <VerifiedBadge size="md" />
+            {stats.rating > 0 && (
+              <div className="text-right">
+                <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {stats.rating}★
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Your Rating</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Profile Completion Checklist */}
       {profileCompletion < 100 && (
-        <ElevatedCard className="border-l-4 border-l-yellow-500">
+        <ElevatedCard className="border-l-4 border-l-warning-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-                  <Target className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-warning-50 dark:bg-warning-900/20 rounded-lg flex items-center justify-center">
+                  <Target className="h-5 w-5 text-warning-600 dark:text-warning-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Complete Your Profile
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {profileCompletion}% complete • {profileChecklist.filter(item => !item.completed).length} items remaining
                   </p>
                 </div>
               </div>
               <Link to="/profile">
-                <Button variant="outline" size="sm">
+                <Button variant="secondary" size="sm">
                   Complete Profile
                 </Button>
               </Link>
@@ -287,22 +293,22 @@ export const EmployeeDashboard: React.FC = () => {
               {profileChecklist.map((item) => {
                 const IconComponent = item.icon;
                 return (
-                  <div key={item.id} className={`flex items-center space-x-3 p-3 rounded-lg ${
+                  <div key={item.id} className={`flex items-center gap-3 p-3 rounded-lg ${
                     item.completed 
-                      ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-                      : 'bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
+                      ? 'bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-700' 
+                      : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
                   }`}>
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                       item.completed 
-                        ? 'bg-green-500 text-white' 
-                        : 'bg-neutral-300 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400'
+                        ? 'bg-success-500 text-white' 
+                        : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
                     }`}>
                       {item.completed ? <CheckCircle className="h-4 w-4" /> : <IconComponent className="h-4 w-4" />}
                     </div>
                     <span className={`text-sm font-medium ${
                       item.completed 
-                        ? 'text-green-700 dark:text-green-300' 
-                        : 'text-neutral-700 dark:text-neutral-300'
+                        ? 'text-success-700 dark:text-success-400' 
+                        : 'text-gray-700 dark:text-gray-300'
                     }`}>
                       {item.label}
                     </span>
@@ -316,76 +322,66 @@ export const EmployeeDashboard: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Active Applications</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.applications}</p>
-                <p className="text-xs text-success-600 dark:text-success-400 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +2 this week
-                </p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Applications</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{stats.applications}</p>
               </div>
-              <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-                <Briefcase className="h-6 w-6 text-primary-600" />
+              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                <Briefcase className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
           </CardContent>
         </ElevatedCard>
 
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-success-100 dark:bg-success-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">This Month's Earnings</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">₹{stats.earnings.toLocaleString()}</p>
-                <p className="text-xs text-success-600 dark:text-success-400 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +15% from last month
-                </p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">This Month's Earnings</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">₹{stats.earnings.toLocaleString()}</p>
               </div>
-              <div className="p-3 bg-success-100 dark:bg-success-900/30 rounded-xl">
-                <Wallet className="h-6 w-6 text-success-600" />
+              <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg">
+                <Wallet className="h-6 w-6 text-success-600 dark:text-success-400" />
               </div>
             </div>
           </CardContent>
         </ElevatedCard>
 
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-secondary-100 dark:bg-secondary-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Hours This Month</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.hoursThisMonth}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                  Target: 40 hours
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Hours This Month</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{stats.hoursThisMonth}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Target: 40 hrs
                 </p>
               </div>
-              <div className="p-3 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl">
-                <Clock className="h-6 w-6 text-secondary-600" />
+              <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                <Clock className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
           </CardContent>
         </ElevatedCard>
 
-        <ElevatedCard hover className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-trust-100 dark:bg-trust-900/30 rounded-full -translate-y-10 translate-x-10"></div>
-          <CardContent className="relative">
+        <ElevatedCard>
+          <CardContent>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Completed Jobs</p>
-                <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">{stats.completedJobs}</p>
-                <p className="text-xs text-trust-600 dark:text-trust-400 flex items-center mt-1">
-                  <Star className="h-3 w-3 mr-1" />
-                  {stats.rating}★ average
-                </p>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Jobs</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{stats.completedJobs}</p>
+                {stats.rating > 0 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                    <Star className="h-3 w-3" />
+                    {stats.rating}★ avg
+                  </p>
+                )}
               </div>
-              <div className="p-3 bg-trust-100 dark:bg-trust-900/30 rounded-xl">
-                <CheckCircle className="h-6 w-6 text-trust-600" />
+              <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-success-600 dark:text-success-400" />
               </div>
             </div>
           </CardContent>
@@ -394,29 +390,19 @@ export const EmployeeDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">Quick Actions</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
             <Link key={index} to={action.href}>
               <ElevatedCard hover className="h-full">
                 <CardContent className="p-6 text-center">
-                  <div className={`w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center ${
-                    action.color === 'primary' ? 'bg-primary-100 dark:bg-primary-900/30' :
-                    action.color === 'secondary' ? 'bg-secondary-100 dark:bg-secondary-900/30' :
-                    action.color === 'success' ? 'bg-success-100 dark:bg-success-900/30' :
-                    'bg-trust-100 dark:bg-trust-900/30'
-                  }`}>
-                    <action.icon className={`h-6 w-6 ${
-                      action.color === 'primary' ? 'text-primary-600' :
-                      action.color === 'secondary' ? 'text-secondary-600' :
-                      action.color === 'success' ? 'text-success-600' :
-                      'text-trust-600'
-                    }`} />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <action.icon className="h-6 w-6 text-gray-700 dark:text-gray-300" />
                   </div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                     {action.title}
                   </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {action.description}
                   </p>
                 </CardContent>

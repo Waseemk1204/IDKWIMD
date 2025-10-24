@@ -288,7 +288,7 @@ export const CustomerSupport: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 px-4 py-2 rounded-full mb-4">
+          <div className="inline-flex items-center space-x-2 bg-primary-50 dark:bg-primary-900/20 px-4 py-2 rounded-full mb-4">
             <HeadphonesIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             <span className="text-primary-700 dark:text-primary-300 font-medium">Customer Support</span>
           </div>
@@ -455,7 +455,7 @@ export const CustomerSupport: React.FC = () => {
         </div>
 
         {/* Additional Help Section */}
-        <div className="mt-12 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-2xl p-8 border border-primary-200 dark:border-primary-800">
+        <div className="mt-12 bg-primary-50 dark:bg-primary-900/20 rounded-lg p-8 border border-primary-200 dark:border-primary-800">
           <div className="text-center">
             <UsersIcon className="w-12 h-12 text-primary-600 dark:text-primary-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
