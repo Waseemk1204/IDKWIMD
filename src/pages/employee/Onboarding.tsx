@@ -49,6 +49,31 @@ export const EmployeeOnboarding: React.FC = () => {
 
   const handleComplete = async (data: any) => {
     try {
+      console.log('=== ONBOARDING COMPLETE - RAW DATA ===', data);
+
+      // Ensure experiences and education are properly formatted arrays
+      const experiences = Array.isArray(data.experiences) 
+        ? data.experiences.map((exp: any) => ({
+            company: exp.company || '',
+            title: exp.title || '',
+            description: exp.description || '',
+            from: exp.from,
+            to: exp.to,
+            current: exp.current || false
+          }))
+        : [];
+
+      const education = Array.isArray(data.education)
+        ? data.education.map((edu: any) => ({
+            institution: edu.institution || '',
+            degree: edu.degree || '',
+            field: edu.field || '',
+            from: edu.from,
+            to: edu.to,
+            current: edu.current || false
+          }))
+        : [];
+
       // Update user profile with onboarding data
       const updatePayload = {
         fullName: data.fullName,
@@ -57,17 +82,16 @@ export const EmployeeOnboarding: React.FC = () => {
         headline: data.headline,
         location: data.location,
         about: data.about,
-        skills: data.skills,
-        experiences: data.experiences,
-        education: data.education,
+        skills: Array.isArray(data.skills) ? data.skills : [],
+        experiences: experiences,
+        education: education,
         jobPreferences: data.jobPreferences
       };
 
+      console.log('=== ONBOARDING COMPLETE - CLEANED PAYLOAD ===', JSON.stringify(updatePayload, null, 2));
+
       // Call API to update user profile
-      const response = await apiService.request('/users/profile', {
-        method: 'PUT',
-        body: JSON.stringify(updatePayload)
-      });
+      const response = await apiService.updateProfile(updatePayload);
 
       if (!response.success) {
         throw new Error(response.message || 'Failed to update profile');

@@ -116,6 +116,8 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
       'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo'
     ];
 
+    console.log('=== UPDATE USER PROFILE - RAW BODY ===', JSON.stringify(req.body, null, 2));
+
     const updates = Object.keys(req.body).filter(key => allowedUpdates.includes(key));
     const updateData: any = {};
 
@@ -127,6 +129,40 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
     if (updateData.skills && typeof updateData.skills === 'string') {
       updateData.skills = updateData.skills.split(',').map((skill: string) => skill.trim()).filter(Boolean);
     }
+
+    // Handle experiences array - ensure it's properly formatted
+    if (updateData.experiences) {
+      if (typeof updateData.experiences === 'string') {
+        console.error('❌ Experiences received as STRING:', updateData.experiences);
+        try {
+          updateData.experiences = JSON.parse(updateData.experiences);
+        } catch (e) {
+          console.error('Failed to parse experiences string, setting to empty array');
+          updateData.experiences = [];
+        }
+      }
+      if (Array.isArray(updateData.experiences)) {
+        console.log('✅ Experiences is array with', updateData.experiences.length, 'items');
+      }
+    }
+
+    // Handle education array - ensure it's properly formatted
+    if (updateData.education) {
+      if (typeof updateData.education === 'string') {
+        console.error('❌ Education received as STRING:', updateData.education);
+        try {
+          updateData.education = JSON.parse(updateData.education);
+        } catch (e) {
+          console.error('Failed to parse education string, setting to empty array');
+          updateData.education = [];
+        }
+      }
+      if (Array.isArray(updateData.education)) {
+        console.log('✅ Education is array with', updateData.education.length, 'items');
+      }
+    }
+
+    console.log('=== UPDATE USER PROFILE - PROCESSED DATA ===', JSON.stringify(updateData, null, 2));
 
     const user = await User.findByIdAndUpdate(
       userId,

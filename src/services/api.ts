@@ -247,7 +247,7 @@ class ApiService {
   }
 
   async updateProfile(userData: any): Promise<ApiResponse> {
-    const response = await this.request('/v1/users/profile', {
+    const response = await this.request('/users/profile', {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
