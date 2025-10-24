@@ -1,6 +1,6 @@
 {
   "name": "part-time-pay-fullstack",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Part-Time Pay$ - Full-stack part-time job marketplace",
   "private": true,
   "scripts": {
