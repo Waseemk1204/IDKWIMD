@@ -1,4 +1,4 @@
-// Build: 2025-10-24-v2 - Force CDN cache invalidation
+// Build: 2025-10-25-linkedin-oauth-fix - Force CDN cache invalidation
 import './index.css';
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
