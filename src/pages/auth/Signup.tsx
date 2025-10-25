@@ -130,10 +130,10 @@ export const Signup: React.FC = () => {
       // Use a placeholder for now
       setUserName('there');
       
-      // Redirect to onboarding after animation (3 seconds)
+      // Redirect to onboarding after animation (2 seconds)
       setTimeout(() => {
         navigate(`/onboarding/${authRole}`);
-      }, 3000);
+      }, 2000);
     }
     
     // Handle LinkedIn OAuth callback for new users (legacy)
