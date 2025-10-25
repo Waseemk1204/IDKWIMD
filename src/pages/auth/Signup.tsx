@@ -94,12 +94,16 @@ export const Signup: React.FC = () => {
     setError(error);
   };
 
-  // Handle Google OAuth callback
+  // Handle OAuth callbacks (Google and LinkedIn)
   useEffect(() => {
     const googleAuth = searchParams.get('google_auth');
+    const linkedinAuth = searchParams.get('linkedin_auth');
     const newUser = searchParams.get('new_user');
     const token = searchParams.get('token');
+    const profileData = searchParams.get('profile_data');
+    const authRole = searchParams.get('role');
     
+    // Handle Google OAuth callback for new users
     if (googleAuth === 'success' && newUser === 'true' && token) {
       const storedRole = localStorage.getItem('signup_role') || 'employee';
       setRole(storedRole as 'employee' | 'employer');
@@ -111,6 +115,37 @@ export const Signup: React.FC = () => {
       // User name will be set by AuthContext when it processes the token
       // For now, use a placeholder
       setUserName('there');
+    }
+    
+    // Handle LinkedIn OAuth callback for new users
+    if (linkedinAuth === 'new_user' && profileData && authRole) {
+      try {
+        // Decode profile data
+        const decodedProfile = JSON.parse(atob(profileData));
+        console.log('LinkedIn signup - decoded profile:', decodedProfile);
+        
+        setRole(authRole as 'employee' | 'employer');
+        
+        // Pre-fill form with LinkedIn data
+        if (decodedProfile.email) {
+          setEmail(decodedProfile.email);
+        }
+        
+        // Store full name for later use
+        if (decodedProfile.fullName) {
+          localStorage.setItem('linkedin_fullName', decodedProfile.fullName);
+          setUserName(decodedProfile.fullName);
+        }
+        
+        // Set success state
+        setShowSuccessAnimation(true);
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (error) {
+        console.error('Failed to parse LinkedIn profile data:', error);
+        setError('Failed to process LinkedIn profile data. Please try manual signup.');
+      }
     }
   }, [searchParams]);
   
