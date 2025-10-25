@@ -81,7 +81,7 @@ router.get(
 
         // Generate JWT token
         const token = jwt.sign(
-          { id: user._id },
+          { userId: user._id },
           config.JWT_SECRET as string
         );
 
@@ -135,7 +135,7 @@ router.get(
 
         // Generate JWT token
         const token = jwt.sign(
-          { id: user._id },
+          { userId: user._id },
           config.JWT_SECRET as string
         );
 
