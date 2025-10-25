@@ -103,11 +103,16 @@ router.get(
 
         console.log('LinkedIn callback - creating new user with data:', profileData);
 
+        // Generate username from email or LinkedIn ID
+        const baseUsername = profileData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+        const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        const generatedUsername = `${baseUsername}_${randomSuffix}`;
+
         // Create new user
         user = new User({
           fullName: profileData.fullName,
           email: profileData.email,
-          username: profileData.username || `linkedin_${linkedInProfile.linkedinId}`,
+          username: generatedUsername,
           role: role,
           profilePhoto: profileData.profilePhoto,
           isVerified: true, // LinkedIn email is already verified
