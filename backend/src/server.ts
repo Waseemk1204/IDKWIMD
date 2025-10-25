@@ -3,6 +3,8 @@ import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import passport from 'passport';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 
@@ -14,6 +16,7 @@ import { injectSocketIO } from './middlewares/socket';
 import { configureSocket } from './config/socket';
 import { swaggerSpec } from './config/swagger';
 import swaggerUi from 'swagger-ui-express';
+import { configureLinkedInStrategy } from './services/linkedinService';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -34,6 +37,7 @@ import verificationRoutes from './routes/verification';
 import channelRoutes from './routes/channels';
 import callRoutes from './routes/calls';
 import onboardingRoutes from './routes/onboarding';
+import linkedinRoutes from './routes/linkedin';
 // import integrationRoutes from './routes/integration';
 // import unifiedMessagingRoutes from './routes/unifiedMessaging';
 // import unifiedNotificationRoutes from './routes/unifiedNotifications';
@@ -77,6 +81,35 @@ class Server {
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
     this.app.use(cookieParser());
 
+    // Session middleware (required for OAuth)
+    this.app.use(
+      session({
+        secret: config.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          secure: config.NODE_ENV === 'production',
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        },
+      })
+    );
+
+    // Initialize Passport
+    this.app.use(passport.initialize());
+    this.app.use(passport.session());
+    
+    // Passport serialization
+    passport.serializeUser((user: any, done) => {
+      done(null, user);
+    });
+    passport.deserializeUser((user: any, done) => {
+      done(null, user);
+    });
+    
+    // Configure OAuth strategies
+    configureLinkedInStrategy();
+
     // Compression
     this.app.use(compression());
 
@@ -115,6 +148,7 @@ class Server {
 
     // API routes
     this.app.use('/api/v1/auth', authRoutes);
+    this.app.use('/api/v1/auth/linkedin', linkedinRoutes);
     this.app.use('/api/v1/users', userRoutes);
     this.app.use('/api/v1/jobs', jobRoutes);
     this.app.use('/api/v1/applications', applicationRoutes);
