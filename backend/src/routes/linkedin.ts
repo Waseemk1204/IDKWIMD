@@ -43,8 +43,11 @@ router.get(
       const authData = req.user as unknown as { profile: LinkedInProfile; accessToken: string };
       const linkedInProfile = authData.profile;
       
+      console.log('LinkedIn callback - processing authentication for:', linkedInProfile.email);
+      
       // Get role from session or default to employee
       const role = ((req.session as any)?.linkedInRole as 'employee' | 'employer') || 'employee';
+      console.log('LinkedIn callback - role:', role);
 
       // Check if user exists
       let user = await User.findOne({
@@ -53,6 +56,8 @@ router.get(
           { 'linkedinProfile.linkedinId': linkedInProfile.linkedinId },
         ],
       });
+
+      console.log('LinkedIn callback - user found:', !!user);
 
       if (user) {
         // User exists - update LinkedIn profile data
@@ -89,25 +94,54 @@ router.get(
         // Clear role from session
         delete (req.session as any)?.linkedInRole;
 
-        res.redirect(`${config.FRONTEND_URL}/login?${queryParams.toString()}`);
+        const redirectUrl = `${config.FRONTEND_URL}/login?${queryParams.toString()}`;
+        console.log('LinkedIn callback - redirecting existing user to:', redirectUrl);
+        res.redirect(redirectUrl);
       } else {
-        // New user - send profile data for signup
+        // New user - create account automatically
         const profileData = extractUserDataFromLinkedIn(linkedInProfile, role);
 
-        // Encode profile data
-        const encodedProfile = Buffer.from(JSON.stringify(profileData)).toString('base64');
+        console.log('LinkedIn callback - creating new user with data:', profileData);
 
-        // Redirect to signup with profile data
+        // Create new user
+        user = new User({
+          fullName: profileData.fullName,
+          email: profileData.email,
+          username: profileData.username || `linkedin_${linkedInProfile.linkedinId}`,
+          role: role,
+          profilePhoto: profileData.profilePhoto,
+          isVerified: true, // LinkedIn email is already verified
+          onboardingCompleted: false,
+          linkedinProfile: {
+            linkedinId: linkedInProfile.linkedinId,
+            profileUrl: linkedInProfile.profileUrl || '',
+            lastSynced: new Date(),
+            autoImportEnabled: true,
+          },
+        });
+
+        await user.save();
+        console.log('LinkedIn callback - new user created:', user._id);
+
+        // Generate JWT token
+        const token = jwt.sign(
+          { id: user._id },
+          config.JWT_SECRET as string
+        );
+
+        // Redirect to onboarding for new users
         const queryParams = new URLSearchParams({
-          linkedin_auth: 'new_user',
-          profile_data: encodedProfile,
-          role,
+          token,
+          linkedin_auth: 'success',
+          new_user: 'true',
         });
 
         // Clear role from session
         delete (req.session as any)?.linkedInRole;
 
-        res.redirect(`${config.FRONTEND_URL}/signup?${queryParams.toString()}`);
+        const redirectUrl = `${config.FRONTEND_URL}/${role}/onboarding?${queryParams.toString()}`;
+        console.log('LinkedIn callback - redirecting new user to onboarding:', redirectUrl);
+        res.redirect(redirectUrl);
       }
     } catch (error) {
       console.error('LinkedIn callback error:', error);
