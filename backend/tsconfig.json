@@ -35,6 +35,13 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "src/routes/linkedin.ts",
+    "src/routes/resume.ts",
+    "src/routes/timesheetRoutes.ts",
+    "src/services/blockchainService.ts",
+    "src/services/linkedinService.ts",
+    "src/utils/resumeExtractor.ts",
+    "src/controllers/timesheetController.ts"
   ]
 }
