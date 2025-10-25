@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertCircle, Users, MessageSquare } from 'lucide-react';
-import { Button } from './Button';
-import { Card } from './Card';
-import { lockScroll, unlockScroll } from '../../utils/scrollLock';
+import { X } from 'lucide-react';
 
 interface DevelopmentNoticeProps {
   onDismiss?: () => void;
@@ -27,129 +24,32 @@ export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss 
     }
   }, []);
 
-  // Prevent background scrolling when modal is open
-  useEffect(() => {
-    if (isVisible) {
-      lockScroll();
-    } else {
-      unlockScroll();
-    }
-    
-    // Cleanup function to ensure scroll is unlocked when component unmounts
-    return () => {
-      unlockScroll();
-    };
-  }, [isVisible]);
-
   const handleDismiss = () => {
     setIsVisible(false);
     localStorage.setItem('dev-notice-dismissed', 'true');
     onDismiss?.();
   };
 
-  const handleSignUpClick = () => {
-    // Navigate to signup page
-    window.location.href = '/signup';
-  };
-
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-      <Card className="max-w-2xl w-full bg-white dark:bg-gray-800 border-2 border-orange-500 shadow-2xl animate-fade-in-up">
-        <div className="p-4 sm:p-6">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4 sm:mb-6">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div className="p-1.5 sm:p-2 bg-orange-100 dark:bg-orange-900/30 rounded-full flex-shrink-0">
-                <AlertCircle className="w-4 h-4 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                  🚧 Site Under Development
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                  ParttimePays is currently in active development
-                </p>
-              </div>
-            </div>
+    <div className="fixed top-0 left-0 right-0 z-50 animate-slide-in">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-blue-800 dark:text-blue-200 flex-1">
+              <span className="font-medium">Under Development:</span> Some features are still being built. Thank you for your patience! 🚧
+            </p>
             <button
               onClick={handleDismiss}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors flex-shrink-0 ml-2"
+              className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded transition-colors flex-shrink-0"
+              aria-label="Dismiss notice"
             >
-              <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
+              <X className="w-4 h-4 text-blue-600 dark:text-blue-300" />
             </button>
           </div>
-
-          {/* Content */}
-          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 sm:p-4">
-              <p className="text-sm sm:text-base text-gray-800 dark:text-gray-200 leading-relaxed">
-                <strong>Welcome to ParttimePays!</strong> We're excited to have you here. 
-                Our platform is currently under active development, which means some features 
-                and functions might not work exactly as intended yet.
-              </p>
-            </div>
-
-            <div className="space-y-2 sm:space-y-3">
-              <div className="flex items-start gap-2 sm:gap-3">
-                <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded-full mt-0.5 sm:mt-1 flex-shrink-0">
-                  <Users className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white mb-1">
-                    Support Our Journey
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    You can still support us by signing up and exploring our platform. 
-                    Your early adoption helps us build something amazing together!
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2 sm:gap-3">
-                <div className="p-1 bg-green-100 dark:bg-green-900/30 rounded-full mt-0.5 sm:mt-1 flex-shrink-0">
-                  <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white mb-1">
-                    Share Your Feedback
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    Found a bug or have suggestions? We'd love to hear from you! 
-                    Use the feedback button to share your thoughts and help us improve.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col gap-2 sm:gap-3">
-            <Button
-              onClick={handleSignUpClick}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
-            >
-              <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              Sign Up & Explore
-            </Button>
-            <Button
-              onClick={handleDismiss}
-              variant="secondary"
-              className="w-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base"
-            >
-              Continue Browsing
-            </Button>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-              Thank you for your patience and support as we build the future of part-time work! 💪
-            </p>
-          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
