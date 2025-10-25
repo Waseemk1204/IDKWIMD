@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import config from '../config';
 import { extractUserDataFromLinkedIn, LinkedInProfile } from '../services/linkedinService';
 import User from '../models/User';
@@ -75,11 +75,13 @@ router.get(
 
         // Generate JWT token
         const jwtSecret = config.JWT_SECRET as string;
-        const jwtExpire = config.JWT_EXPIRE || '7d';
+        const signOptions: SignOptions = { 
+          expiresIn: (config.JWT_EXPIRE || '7d') as string 
+        };
         const token = jwt.sign(
           { id: user._id },
           jwtSecret,
-          { expiresIn: jwtExpire }
+          signOptions
         );
 
         // Redirect to frontend with token and profile data
@@ -154,11 +156,13 @@ router.post('/signup', async (req, res) => {
 
     // Generate JWT token
     const jwtSecret = config.JWT_SECRET as string;
-    const jwtExpire = config.JWT_EXPIRE || '7d';
+    const signOptions: SignOptions = { 
+      expiresIn: (config.JWT_EXPIRE || '7d') as string 
+    };
     const token = jwt.sign(
       { id: user._id },
       jwtSecret,
-      { expiresIn: jwtExpire }
+      signOptions
     );
 
     return res.status(201).json({
