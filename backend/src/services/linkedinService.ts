@@ -131,8 +131,16 @@ export const configureLinkedInStrategy = () => {
             });
             
             if (response.ok) {
-              const userinfo = await response.json();
-              linkedInProfile = parseLinkedInProfile({ _json: userinfo, ...userinfo });
+              const userinfo = await response.json() as any;
+              linkedInProfile = parseLinkedInProfile({ 
+                _json: userinfo, 
+                sub: userinfo.sub,
+                name: userinfo.name,
+                given_name: userinfo.given_name,
+                family_name: userinfo.family_name,
+                email: userinfo.email,
+                picture: userinfo.picture,
+              });
             } else {
               // Fallback to passport profile if userinfo fails
               linkedInProfile = parseLinkedInProfile(profile);
