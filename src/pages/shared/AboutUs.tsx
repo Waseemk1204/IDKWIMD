@@ -111,12 +111,12 @@ export const AboutUs: React.FC = () => {
           <span className="text-primary-700 dark:text-primary-300 font-medium">About PART-TIME PAY$</span>
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
           Empowering India's
           <span className="text-primary-600 dark:text-primary-400"> Future Workforce</span>
         </h1>
         
-        <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
+        <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
           We're building India's most trusted platform for part-time work, connecting students and professionals 
           with verified opportunities while ensuring security, transparency, and career growth.
         </p>
@@ -129,10 +129,10 @@ export const AboutUs: React.FC = () => {
             <div className="flex justify-center mb-3">
               <stat.icon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
             </div>
-            <div className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
+            <div className="text-3xl font-bold text-neutral-900 dark:text-white mb-1">
               {stat.number}
             </div>
-            <div className="text-sm text-neutral-600 dark:text-neutral-400">
+            <div className="text-xs text-neutral-600 dark:text-neutral-400">
               {stat.label}
             </div>
           </ElevatedCard>
@@ -332,11 +332,11 @@ export const AboutUs: React.FC = () => {
               <span className="font-medium">Join Our Community</span>
             </div>
             
-            <h2 className="text-3xl font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Ready to {user?.role === 'employer' ? 'Find Great Talent' : 'Start Your Journey'}?
             </h2>
             
-            <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
               {user?.role === 'employer' 
                 ? 'Connect with skilled students and professionals ready to contribute to your business growth.'
                 : 'Discover verified part-time opportunities that fit your schedule and help build your career.'

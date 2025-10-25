@@ -174,10 +174,10 @@ export const ContactUs: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
             Contact Us
           </h1>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+          <p className="text-base text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
             Have questions, feedback, or need support? We're here to help! Reach out to us through any of the channels below.
           </p>
         </div>
@@ -324,7 +324,7 @@ export const ContactUs: React.FC = () => {
 
             {/* Business Hours */}
             <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">
                 Business Hours
               </h3>
               <div className="space-y-2 text-neutral-600 dark:text-neutral-400">
@@ -348,7 +348,7 @@ export const ContactUs: React.FC = () => {
 
             {/* Social Media */}
             <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">
                 Follow Us
               </h3>
               <p className="text-neutral-600 dark:text-neutral-400 mb-6">
@@ -378,7 +378,7 @@ export const ContactUs: React.FC = () => {
 
             {/* Quick Help */}
             <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-8 border border-primary-200 dark:border-primary-800">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">
                 Need Quick Help?
               </h3>
               <p className="text-neutral-600 dark:text-neutral-400 mb-4">

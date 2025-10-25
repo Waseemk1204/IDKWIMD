@@ -316,10 +316,10 @@ export const PrivacyPolicy: React.FC = () => {
               </h1>
             </Link>
             
-            <h2 className="text-4xl font-extrabold text-neutral-900 dark:text-white mb-4">
+            <h2 className="text-3xl font-bold text-neutral-900 dark:text-white mb-4">
               Privacy Policy
             </h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+            <p className="text-base text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
               Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.
             </p>
             <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-4">
@@ -333,7 +333,7 @@ export const PrivacyPolicy: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Table of Contents */}
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-soft p-6 mb-8">
-          <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
             Table of Contents
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -368,7 +368,7 @@ export const PrivacyPolicy: React.FC = () => {
                     {section.icon}
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
                   {index + 1}. {section.title}
                 </h3>
               </div>

@@ -126,12 +126,12 @@ export const Blogs: React.FC = () => {
           <span className="text-primary-700 dark:text-primary-300 font-medium">PART-TIME PAY$ Blog</span>
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
           Insights for
           <span className="text-primary-600 dark:text-primary-400"> Smart Workers</span>
         </h1>
         
-        <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
+        <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto">
           Expert advice, career tips, and industry insights to help you succeed in the world of flexible work
         </p>
       </div>
@@ -211,7 +211,7 @@ export const Blogs: React.FC = () => {
                     </div>
                   </div>
                   
-                  <h2 className="text-3xl font-bold text-neutral-900 dark:text-white leading-tight">
+                  <h2 className="text-2xl font-bold text-neutral-900 dark:text-white leading-tight">
                     {featuredPost.title}
                   </h2>
                   
@@ -371,7 +371,7 @@ export const Blogs: React.FC = () => {
               <span className="font-medium">Stay Updated</span>
             </div>
             
-            <h2 className="text-3xl font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Never Miss an Insight
             </h2>
             
