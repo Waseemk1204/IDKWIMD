@@ -74,10 +74,12 @@ router.get(
         await user.save();
 
         // Generate JWT token
+        const jwtSecret = config.JWT_SECRET as string;
+        const jwtExpire = config.JWT_EXPIRE || '7d';
         const token = jwt.sign(
           { id: user._id },
-          config.JWT_SECRET as string,
-          { expiresIn: config.JWT_EXPIRE || '7d' }
+          jwtSecret,
+          { expiresIn: jwtExpire }
         );
 
         // Redirect to frontend with token and profile data
@@ -151,10 +153,12 @@ router.post('/signup', async (req, res) => {
     });
 
     // Generate JWT token
+    const jwtSecret = config.JWT_SECRET as string;
+    const jwtExpire = config.JWT_EXPIRE || '7d';
     const token = jwt.sign(
       { id: user._id },
-      config.JWT_SECRET as string,
-      { expiresIn: config.JWT_EXPIRE || '7d' }
+      jwtSecret,
+      { expiresIn: jwtExpire }
     );
 
     return res.status(201).json({
