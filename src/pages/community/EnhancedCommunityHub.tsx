@@ -273,10 +273,10 @@ export const EnhancedCommunityHub: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
             Professional Community Hub
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
             Connect, share insights, and grow professionally with industry experts
           </p>
         </div>

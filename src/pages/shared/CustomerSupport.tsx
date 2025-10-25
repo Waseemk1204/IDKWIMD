@@ -293,7 +293,7 @@ export const CustomerSupport: React.FC = () => {
             <span className="text-primary-700 dark:text-primary-300 font-medium">Customer Support</span>
           </div>
           
-          <h1 className="text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
             We're Here to Help
           </h1>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">

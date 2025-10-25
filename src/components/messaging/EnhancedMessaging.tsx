@@ -432,7 +432,7 @@ export const EnhancedMessaging: React.FC<EnhancedMessagingProps> = ({ className 
         {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Messages</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Messages</h2>
             <Button
               variant="outline"
               size="sm"

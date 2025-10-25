@@ -383,7 +383,7 @@ export const PrivacyPolicy: React.FC = () => {
         {/* Contact Section */}
         <div className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-8 mt-12">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">
+            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
               Contact Us About Privacy
             </h3>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">

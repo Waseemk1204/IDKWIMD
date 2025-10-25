@@ -326,7 +326,7 @@ export const PostDetail: React.FC = () => {
           </div>
 
           {/* Post Content */}
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             {post.title}
           </h2>
           <div className="prose dark:prose-invert max-w-none mb-6">

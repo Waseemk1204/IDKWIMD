@@ -278,7 +278,7 @@ export const BlogPostPage: React.FC = () => {
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-6 leading-tight">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-6 leading-tight">
             {currentPost.title}
           </h1>
 
@@ -498,7 +498,7 @@ export const BlogPostPage: React.FC = () => {
           <ElevatedCard>
             <CardContent className="p-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
                   Comments ({currentPost.comments.length})
                 </h3>
               </div>
