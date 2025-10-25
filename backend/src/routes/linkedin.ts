@@ -149,7 +149,7 @@ router.get(
         // Clear role from session
         delete (req.session as any)?.linkedInRole;
 
-        const redirectUrl = `${config.FRONTEND_URL}/${role}/onboarding?${queryParams.toString()}`;
+        const redirectUrl = `${config.FRONTEND_URL}/onboarding/${role}?${queryParams.toString()}`;
         console.log('LinkedIn callback - redirecting new user to onboarding:', redirectUrl);
         res.redirect(redirectUrl);
       }
