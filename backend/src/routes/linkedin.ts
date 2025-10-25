@@ -1,6 +1,7 @@
 import express from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import config from '../config';
 import { extractUserDataFromLinkedIn, LinkedInProfile } from '../services/linkedinService';
 import User from '../models/User';
@@ -108,11 +109,15 @@ router.get(
         const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         const generatedUsername = `${baseUsername}_${randomSuffix}`;
 
+        // Generate a secure random password (user won't need it for OAuth login)
+        const randomPassword = crypto.randomBytes(32).toString('hex');
+
         // Create new user
         user = new User({
           fullName: profileData.fullName,
           email: profileData.email,
           username: generatedUsername,
+          password: randomPassword, // Required by schema but won't be used for OAuth login
           role: role,
           profilePhoto: profileData.profilePhoto,
           isVerified: true, // LinkedIn email is already verified
