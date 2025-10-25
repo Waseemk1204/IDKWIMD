@@ -42,7 +42,7 @@ router.post('/upload', protect, uploadSingleResume, async (req, res) => {
     // Clean up: delete the file after parsing
     fs.unlinkSync(req.file.path);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Resume parsed successfully',
       data: {
@@ -98,7 +98,7 @@ router.post('/parse-text', protect, async (req, res) => {
     const userRole = (role as 'employee' | 'employer') || 'employee';
     const profileData = parsedResume.data;
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Resume parsed successfully',
       data: {

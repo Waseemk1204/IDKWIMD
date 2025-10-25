@@ -77,7 +77,7 @@ router.get(
         const token = jwt.sign(
           { id: user._id },
           config.JWT_SECRET as string,
-          { expiresIn: config.JWT_EXPIRE as string }
+          { expiresIn: config.JWT_EXPIRE || '7d' }
         );
 
         // Redirect to frontend with token and profile data
@@ -154,7 +154,7 @@ router.post('/signup', async (req, res) => {
     const token = jwt.sign(
       { id: user._id },
       config.JWT_SECRET as string,
-      { expiresIn: config.JWT_EXPIRE as string }
+      { expiresIn: config.JWT_EXPIRE || '7d' }
     );
 
     return res.status(201).json({
