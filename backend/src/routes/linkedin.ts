@@ -40,7 +40,7 @@ router.get(
   }),
   async (req, res) => {
     try {
-      const authData = req.user as { profile: LinkedInProfile; accessToken: string };
+      const authData = req.user as unknown as { profile: LinkedInProfile; accessToken: string };
       const linkedInProfile = authData.profile;
       
       // Get role from session or default to employee
@@ -74,9 +74,11 @@ router.get(
         await user.save();
 
         // Generate JWT token
-        const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
-          expiresIn: config.JWT_EXPIRE,
-        });
+        const token = jwt.sign(
+          { id: user._id },
+          config.JWT_SECRET as string,
+          { expiresIn: config.JWT_EXPIRE as string }
+        );
 
         // Redirect to frontend with token and profile data
         const queryParams = new URLSearchParams({
@@ -149,9 +151,11 @@ router.post('/signup', async (req, res) => {
     });
 
     // Generate JWT token
-    const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
-      expiresIn: config.JWT_EXPIRE,
-    });
+    const token = jwt.sign(
+      { id: user._id },
+      config.JWT_SECRET as string,
+      { expiresIn: config.JWT_EXPIRE as string }
+    );
 
     return res.status(201).json({
       success: true,
@@ -169,7 +173,7 @@ router.post('/signup', async (req, res) => {
     });
   } catch (error) {
     console.error('LinkedIn signup error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to create user with LinkedIn profile',
     });

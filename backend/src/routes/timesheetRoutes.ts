@@ -4,9 +4,9 @@ import { submitTimesheet, getPendingTimesheets, approveTimesheet, getEmployeeTim
 
 const router = express.Router();
 
-router.post('/submit', authenticate, submitTimesheet);
-router.get('/pending', authenticate, getPendingTimesheets);
-router.post('/approve/:timesheetId', authenticate, approveTimesheet);
-router.get('/employee', authenticate, getEmployeeTimesheets);
+router.post('/submit', authenticate, submitTimesheet as any);
+router.get('/pending', authenticate, getPendingTimesheets as any);
+router.post('/approve/:timesheetId', authenticate, approveTimesheet as any);
+router.get('/employee', authenticate, getEmployeeTimesheets as any);
 
 export default router;

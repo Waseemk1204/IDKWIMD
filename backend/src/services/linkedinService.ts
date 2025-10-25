@@ -93,7 +93,6 @@ export const configureLinkedInStrategy = () => {
         clientSecret: config.LINKEDIN_CLIENT_SECRET,
         callbackURL: config.LINKEDIN_CALLBACK_URL,
         scope: ['openid', 'profile', 'email'], // Updated scopes for LinkedIn API v2
-        state: true,
       },
       async (accessToken: string, refreshToken: string, profile: any, done: any) => {
         try {

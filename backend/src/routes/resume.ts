@@ -58,7 +58,7 @@ router.post('/upload', protect, uploadSingleResume, async (req, res) => {
       fs.unlinkSync(req.file.path);
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to parse resume. Please try again.',
     });
@@ -108,7 +108,7 @@ router.post('/parse-text', protect, async (req, res) => {
     });
   } catch (error) {
     console.error('Resume parse error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Failed to parse resume',
     });
