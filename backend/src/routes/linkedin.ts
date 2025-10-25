@@ -76,7 +76,7 @@ router.get(
         // Generate JWT token
         const jwtSecret = config.JWT_SECRET as string;
         const signOptions: SignOptions = { 
-          expiresIn: (config.JWT_EXPIRE || '7d') as string 
+          expiresIn: config.JWT_EXPIRE || '7d'
         };
         const token = jwt.sign(
           { id: user._id },
@@ -157,7 +157,7 @@ router.post('/signup', async (req, res) => {
     // Generate JWT token
     const jwtSecret = config.JWT_SECRET as string;
     const signOptions: SignOptions = { 
-      expiresIn: (config.JWT_EXPIRE || '7d') as string 
+      expiresIn: config.JWT_EXPIRE || '7d'
     };
     const token = jwt.sign(
       { id: user._id },
