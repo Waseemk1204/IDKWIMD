@@ -32,8 +32,32 @@ export interface LinkedInProfile {
 
 /**
  * Parse LinkedIn profile data into our application format
+ * Handles both OpenID Connect userinfo and legacy profile formats
  */
 export const parseLinkedInProfile = (profile: any): LinkedInProfile => {
+  // OpenID Connect userinfo format
+  const isOpenIDConnect = profile.sub || profile._json?.sub;
+  
+  if (isOpenIDConnect) {
+    const json = profile._json || profile;
+    return {
+      linkedinId: json.sub || profile.id,
+      fullName: json.name || `${json.given_name || ''} ${json.family_name || ''}`.trim(),
+      firstName: json.given_name || '',
+      lastName: json.family_name || '',
+      email: json.email || '',
+      headline: json.headline || '',
+      summary: json.bio || '',
+      profilePicture: json.picture || '',
+      location: json.locale || '',
+      profileUrl: json.profile || '',
+      positions: [],
+      educations: [],
+      skills: [],
+    };
+  }
+  
+  // Legacy format (fallback)
   const parsedProfile: LinkedInProfile = {
     linkedinId: profile.id,
     fullName: profile.displayName || `${profile.name?.givenName || ''} ${profile.name?.familyName || ''}`.trim(),
@@ -47,7 +71,7 @@ export const parseLinkedInProfile = (profile: any): LinkedInProfile => {
     profileUrl: profile._json?.publicProfileUrl || '',
   };
 
-  // Parse positions (work experience)
+  // Parse positions (work experience) - only in legacy format
   if (profile._json?.positions?.values) {
     parsedProfile.positions = profile._json.positions.values.map((pos: any) => ({
       title: pos.title || '',
@@ -58,7 +82,7 @@ export const parseLinkedInProfile = (profile: any): LinkedInProfile => {
     }));
   }
 
-  // Parse education
+  // Parse education - only in legacy format
   if (profile._json?.educations?.values) {
     parsedProfile.educations = profile._json.educations.values.map((edu: any) => ({
       institution: edu.schoolName || '',
@@ -69,7 +93,7 @@ export const parseLinkedInProfile = (profile: any): LinkedInProfile => {
     }));
   }
 
-  // Parse skills
+  // Parse skills - only in legacy format
   if (profile._json?.skills?.values) {
     parsedProfile.skills = profile._json.skills.values.map((skill: any) => skill.skill?.name || skill.name).filter(Boolean);
   }
@@ -92,7 +116,8 @@ export const configureLinkedInStrategy = () => {
         clientID: config.LINKEDIN_CLIENT_ID,
         clientSecret: config.LINKEDIN_CLIENT_SECRET,
         callbackURL: config.LINKEDIN_CALLBACK_URL,
-        scope: ['openid', 'profile', 'email'], // Updated scopes for LinkedIn API v2
+        scope: ['openid', 'profile', 'email'],
+        profileUrl: 'https://api.linkedin.com/v2/userinfo', // OpenID Connect userinfo endpoint
       },
       async (accessToken: string, refreshToken: string, profile: any, done: any) => {
         try {
