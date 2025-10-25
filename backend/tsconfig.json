@@ -36,12 +36,10 @@
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "src/routes/linkedin.ts",
+    "src/services/blockchainService.ts",
     "src/routes/resume.ts",
     "src/routes/timesheetRoutes.ts",
-    "src/services/blockchainService.ts",
-    "src/services/linkedinService.ts",
-    "src/utils/resumeExtractor.ts",
-    "src/controllers/timesheetController.ts"
+    "src/controllers/timesheetController.ts",
+    "src/utils/resumeExtractor.ts"
   ]
 }

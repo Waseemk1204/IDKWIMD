@@ -1,7 +1,7 @@
 import express from 'express';
 import { uploadSingleResume } from '../middlewares/fileUpload';
-import { protect } from '../middlewares/auth';
-import { parseResumeFile, convertResumeToUserProfile } from '../services/resumeParserService';
+import { authenticate as protect } from '../middlewares/auth';
+import resumeParserService from '../services/resumeParserService';
 import { validateResumeFile } from '../utils/resumeExtractor';
 import fs from 'fs';
 

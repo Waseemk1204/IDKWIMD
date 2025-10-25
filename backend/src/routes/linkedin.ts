@@ -18,7 +18,7 @@ router.get(
     // Store role in session for later use
     const role = req.query.role as string;
     if (role && (role === 'employee' || role === 'employer')) {
-      req.session!.linkedInRole = role;
+      (req.session as any).linkedInRole = role;
     }
     next();
   },
@@ -36,7 +36,7 @@ router.get(
   '/callback',
   passport.authenticate('linkedin', {
     session: false,
-    failureRedirect: `${config.frontendUrl}/login?error=linkedin_auth_failed`,
+    failureRedirect: `${config.FRONTEND_URL}/login?error=linkedin_auth_failed`,
   }),
   async (req, res) => {
     try {
@@ -44,7 +44,7 @@ router.get(
       const linkedInProfile = authData.profile;
       
       // Get role from session or default to employee
-      const role = (req.session?.linkedInRole as 'employee' | 'employer') || 'employee';
+      const role = ((req.session as any)?.linkedInRole as 'employee' | 'employer') || 'employee';
 
       // Check if user exists
       let user = await User.findOne({
@@ -58,7 +58,8 @@ router.get(
         // User exists - update LinkedIn profile data
         const profileData = extractUserDataFromLinkedIn(linkedInProfile, role);
         
-        user.linkedinProfile = {
+        // Store LinkedIn profile data (if field exists in User model)
+        (user as any).linkedinProfile = {
           linkedinId: linkedInProfile.linkedinId,
           profileUrl: linkedInProfile.profileUrl || '',
           lastSynced: new Date(),
@@ -73,8 +74,8 @@ router.get(
         await user.save();
 
         // Generate JWT token
-        const token = jwt.sign({ id: user._id }, config.jwtSecret, {
-          expiresIn: config.jwtExpire,
+        const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+          expiresIn: config.JWT_EXPIRE,
         });
 
         // Redirect to frontend with token and profile data
@@ -85,9 +86,9 @@ router.get(
         });
 
         // Clear role from session
-        delete req.session?.linkedInRole;
+        delete (req.session as any)?.linkedInRole;
 
-        res.redirect(`${config.frontendUrl}/login?${queryParams.toString()}`);
+        res.redirect(`${config.FRONTEND_URL}/login?${queryParams.toString()}`);
       } else {
         // New user - send profile data for signup
         const profileData = extractUserDataFromLinkedIn(linkedInProfile, role);
@@ -103,13 +104,13 @@ router.get(
         });
 
         // Clear role from session
-        delete req.session?.linkedInRole;
+        delete (req.session as any)?.linkedInRole;
 
-        res.redirect(`${config.frontendUrl}/signup?${queryParams.toString()}`);
+        res.redirect(`${config.FRONTEND_URL}/signup?${queryParams.toString()}`);
       }
     } catch (error) {
       console.error('LinkedIn callback error:', error);
-      res.redirect(`${config.frontendUrl}/login?error=linkedin_callback_failed`);
+      res.redirect(`${config.FRONTEND_URL}/login?error=linkedin_callback_failed`);
     }
   }
 );
@@ -148,11 +149,11 @@ router.post('/signup', async (req, res) => {
     });
 
     // Generate JWT token
-    const token = jwt.sign({ id: user._id }, config.jwtSecret, {
-      expiresIn: config.jwtExpire,
+    const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+      expiresIn: config.JWT_EXPIRE,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'User created successfully with LinkedIn profile',
       data: {

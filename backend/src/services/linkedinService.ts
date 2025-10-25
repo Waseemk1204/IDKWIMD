@@ -81,7 +81,7 @@ export const parseLinkedInProfile = (profile: any): LinkedInProfile => {
  * Configure LinkedIn OAuth Strategy
  */
 export const configureLinkedInStrategy = () => {
-  if (!config.linkedIn?.clientId || !config.linkedIn?.clientSecret) {
+  if (!config.LINKEDIN_CLIENT_ID || !config.LINKEDIN_CLIENT_SECRET) {
     console.warn('LinkedIn OAuth credentials not configured. LinkedIn authentication will not be available.');
     return;
   }
@@ -89,9 +89,9 @@ export const configureLinkedInStrategy = () => {
   passport.use(
     new LinkedInStrategy(
       {
-        clientID: config.linkedIn.clientId,
-        clientSecret: config.linkedIn.clientSecret,
-        callbackURL: config.linkedIn.callbackURL,
+        clientID: config.LINKEDIN_CLIENT_ID,
+        clientSecret: config.LINKEDIN_CLIENT_SECRET,
+        callbackURL: config.LINKEDIN_CALLBACK_URL,
         scope: ['openid', 'profile', 'email'], // Updated scopes for LinkedIn API v2
         state: true,
       },
