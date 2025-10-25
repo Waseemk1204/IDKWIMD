@@ -111,10 +111,10 @@ export const SkillsStep: React.FC = () => {
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gradient mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-3">
           Skills & Job Preferences
         </h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400">
+        <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
           Help us match you with the perfect opportunities
         </p>
       </div>
@@ -126,10 +126,10 @@ export const SkillsStep: React.FC = () => {
             <Award className="w-5 h-5 text-primary-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
               Your Skills
             </h2>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400">
               Add at least 3 skills (minimum required)
             </p>
           </div>

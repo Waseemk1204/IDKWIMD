@@ -86,10 +86,10 @@ export const ExperienceStep: React.FC = () => {
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gradient mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-3">
           Your Professional Background
         </h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400">
+        <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
           Add your work experience and education to showcase your qualifications
         </p>
       </div>
@@ -102,10 +102,10 @@ export const ExperienceStep: React.FC = () => {
               <Briefcase className="w-5 h-5 text-primary-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
                 Work Experience
               </h2>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400">
                 Add at least one work experience
               </p>
             </div>
@@ -128,7 +128,7 @@ export const ExperienceStep: React.FC = () => {
               className="p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700"
             >
               <div className="flex items-start justify-between mb-4">
-                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+                <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
                   Experience #{index + 1}
                 </h3>
                 {experiences.length > 1 && (
@@ -144,7 +144,7 @@ export const ExperienceStep: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Company */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  <label className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     Company Name <span className="text-error-500">*</span>
                   </label>
                   <input
@@ -159,7 +159,7 @@ export const ExperienceStep: React.FC = () => {
 
                 {/* Job Title */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  <label className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     Job Title <span className="text-error-500">*</span>
                   </label>
                   <input
@@ -190,7 +190,7 @@ export const ExperienceStep: React.FC = () => {
 
                 {/* To Date */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  <label className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     To
                   </label>
                   <div className="relative">
@@ -214,7 +214,7 @@ export const ExperienceStep: React.FC = () => {
                       onChange={(e) => handleExperienceChange(index, 'current', e.target.checked)}
                       className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
                     />
-                    <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                    <span className="text-base text-neutral-700 dark:text-neutral-300">
                       I currently work here
                     </span>
                   </label>
@@ -222,7 +222,7 @@ export const ExperienceStep: React.FC = () => {
 
                 {/* Description */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                  <label className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                     Description
                   </label>
                   <textarea
@@ -247,10 +247,10 @@ export const ExperienceStep: React.FC = () => {
               <GraduationCap className="w-5 h-5 text-secondary-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
                 Education
               </h2>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400">
                 Add at least one educational qualification
               </p>
             </div>

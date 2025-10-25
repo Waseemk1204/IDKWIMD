@@ -56,10 +56,10 @@ export const ProfileStep: React.FC = () => {
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gradient mb-3">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-3">
           Let's Build Your Profile
         </h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400">
+        <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
           Tell us about yourself so employers can find you
         </p>
       </div>
@@ -126,7 +126,7 @@ export const ProfileStep: React.FC = () => {
       <div className="space-y-6">
         {/* Full Name */}
         <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="fullName" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Full Name <span className="text-error-500">*</span>
           </label>
           <div className="relative">
@@ -147,7 +147,7 @@ export const ProfileStep: React.FC = () => {
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="email" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Email Address <span className="text-error-500">*</span>
           </label>
           <div className="relative">
@@ -168,7 +168,7 @@ export const ProfileStep: React.FC = () => {
 
         {/* Phone */}
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="phone" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Phone Number <span className="text-error-500">*</span>
           </label>
           <div className="relative">
@@ -189,7 +189,7 @@ export const ProfileStep: React.FC = () => {
 
         {/* Professional Headline */}
         <div>
-          <label htmlFor="headline" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="headline" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Professional Headline
           </label>
           <div className="relative">
@@ -206,14 +206,14 @@ export const ProfileStep: React.FC = () => {
               maxLength={100}
             />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             A brief professional title that describes what you do
           </p>
         </div>
 
         {/* Location */}
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="location" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Location
           </label>
           <div className="relative">
@@ -233,7 +233,7 @@ export const ProfileStep: React.FC = () => {
 
         {/* About */}
         <div>
-          <label htmlFor="about" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+          <label htmlFor="about" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             About You
           </label>
           <textarea
@@ -245,7 +245,7 @@ export const ProfileStep: React.FC = () => {
             placeholder="Tell us a bit about yourself, your interests, and what you're looking for..."
             maxLength={500}
           />
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             {about.length}/500 characters
           </p>
         </div>
