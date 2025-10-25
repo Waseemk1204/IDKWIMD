@@ -99,18 +99,8 @@ export const Login: React.FC = () => {
     handleGoogleCallback();
   }, [location, loginWithGoogle, navigate]);
 
-  // Handle LinkedIn OAuth callback
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const linkedinAuth = urlParams.get('linkedin_auth');
-    const token = urlParams.get('token');
-    
-    if (linkedinAuth === 'success' && token) {
-      console.log('LinkedIn OAuth login successful, token will be processed by AuthContext');
-      // Clean URL to prevent re-triggering
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [location]);
+  // LinkedIn OAuth is handled automatically by AuthContext
+  // No need to do anything here - just let AuthContext process the token from URL
 
   const handleGoogleSuccess = async () => {
     setIsLoading(true);
