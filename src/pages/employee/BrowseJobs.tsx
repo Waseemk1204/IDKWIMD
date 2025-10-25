@@ -190,7 +190,7 @@ export const BrowseJobs: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Category
               </label>
               <select
@@ -214,7 +214,7 @@ export const BrowseJobs: React.FC = () => {
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <MapPin className="w-4 h-4 inline mr-1" />
                 Location
               </label>
@@ -228,7 +228,7 @@ export const BrowseJobs: React.FC = () => {
 
             {/* Job Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <Clock className="w-4 h-4 inline mr-1" />
                 Job Type
               </label>
@@ -247,7 +247,7 @@ export const BrowseJobs: React.FC = () => {
 
             {/* Experience Level */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <Users className="w-4 h-4 inline mr-1" />
                 Experience Level
               </label>
@@ -265,7 +265,7 @@ export const BrowseJobs: React.FC = () => {
 
             {/* Salary Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <DollarSign className="w-4 h-4 inline mr-1" />
                 Min Salary (₹/hour)
               </label>
@@ -278,7 +278,7 @@ export const BrowseJobs: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                 <DollarSign className="w-4 h-4 inline mr-1" />
                 Max Salary (₹/hour)
               </label>
@@ -307,7 +307,7 @@ export const BrowseJobs: React.FC = () => {
 
           {/* Sort Options */}
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               Sort By
             </label>
             <select

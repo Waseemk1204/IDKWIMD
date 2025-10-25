@@ -271,7 +271,7 @@ export const EditJob: React.FC = () => {
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Job Title *
               </label>
               <input
@@ -289,7 +289,7 @@ export const EditJob: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Company *
               </label>
               <input
@@ -309,7 +309,7 @@ export const EditJob: React.FC = () => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               Job Description *
             </label>
             <textarea
@@ -329,7 +329,7 @@ export const EditJob: React.FC = () => {
           {/* Location and Remote */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Location
               </label>
               <input
@@ -358,7 +358,7 @@ export const EditJob: React.FC = () => {
           {/* Pay Rate */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Minimum Hourly Rate (₹)
               </label>
               <input
@@ -378,7 +378,7 @@ export const EditJob: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Maximum Hourly Rate (₹)
               </label>
               <input
@@ -401,7 +401,7 @@ export const EditJob: React.FC = () => {
           {/* Job Details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Hours Per Week
               </label>
               <input
@@ -414,7 +414,7 @@ export const EditJob: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Duration
               </label>
               <input
@@ -427,7 +427,7 @@ export const EditJob: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Experience Level
               </label>
               <select
@@ -445,7 +445,7 @@ export const EditJob: React.FC = () => {
           {/* Category and Urgency */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Category *
               </label>
               <select
@@ -471,7 +471,7 @@ export const EditJob: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Urgency
               </label>
               <select
@@ -488,7 +488,7 @@ export const EditJob: React.FC = () => {
 
           {/* Skills */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               Required Skills * (comma-separated)
             </label>
             <input
@@ -507,7 +507,7 @@ export const EditJob: React.FC = () => {
 
           {/* Requirements */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               Requirements (one per line)
             </label>
             <textarea
@@ -521,7 +521,7 @@ export const EditJob: React.FC = () => {
 
           {/* Responsibilities */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               Responsibilities (one per line)
             </label>
             <textarea
@@ -535,7 +535,7 @@ export const EditJob: React.FC = () => {
 
           {/* Status */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
               Job Status
             </label>
             <select

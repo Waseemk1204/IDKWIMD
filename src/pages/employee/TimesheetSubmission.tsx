@@ -7,7 +7,7 @@ export const TimesheetSubmission: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <form className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Select Project
             </label>
             <select className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm">
@@ -16,19 +16,19 @@ export const TimesheetSubmission: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Date
             </label>
             <input type="date" className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Hours Worked
             </label>
             <input type="number" min="0.5" step="0.5" className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Description of Work
             </label>
             <textarea rows={4} className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" placeholder="Describe the tasks you worked on"></textarea>

@@ -337,7 +337,7 @@ export const PostJob: React.FC = () => {
         )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Job Title *
             </label>
             <input 
@@ -353,7 +353,7 @@ export const PostJob: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Company Name *
             </label>
             <input 
@@ -368,7 +368,7 @@ export const PostJob: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Job Description *
             </label>
             <textarea 
@@ -385,7 +385,7 @@ export const PostJob: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Location *
               </label>
               <input 
@@ -405,7 +405,7 @@ export const PostJob: React.FC = () => {
               <FieldError fieldName="location" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Job Category *
               </label>
               <select 
@@ -431,7 +431,7 @@ export const PostJob: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Min Hourly Rate (₹) *
               </label>
               <input 
@@ -447,7 +447,7 @@ export const PostJob: React.FC = () => {
               <FieldError fieldName="minHourlyRate" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Max Hourly Rate (₹) *
               </label>
               <input 
@@ -471,7 +471,7 @@ export const PostJob: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Hours per Week *
               </label>
               <input 
@@ -484,7 +484,7 @@ export const PostJob: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Job Duration *
               </label>
               <input 
@@ -500,7 +500,7 @@ export const PostJob: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Required Skills *
             </label>
             <input 
@@ -516,7 +516,7 @@ export const PostJob: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Requirements
             </label>
             <input 
@@ -530,7 +530,7 @@ export const PostJob: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
               Responsibilities
             </label>
             <input 
@@ -546,7 +546,7 @@ export const PostJob: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Experience Level
               </label>
               <select 
@@ -561,7 +561,7 @@ export const PostJob: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Urgency
               </label>
               <select 
