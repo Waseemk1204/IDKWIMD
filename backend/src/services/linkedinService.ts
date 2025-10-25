@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2';
+import { Strategy as OAuth2Strategy } from 'passport-oauth2';
 import config from '../config';
 
 export interface LinkedInProfile {
@@ -110,53 +110,58 @@ export const configureLinkedInStrategy = () => {
     return;
   }
 
-  passport.use(
-    new LinkedInStrategy(
-      {
-        clientID: config.LINKEDIN_CLIENT_ID,
-        clientSecret: config.LINKEDIN_CLIENT_SECRET,
-        callbackURL: config.LINKEDIN_CALLBACK_URL,
-        scope: ['openid', 'profile', 'email'],
-      },
-      async (accessToken: string, refreshToken: string, profile: any, done: any) => {
-        try {
-          // Fetch user profile from OpenID Connect userinfo endpoint
-          let linkedInProfile: LinkedInProfile;
-          
-          try {
-            const response = await fetch('https://api.linkedin.com/v2/userinfo', {
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-              },
-            });
-            
-            if (response.ok) {
-              const userinfo = await response.json() as any;
-              linkedInProfile = parseLinkedInProfile({ 
-                _json: userinfo, 
-                sub: userinfo.sub,
-                name: userinfo.name,
-                given_name: userinfo.given_name,
-                family_name: userinfo.family_name,
-                email: userinfo.email,
-                picture: userinfo.picture,
-              });
-            } else {
-              // Fallback to passport profile if userinfo fails
-              linkedInProfile = parseLinkedInProfile(profile);
-            }
-          } catch (fetchError) {
-            console.error('Failed to fetch userinfo, using passport profile:', fetchError);
-            linkedInProfile = parseLinkedInProfile(profile);
-          }
-          
-          return done(null, { accessToken, refreshToken, profile: linkedInProfile });
-        } catch (error) {
-          return done(error, null);
+  const strategy = new OAuth2Strategy(
+    {
+      authorizationURL: 'https://www.linkedin.com/oauth/v2/authorization',
+      tokenURL: 'https://www.linkedin.com/oauth/v2/accessToken',
+      clientID: config.LINKEDIN_CLIENT_ID,
+      clientSecret: config.LINKEDIN_CLIENT_SECRET,
+      callbackURL: config.LINKEDIN_CALLBACK_URL,
+      scope: ['openid', 'profile', 'email'],
+    },
+    async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+      try {
+        // Fetch user profile from OpenID Connect userinfo endpoint
+        const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('LinkedIn userinfo error:', response.status, errorText);
+          return done(new Error(`Failed to fetch LinkedIn profile: ${response.status}`), null);
         }
+        
+        const userinfo = await response.json() as any;
+        console.log('LinkedIn userinfo response:', userinfo);
+        
+        const linkedInProfile = parseLinkedInProfile({ 
+          _json: userinfo, 
+          sub: userinfo.sub,
+          name: userinfo.name,
+          given_name: userinfo.given_name,
+          family_name: userinfo.family_name,
+          email: userinfo.email,
+          picture: userinfo.picture,
+        });
+        
+        return done(null, { accessToken, refreshToken, profile: linkedInProfile });
+      } catch (error) {
+        console.error('LinkedIn OAuth error:', error);
+        return done(error, null);
       }
-    )
+    }
   );
+  
+  // Override the userProfile method to prevent automatic profile fetching
+  strategy.userProfile = function(accessToken: string, done: any) {
+    // Skip automatic profile fetching - we handle it in the verify callback
+    done(null, {});
+  };
+  
+  passport.use('linkedin', strategy);
 };
 
 /**
