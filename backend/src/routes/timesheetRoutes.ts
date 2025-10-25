@@ -1,12 +1,12 @@
 import express from 'express';
-import { auth } from '../middlewares/auth';
+import { authenticate } from '../middlewares/auth';
 import { submitTimesheet, getPendingTimesheets, approveTimesheet, getEmployeeTimesheets } from '../controllers/timesheetController';
 
 const router = express.Router();
 
-router.post('/submit', auth, submitTimesheet);
-router.get('/pending', auth, getPendingTimesheets);
-router.post('/approve/:timesheetId', auth, approveTimesheet);
-router.get('/employee', auth, getEmployeeTimesheets);
+router.post('/submit', authenticate, submitTimesheet);
+router.get('/pending', authenticate, getPendingTimesheets);
+router.post('/approve/:timesheetId', authenticate, approveTimesheet);
+router.get('/employee', authenticate, getEmployeeTimesheets);
 
 export default router;

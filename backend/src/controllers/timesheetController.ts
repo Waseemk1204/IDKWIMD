@@ -2,10 +2,13 @@ import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth';
 import Timesheet from '../models/Timesheet';
 import Job from '../models/Job';
-import blockchainService from '../services/blockchainService';
 
 export const submitTimesheet = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'User not authenticated' });
+      return;
+    }
     const { jobId, weekNumber, hoursWorked, description } = req.body;
     const freelancerId = req.user._id;
     const job = await Job.findById(jobId);
@@ -21,6 +24,10 @@ export const submitTimesheet = async (req: AuthRequest, res: Response): Promise<
 
 export const getPendingTimesheets = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'User not authenticated' });
+      return;
+    }
     const employerId = req.user._id;
     const jobs = await Job.find({ employer: employerId });
     const jobIds = jobs.map(j => j._id);
@@ -37,18 +44,23 @@ export const getPendingTimesheets = async (req: AuthRequest, res: Response): Pro
 
 export const approveTimesheet = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'User not authenticated' });
+      return;
+    }
     const { timesheetId } = req.params;
     const employerId = req.user._id;
     const timesheet = await Timesheet.findById(timesheetId).populate('jobId');
     if (!timesheet) { res.status(404).json({ success: false, message: 'Timesheet not found' }); return; }
     const job: any = timesheet.jobId;
     if (job.employer.toString() !== employerId.toString()) { res.status(403).json({ success: false, message: 'Not authorized' }); return; }
-    if (job.paymentMethod === 'crypto') {
-      const txHash = await blockchainService.approveTimesheetOnChain(job._id.toString(), timesheet.weekNumber);
-      timesheet.blockchainTxHash = txHash;
-      timesheet.paidAmount = job.weeklyUSDCAmount;
-    }
+    
+    // Mark as approved (blockchain integration disabled)
     timesheet.status = 'approved';
+    if (job.paymentMethod === 'crypto') {
+      // Blockchain integration will be added in future
+      timesheet.paidAmount = job.weeklyUSDCAmount || 0;
+    }
     await timesheet.save();
     res.json({ success: true, message: 'Timesheet approved', data: { timesheet } });
   } catch (error: any) {
@@ -59,6 +71,10 @@ export const approveTimesheet = async (req: AuthRequest, res: Response): Promise
 
 export const getEmployeeTimesheets = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: 'User not authenticated' });
+      return;
+    }
     const freelancerId = req.user._id;
     const timesheets = await Timesheet.find({ freelancerId })
       .populate('jobId', 'title company paymentMethod')
