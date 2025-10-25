@@ -99,6 +99,7 @@ export const Signup: React.FC = () => {
     const googleAuth = searchParams.get('google_auth');
     const linkedinAuth = searchParams.get('linkedin_auth');
     const newUser = searchParams.get('new_user');
+    const showAnimation = searchParams.get('show_animation');
     const token = searchParams.get('token');
     const profileData = searchParams.get('profile_data');
     const authRole = searchParams.get('role');
@@ -117,7 +118,25 @@ export const Signup: React.FC = () => {
       setUserName('there');
     }
     
-    // Handle LinkedIn OAuth callback for new users
+    // Handle LinkedIn OAuth callback with animation for new users
+    if (linkedinAuth === 'success' && showAnimation === 'true' && token && authRole) {
+      console.log('LinkedIn signup - showing animation and redirecting to onboarding');
+      
+      setRole(authRole as 'employee' | 'employer');
+      setIsLoading(true);
+      setShowSuccessAnimation(true);
+      
+      // Get user's name from the token (it will be set by AuthContext)
+      // Use a placeholder for now
+      setUserName('there');
+      
+      // Redirect to onboarding after animation (3 seconds)
+      setTimeout(() => {
+        navigate(`/onboarding/${authRole}`);
+      }, 3000);
+    }
+    
+    // Handle LinkedIn OAuth callback for new users (legacy)
     if (linkedinAuth === 'new_user' && profileData && authRole) {
       try {
         // Decode profile data
@@ -147,7 +166,7 @@ export const Signup: React.FC = () => {
         setError('Failed to process LinkedIn profile data. Please try manual signup.');
       }
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
   
   // Update role if URL parameters change
   useEffect(() => {

@@ -139,18 +139,19 @@ router.get(
           config.JWT_SECRET as string
         );
 
-        // Redirect to onboarding for new users
+        // Redirect to signup page with animation, which will then redirect to onboarding
         const queryParams = new URLSearchParams({
           token,
           linkedin_auth: 'success',
-          new_user: 'true',
+          show_animation: 'true',
+          role,
         });
 
         // Clear role from session
         delete (req.session as any)?.linkedInRole;
 
-        const redirectUrl = `${config.FRONTEND_URL}/onboarding/${role}?${queryParams.toString()}`;
-        console.log('LinkedIn callback - redirecting new user to onboarding:', redirectUrl);
+        const redirectUrl = `${config.FRONTEND_URL}/signup?${queryParams.toString()}`;
+        console.log('LinkedIn callback - redirecting new user to signup animation:', redirectUrl);
         res.redirect(redirectUrl);
       }
     } catch (error) {
