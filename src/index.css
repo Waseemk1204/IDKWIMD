@@ -18,6 +18,19 @@
 /* Import Inter font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+/* CSS Variables for Toast Notifications */
+:root {
+  --toast-bg: #ffffff;
+  --toast-text: #1f2937;
+  --toast-border: #e5e7eb;
+}
+
+:root.dark {
+  --toast-bg: #1f2937;
+  --toast-text: #f3f4f6;
+  --toast-border: #374151;
+}
+
 /* Base styles for better typography and user experience */
 @layer base {
   html {
@@ -380,5 +393,64 @@
 
   .animation-delay-4000 {
     animation-delay: 4s;
+  }
+}
+
+/* Custom Toast Notification Styles */
+[data-sonner-toaster] {
+  --normal-bg: var(--toast-bg) !important;
+  --normal-border: var(--toast-border) !important;
+  --normal-text: var(--toast-text) !important;
+}
+
+/* Toast close button styling */
+[data-sonner-toast] [data-close-button] {
+  background: transparent !important;
+  border: none !important;
+  color: var(--toast-text) !important;
+  opacity: 0.6 !important;
+  transition: opacity 0.2s ease !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+:root.dark [data-sonner-toast] [data-close-button]:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Remove swipe indicator if present */
+[data-sonner-toast] [data-swipe-indicator] {
+  display: none !important;
+}
+
+/* Toast content area */
+[data-sonner-toast] [data-content] {
+  padding-right: 8px !important;
+}
+
+/* Smooth toast animations */
+[data-sonner-toast] {
+  animation: slideInRight 0.2s ease-out !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }

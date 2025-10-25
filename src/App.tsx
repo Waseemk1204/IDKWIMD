@@ -160,7 +160,25 @@ export function App() {
         <AuthProvider>
           <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300">
             <AppRouter />
-            <Toaster position="top-right" />
+            <Toaster 
+              position="top-right"
+              closeButton
+              richColors
+              expand={false}
+              duration={4000}
+              toastOptions={{
+                style: {
+                  background: 'var(--toast-bg)',
+                  color: 'var(--toast-text)',
+                  border: '1px solid var(--toast-border)',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                },
+                className: 'toast-custom',
+              }}
+            />
             <SpeedInsights />
             <Analytics />
           </div>
