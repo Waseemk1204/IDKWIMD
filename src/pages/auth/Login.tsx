@@ -15,9 +15,23 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login, loginWithGoogle, loginWithLinkedIn } = useAuth();
+  const { login, loginWithGoogle, loginWithLinkedIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (user) {
+      console.log('User is authenticated, redirecting to dashboard:', user.role);
+      if (user.role === 'employer') {
+        navigate('/employer');
+      } else if (user.role === 'employee') {
+        navigate('/employee');
+      } else if (user.role === 'admin') {
+        navigate('/admin');
+      }
+    }
+  }, [user, navigate]);
 
   // Handle Google OAuth callback
   useEffect(() => {
