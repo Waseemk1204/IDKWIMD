@@ -33,22 +33,34 @@ export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 animate-slide-in">
-      <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-blue-800 dark:text-blue-200 flex-1">
-              <span className="font-medium">Under Development:</span> Some features are still being built. Thank you for your patience! 🚧
-            </p>
-            <button
-              onClick={handleDismiss}
-              className="p-1 hover:bg-blue-100 dark:hover:bg-blue-800/30 rounded transition-colors flex-shrink-0"
-              aria-label="Dismiss notice"
-            >
-              <X className="w-4 h-4 text-blue-600 dark:text-blue-300" />
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6 animate-fade-in-up">
+        {/* Header with close button */}
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            🚧 Under Development
+          </h3>
+          <button
+            onClick={handleDismiss}
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+            aria-label="Dismiss notice"
+          >
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          </button>
         </div>
+        
+        {/* Simple message */}
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          Some features are still being built. Thank you for your patience!
+        </p>
+        
+        {/* Dismiss button */}
+        <button
+          onClick={handleDismiss}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200"
+        >
+          Got it
+        </button>
       </div>
     </div>
   );
