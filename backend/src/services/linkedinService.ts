@@ -117,11 +117,31 @@ export const configureLinkedInStrategy = () => {
         clientSecret: config.LINKEDIN_CLIENT_SECRET,
         callbackURL: config.LINKEDIN_CALLBACK_URL,
         scope: ['openid', 'profile', 'email'],
-        profileUrl: 'https://api.linkedin.com/v2/userinfo', // OpenID Connect userinfo endpoint
       },
       async (accessToken: string, refreshToken: string, profile: any, done: any) => {
         try {
-          const linkedInProfile = parseLinkedInProfile(profile);
+          // Fetch user profile from OpenID Connect userinfo endpoint
+          let linkedInProfile: LinkedInProfile;
+          
+          try {
+            const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+              },
+            });
+            
+            if (response.ok) {
+              const userinfo = await response.json();
+              linkedInProfile = parseLinkedInProfile({ _json: userinfo, ...userinfo });
+            } else {
+              // Fallback to passport profile if userinfo fails
+              linkedInProfile = parseLinkedInProfile(profile);
+            }
+          } catch (fetchError) {
+            console.error('Failed to fetch userinfo, using passport profile:', fetchError);
+            linkedInProfile = parseLinkedInProfile(profile);
+          }
+          
           return done(null, { accessToken, refreshToken, profile: linkedInProfile });
         } catch (error) {
           return done(error, null);
