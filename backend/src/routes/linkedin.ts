@@ -8,6 +8,19 @@ import User from '../models/User';
 
 const router = express.Router();
 
+// Middleware to check if LinkedIn OAuth is configured
+const checkLinkedInConfigured = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+  if (!config.LINKEDIN_CLIENT_ID || !config.LINKEDIN_CLIENT_SECRET) {
+    res.status(503).json({
+      success: false,
+      message: 'LinkedIn authentication is not configured on this server. Please contact support or use another login method.',
+      error: 'linkedin_not_configured'
+    });
+    return;
+  }
+  next();
+};
+
 /**
  * @route   GET /api/v1/auth/linkedin
  * @desc    Initiate LinkedIn OAuth login
@@ -15,6 +28,7 @@ const router = express.Router();
  */
 router.get(
   '/',
+  checkLinkedInConfigured,
   (req, res, next) => {
     // Store role in session for later use
     const role = req.query.role as string;
@@ -35,6 +49,7 @@ router.get(
  */
 router.get(
   '/callback',
+  checkLinkedInConfigured,
   passport.authenticate('linkedin', {
     session: false,
     failureRedirect: `${config.FRONTEND_URL}/login?error=linkedin_auth_failed`,
