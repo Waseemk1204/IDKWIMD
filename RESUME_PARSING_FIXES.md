@@ -4,7 +4,7 @@ This document tracks all fixes applied to get resume parsing working in producti
 
 ## 🎯 Final Status: WORKING ✅
 
-After 8 incremental fixes, resume parsing is now fully functional.
+After 9 incremental fixes, resume parsing is now fully functional.
 
 ---
 
@@ -298,6 +298,68 @@ curl -o ./venv/lib/python3.11/site-packages/pyresparser/config.cfg \
 
 ---
 
+### Issue 9: Config File Download Getting 404 🔗
+**Error**: `File contains no section headers. file: '<string>', line: 1 '404: Not Found'`
+
+**Root Cause**:
+- The curl command to download config.cfg from GitHub got a **404 error**
+- GitHub raw URL was incorrect or file moved/deleted
+- Instead of the actual config.cfg INI file, we got an HTML 404 page
+- INI parser failed because HTML doesn't have section headers like `[default]`
+
+**The Failed Approach**:
+```bash
+curl -o config.cfg https://raw.githubusercontent.com/OmkarPathak/pyresparser/master/pyresparser/config.cfg
+# → 404 Not Found (HTML page)
+# → INI parser error: "File contains no section headers"
+```
+
+**The Better Solution**: Bundle config.cfg in our repo
+1. **Created `backend/python-services/config.cfg`** with proper INI format:
+   ```ini
+   [default]
+   [spacy]
+   model = en_core_web_sm
+   [nltk]
+   stopwords = True
+   punkt = True
+   ...
+   [extraction]
+   name = True
+   email = True
+   skills = True
+   ...
+   ```
+
+2. **Updated Dockerfile** to copy local file:
+   ```dockerfile
+   cp config.cfg ./venv/lib/python3.11/site-packages/pyresparser/config.cfg
+   ```
+
+**Why This Is Better**:
+- ✅ **No external dependency** - No risk of 404 errors
+- ✅ **Faster builds** - No network call needed
+- ✅ **Version controlled** - We control the exact config
+- ✅ **Guaranteed availability** - File always exists in our repo
+- ✅ **Instant copy** - vs. waiting for download
+
+**Config Enables**:
+- Name extraction
+- Email detection
+- Phone number parsing
+- Skills identification
+- Education extraction
+- Experience parsing
+
+**Build Time Impact**:
+- Copy is instant (< 1ms)
+- No network latency
+- More reliable than curl
+
+**Commit**: `4ac0b28`
+
+---
+
 ## 🏗️ Final Build Process (~3 minutes)
 
 1. **Pull Debian base image** (~10s)
@@ -310,7 +372,7 @@ curl -o ./venv/lib/python3.11/site-packages/pyresparser/config.cfg \
 8. **Install other Python packages** (~10s)
 9. **Download spaCy model** (~10s) ← Language model (direct wheel)
 10. **Download NLTK data** (~20s)
-11. **Download pyresparser config** (~1s) ← NEW! Missing config file
+11. **Copy pyresparser config** (~1ms) ← Bundled in repo (no download!)
 12. **Build TypeScript** (~10s)
 13. **Clean up** (~5s)
 14. **Healthcheck & start** ✅
@@ -419,7 +481,8 @@ Watch for these messages in Railway deployment logs:
 - `f333800` - Python error capture fix (debugging)
 - `43b57e8` - spaCy language model download
 - `a8b7658` - spaCy pip 25.3 compatibility fix
-- `a5346d3` - pyresparser config.cfg fix ← **FINAL FIX**
+- `a5346d3` - pyresparser config.cfg download (failed - 404)
+- `4ac0b28` - Bundle config.cfg in repo (no external dependency) ← **FINAL FIX**
 
 **Status**: Deployed to Railway ✅  
 **URL**: https://idkwimd-production.up.railway.app  
