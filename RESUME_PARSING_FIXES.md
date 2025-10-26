@@ -4,7 +4,7 @@ This document tracks all fixes applied to get resume parsing working in producti
 
 ## 🎯 Final Status: WORKING ✅
 
-After 4 incremental fixes, resume parsing is now fully functional.
+After 5 incremental fixes, resume parsing is now fully functional.
 
 ---
 
@@ -133,7 +133,78 @@ Could upgrade to spaCy 3.7+ (supports numpy 2.x), but would require:
 
 ---
 
-## 🏗️ Final Build Process (~2-3 minutes)
+### Issue 5: spaCy Language Model Missing 🔤
+**Error**: `[E050] Can't find model 'en_core_web_sm'`
+
+**Root Cause**:
+- spaCy requires language models to be downloaded separately
+- Models are NOT included in pip install
+- `en_core_web_sm` is a small English language model
+- pyresparser needs it for NLP processing (tokenization, POS tagging, entity recognition)
+
+**What Are spaCy Models**:
+spaCy models contain trained pipelines for:
+- **Tokenization** - Breaking text into words/sentences
+- **Part-of-speech tagging** - Identifying nouns, verbs, adjectives, etc.
+- **Named entity recognition** - Extracting names, companies, dates, locations
+- **Dependency parsing** - Understanding grammatical structure
+
+**Fix**: Added spaCy model download to Dockerfile
+```dockerfile
+RUN ./venv/bin/python -m spacy download en_core_web_sm
+```
+
+**About en_core_web_sm**:
+- **Size**: ~12MB
+- **Language**: English
+- **Accuracy**: Good for general use
+- **Speed**: Fast inference
+- **Perfect for**: Resume parsing, document analysis
+
+**Build Time Impact**:
+- Model download: ~10 seconds
+- Total build time: Still ~2-3 minutes
+
+**Commit**: `43b57e8`
+
+---
+
+### Issue 6: Python Error Capture Bug 🐛
+**Error**: "Resume parsing failed: Unknown error"
+
+**Root Cause**:
+- Python script outputs JSON to **stdout** for both success and errors
+- Node.js service was only checking **stderr** when exit code ≠ 0
+- stderr was empty (errors went to stdout)
+- Result: Generic "Unknown error" message
+
+**The Bug**:
+```typescript
+if (code !== 0) {
+  error = stderr || 'Unknown error'  // ❌ stderr was empty!
+}
+```
+
+But Python does:
+```python
+print(json.dumps({"success": False, "error": "..."}))  # Goes to stdout!
+sys.exit(1)
+```
+
+**Fix**: Modified `resumeParserService.ts`
+- Always parse stdout first (regardless of exit code)
+- Only check stderr if stdout is empty
+- Added detailed logging to capture Python output chunks
+- Better error messages combining stdout and stderr
+
+**Benefit**:
+Now we see the ACTUAL Python error messages, making debugging possible!
+
+**Commit**: `f333800`
+
+---
+
+## 🏗️ Final Build Process (~3 minutes)
 
 1. **Pull Debian base image** (~10s)
 2. **Install Python + curl** (~20s)
@@ -143,12 +214,13 @@ Could upgrade to spaCy 3.7+ (supports numpy 2.x), but would require:
 6. **Install numpy 1.24.x** (~10s) ← Compatible version
 7. **Install spaCy wheel** (~20s) ← Pre-built, no compilation!
 8. **Install other Python packages** (~10s)
-9. **Download NLTK data** (~20s)
-10. **Build TypeScript** (~10s)
-11. **Clean up** (~5s)
-12. **Healthcheck & start** ✅
+9. **Download spaCy model** (~10s) ← NEW! Language model
+10. **Download NLTK data** (~20s)
+11. **Build TypeScript** (~10s)
+12. **Clean up** (~5s)
+13. **Healthcheck & start** ✅
 
-**Total**: ~2-3 minutes (well under Railway's 10-minute timeout)
+**Total**: ~3 minutes (well under Railway's 10-minute timeout)
 
 ---
 
@@ -174,6 +246,7 @@ Could upgrade to spaCy 3.7+ (supports numpy 2.x), but would require:
 2. **Resume Parsing** ✅
    - Python environment available
    - spaCy + dependencies installed
+   - spaCy language model downloaded
    - NLTK data downloaded
    - Binary compatibility ensured
 
@@ -243,10 +316,12 @@ Watch for these messages in Railway deployment logs:
 ## 🚀 Deployment
 
 **Final Commits**:
-- `ffb6c99` - Python environment setup
-- `b4496f6` - Alpine → Debian switch
+- `ffb6c99` - Python environment setup (Dockerfile)
+- `b4496f6` - Alpine → Debian switch (faster builds)
 - `601c80d` - NLTK data download
-- `c061694` - numpy version pinning
+- `c061694` - numpy version pinning (binary compatibility)
+- `f333800` - Python error capture fix (debugging)
+- `43b57e8` - spaCy language model download ← **FINAL FIX**
 
 **Status**: Deployed to Railway ✅  
 **URL**: https://idkwimd-production.up.railway.app  
