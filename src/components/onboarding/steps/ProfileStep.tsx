@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Briefcase, Upload, FileText } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Briefcase, Upload, FileText, Link as LinkIcon, Linkedin, Twitter, Github } from 'lucide-react';
 import { useOnboarding } from '../../../context/OnboardingContext';
 import { useAuth } from '../../../hooks/useAuth';
 import { ResumeUpload } from '../../profile/ResumeUpload';
@@ -9,30 +9,45 @@ export const ProfileStep: React.FC = () => {
   const { data, updateData } = useOnboarding();
   const { user } = useAuth();
 
+  // Match EnhancedProfile fields exactly
   const [fullName, setFullName] = useState(data.fullName || user?.fullName || '');
+  const [displayName, setDisplayName] = useState(data.displayName || user?.displayName || '');
+  const [username, setUsername] = useState(data.username || user?.username || '');
   const [email, setEmail] = useState(data.email || user?.email || '');
   const [phone, setPhone] = useState(data.phone || user?.phone || '');
   const [headline, setHeadline] = useState(data.headline || user?.headline || '');
   const [location, setLocation] = useState(data.location || user?.location || '');
   const [about, setAbout] = useState(data.about || user?.about || '');
+  const [website, setWebsite] = useState(data.website || user?.website || '');
+  const [linkedinUrl, setLinkedinUrl] = useState(data.socialLinks?.linkedin || user?.socialLinks?.linkedin || '');
+  const [githubUrl, setGithubUrl] = useState(data.socialLinks?.github || user?.socialLinks?.github || '');
+  const [portfolioUrl, setPortfolioUrl] = useState(data.socialLinks?.portfolio || user?.socialLinks?.portfolio || '');
   const [showResumeUpload, setShowResumeUpload] = useState(false);
 
   useEffect(() => {
     updateData({
       fullName,
+      displayName,
+      username,
       email,
       phone,
       headline,
       location,
-      about
+      about,
+      website,
+      socialLinks: {
+        linkedin: linkedinUrl,
+        github: githubUrl,
+        portfolio: portfolioUrl
+      }
     });
-  }, [fullName, email, phone, headline, location, about]);
+  }, [fullName, displayName, username, email, phone, headline, location, about, website, linkedinUrl, githubUrl, portfolioUrl]);
 
   const handleResumeUploadSuccess = (parsedData: any) => {
     console.log('📄 Resume parsed successfully! Data:', parsedData);
     
     // FORCE OVERWRITE all fields with parsed data (Workday-style comprehensive)
-    // Always use parsed data, even if fields are already filled
+    // Match EnhancedProfile structure exactly
     console.log('✅ Force overwriting fullName:', parsedData.fullName);
     setFullName(parsedData.fullName || fullName);
     
@@ -49,16 +64,26 @@ export const ProfileStep: React.FC = () => {
     setAbout(parsedData.about || about);
     
     // Update onboarding context with ALL parsed info (FORCE OVERWRITE)
+    // Include all EnhancedProfile fields for consistency
     console.log('📦 Force updating onboarding data with comprehensive info...');
     updateData({
       fullName: parsedData.fullName || fullName,
+      displayName,
+      username,
       email: parsedData.email || email,
       phone: parsedData.phone || phone,
+      headline,
       location: parsedData.location || location,
       about: parsedData.about || about,
+      website,
       skills: parsedData.skills || [], // Force overwrite skills
       experiences: parsedData.experiences || [], // Force overwrite experiences
       education: parsedData.education || [], // Force overwrite education
+      socialLinks: {
+        linkedin: linkedinUrl,
+        github: githubUrl,
+        portfolio: portfolioUrl
+      },
       resumeData: {
         fileName: parsedData.fileName,
         uploadedAt: new Date(),
@@ -267,6 +292,143 @@ export const ProfileStep: React.FC = () => {
             {about.length}/500 characters
           </p>
         </div>
+
+        {/* Display Name (Optional) */}
+        <div>
+          <label htmlFor="displayName" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Display Name
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <User className="h-5 w-5 text-neutral-400" />
+            </div>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="input-professional pl-10"
+              placeholder="How you'd like to be addressed"
+            />
+          </div>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            Optional: How you'd like to be shown on your profile
+          </p>
+        </div>
+
+        {/* Username (Optional) */}
+        <div>
+          <label htmlFor="username" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Username
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <User className="h-5 w-5 text-neutral-400" />
+            </div>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="input-professional pl-10"
+              placeholder="Your unique username"
+            />
+          </div>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            Optional: A unique identifier for your profile
+          </p>
+        </div>
+
+        {/* Website (Optional) */}
+        <div>
+          <label htmlFor="website" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+            Website or Portfolio
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <LinkIcon className="h-5 w-5 text-neutral-400" />
+            </div>
+            <input
+              id="website"
+              type="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              className="input-professional pl-10"
+              placeholder="https://yourwebsite.com"
+            />
+          </div>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            Optional: Link to your personal website or portfolio
+          </p>
+        </div>
+
+        {/* Social Links */}
+        <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+            Social Links (Optional)
+          </h3>
+          <div className="space-y-4">
+            {/* LinkedIn */}
+            <div>
+              <label htmlFor="linkedin" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                LinkedIn Profile
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Linkedin className="h-5 w-5 text-neutral-400" />
+                </div>
+                <input
+                  id="linkedin"
+                  type="url"
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  className="input-professional pl-10"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                />
+              </div>
+            </div>
+
+            {/* GitHub */}
+            <div>
+              <label htmlFor="github" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                GitHub Profile
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Github className="h-5 w-5 text-neutral-400" />
+                </div>
+                <input
+                  id="github"
+                  type="url"
+                  value={githubUrl}
+                  onChange={(e) => setGithubUrl(e.target.value)}
+                  className="input-professional pl-10"
+                  placeholder="https://github.com/yourusername"
+                />
+              </div>
+            </div>
+
+            {/* Portfolio */}
+            <div>
+              <label htmlFor="portfolio" className="block text-base font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                Portfolio Link
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <LinkIcon className="h-5 w-5 text-neutral-400" />
+                </div>
+                <input
+                  id="portfolio"
+                  type="url"
+                  value={portfolioUrl}
+                  onChange={(e) => setPortfolioUrl(e.target.value)}
+                  className="input-professional pl-10"
+                  placeholder="https://yourportfolio.com"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tips */}
@@ -278,6 +440,7 @@ export const ProfileStep: React.FC = () => {
           <li>• Use a professional email address</li>
           <li>• Make your headline specific and engaging</li>
           <li>• Highlight your unique skills or interests in the "About" section</li>
+          <li>• Link your professional social profiles to stand out</li>
           <li>• Keep your phone number up-to-date for employer contact</li>
         </ul>
       </div>
