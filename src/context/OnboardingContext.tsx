@@ -211,7 +211,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${sessionService.getToken()}`
           },
           body: JSON.stringify({
             role,
@@ -239,7 +239,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/onboarding/load/${role}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${sessionService.getToken()}`
           }
         });
 
