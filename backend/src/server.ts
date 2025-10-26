@@ -45,6 +45,7 @@ import linkedinRoutes from './routes/linkedin';
 
 // Import socket handlers
 import { setupSocketHandlers } from './services/socketService';
+import { getNotificationService } from './services/notificationService';
 
 class Server {
   private app: express.Application;
@@ -186,6 +187,10 @@ class Server {
   }
 
   private initializeSocket(): void {
+    // Initialize notification service with Socket.IO instance
+    getNotificationService(this.io);
+    
+    // Setup socket handlers
     setupSocketHandlers(this.io);
   }
 
