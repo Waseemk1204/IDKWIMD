@@ -147,8 +147,9 @@ class Server {
     }));
 
     // API routes
-    this.app.use('/api/v1/auth', authRoutes);
+    // LinkedIn OAuth must come BEFORE /api/v1/auth to avoid auth middleware
     this.app.use('/api/v1/auth/linkedin', linkedinRoutes);
+    this.app.use('/api/v1/auth', authRoutes);
     this.app.use('/api/v1/users', userRoutes);
     this.app.use('/api/v1/jobs', jobRoutes);
     this.app.use('/api/v1/applications', applicationRoutes);
