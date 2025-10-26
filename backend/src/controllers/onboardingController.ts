@@ -21,6 +21,7 @@ export const saveOnboardingProgress = async (req: AuthRequest, res: Response): P
     }
 
     // Clean data: remove undefined values and empty nested objects
+    console.log('📥 Raw data received:', JSON.stringify(data, null, 2));
     const cleanData = data ? JSON.parse(JSON.stringify(data, (key, value) => {
       // Filter out undefined, null, and "undefined" string
       if (value === undefined || value === null || value === "undefined") {
@@ -28,6 +29,7 @@ export const saveOnboardingProgress = async (req: AuthRequest, res: Response): P
       }
       return value;
     })) : {};
+    console.log('✨ Cleaned data:', JSON.stringify(cleanData, null, 2));
 
     // Find existing draft or create new one
     let draft = await OnboardingDraft.findOne({ userId, role });
