@@ -1,6 +1,9 @@
 # Use Node.js 18 LTS
 FROM node:18-alpine
 
+# Install Python and pip for resume parsing
+RUN apk add --no-cache python3 py3-pip python3-dev
+
 # Set working directory
 WORKDIR /app
 
@@ -12,6 +15,12 @@ RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Set up Python virtual environment for resume parser
+RUN cd python-services && \
+    python3 -m venv venv && \
+    ./venv/bin/pip install --upgrade pip && \
+    ./venv/bin/pip install -r requirements.txt
 
 # Build TypeScript
 RUN npm run build
