@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { 
   User, 
   Save, 
@@ -324,16 +325,12 @@ export const ComprehensiveProfile: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">My Details</h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
-            View and update your profile information
-          </p>
-        </div>
-        <div className="flex gap-3">
+      <PageHeader
+        title="My Details"
+        description="View and update your profile information"
+        actions={<div className="flex gap-3">
           {!isEditing && (
             <>
               <Button 
@@ -352,8 +349,8 @@ export const ComprehensiveProfile: React.FC = () => {
               </Button>
             </>
           )}
-        </div>
-      </div>
+        </div>}
+      />
 
       {/* Resume Upload Modal */}
       {showResumeUpload && (

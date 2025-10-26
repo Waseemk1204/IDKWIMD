@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useAuth } from '../../hooks/useAuth';
 import apiService from '../../services/api';
 import { ConnectionInsights } from '../../components/connections/ConnectionInsights';
@@ -688,15 +689,11 @@ export const Connections: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 dark:bg-gray-900 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            My Connections
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Connect with other employees and follow employers to stay updated
-          </p>
-        </div>
+      <div className="max-w-4xl mx-auto space-y-8">
+        <PageHeader
+          title="My Connections"
+          description="Connect with other employees and follow employers to stay updated"
+        />
 
         {/* Tabs */}
         <div className="border-b border-gray-200 dark:border-gray-700 mb-6">

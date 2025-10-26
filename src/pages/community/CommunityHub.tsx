@@ -186,22 +186,18 @@ export const CommunityHub: React.FC = () => {
     }
   };
   return <>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-              Community Hub
-            </h1>
-            <p className="text-neutral-600 dark:text-neutral-400">
-              Connect, share experiences, and learn from others
-            </p>
-          </div>
+      <div className="space-y-8">
+        <PageHeader
+          title="Community Hub"
+          description="Connect, share experiences, and learn from others"
+          actions={<div className="flex items-center gap-3">
           <Link to="/community/create">
             <Button variant="primary" leftIcon={<PlusIcon className="h-5 w-5" />}>
               Create Post
             </Button>
           </Link>
-        </div>
+        </div>}
+        />
         <div className="bg-white dark:bg-neutral-800 shadow rounded-lg p-6">
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1">
