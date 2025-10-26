@@ -207,7 +207,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
 
       // Save to backend API
       try {
-        const response = await fetch('/api/v1/onboarding/save', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/onboarding/save`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
