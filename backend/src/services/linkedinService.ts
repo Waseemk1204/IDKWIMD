@@ -105,11 +105,17 @@ export const parseLinkedInProfile = (profile: any): LinkedInProfile => {
  * Configure LinkedIn OAuth Strategy
  */
 export const configureLinkedInStrategy = () => {
+  console.log('🔍 Configuring LinkedIn OAuth Strategy...');
+  console.log('  LINKEDIN_CLIENT_ID:', config.LINKEDIN_CLIENT_ID ? `${config.LINKEDIN_CLIENT_ID.substring(0, 5)}...` : 'NOT SET');
+  console.log('  LINKEDIN_CLIENT_SECRET:', config.LINKEDIN_CLIENT_SECRET ? 'SET (hidden)' : 'NOT SET');
+  console.log('  LINKEDIN_CALLBACK_URL:', config.LINKEDIN_CALLBACK_URL);
+  
   if (!config.LINKEDIN_CLIENT_ID || !config.LINKEDIN_CLIENT_SECRET) {
-    console.warn('LinkedIn OAuth credentials not configured. LinkedIn authentication will not be available.');
+    console.warn('❌ LinkedIn OAuth credentials not configured. LinkedIn authentication will not be available.');
     return;
   }
 
+  console.log('✅ LinkedIn credentials found, registering strategy...');
   const strategy = new OAuth2Strategy(
     {
       authorizationURL: 'https://www.linkedin.com/oauth/v2/authorization',
@@ -162,6 +168,7 @@ export const configureLinkedInStrategy = () => {
   };
   
   passport.use('linkedin', strategy);
+  console.log('✅ LinkedIn OAuth strategy registered successfully!');
 };
 
 /**
