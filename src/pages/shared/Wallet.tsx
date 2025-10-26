@@ -305,10 +305,15 @@ export const Wallet: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <PageHeader
-          title="Earnings & Wallet"
-          description="Manage your earnings and payments"
-        />
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <WalletIcon className="h-8 w-8 mr-3" />
+            Wallet
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Manage your earnings and payments
+          </p>
+        </div>
 
         {/* Wallet Balance Card */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-8 text-white">

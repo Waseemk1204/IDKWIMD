@@ -5,7 +5,6 @@ import crypto from 'crypto';
 import config from '../config';
 import { extractUserDataFromLinkedIn, LinkedInProfile } from '../services/linkedinService';
 import User from '../models/User';
-import { generateToken } from '../middlewares/auth';
 
 const router = express.Router();
 
@@ -132,8 +131,11 @@ router.get(
 
         await user.save();
 
-        // Generate JWT token with proper expiration
-        const token = generateToken(user._id.toString());
+        // Generate JWT token
+        const token = jwt.sign(
+          { userId: user._id },
+          config.JWT_SECRET as string
+        );
 
         // Redirect to frontend with token and profile data
         const queryParams = new URLSearchParams({
@@ -183,8 +185,11 @@ router.get(
         await user.save();
         console.log('LinkedIn callback - new user created:', user._id);
 
-        // Generate JWT token with proper expiration
-        const token = generateToken(user._id.toString());
+        // Generate JWT token
+        const token = jwt.sign(
+          { userId: user._id },
+          config.JWT_SECRET as string
+        );
 
         // Redirect to signup page with animation, which will then redirect to onboarding
         const queryParams = new URLSearchParams({
@@ -241,8 +246,11 @@ router.post('/signup', async (req, res) => {
       isVerified: false,
     });
 
-    // Generate JWT token with proper expiration
-    const token = generateToken(user._id.toString());
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user._id },
+      config.JWT_SECRET as string
+    );
 
     return res.status(201).json({
       success: true,

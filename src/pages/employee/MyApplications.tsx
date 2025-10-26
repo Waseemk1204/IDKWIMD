@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
-import { PageHeader } from '../../components/layout/PageHeader';
 import { 
   Briefcase,
   MapPin,
@@ -258,12 +257,18 @@ export const MyApplications: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <PageHeader
-        title="My Applications"
-        description="Track the status of your job applications"
-        actions={<div className="flex space-x-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            My Applications
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Track the status of your job applications
+          </p>
+        </div>
+        <div className="flex space-x-3 mt-4 sm:mt-0">
           <Button
             variant="outline"
             onClick={() => setShowStats(!showStats)}
@@ -280,8 +285,8 @@ export const MyApplications: React.FC = () => {
             <Briefcase className="w-4 h-4 mr-2" />
             Browse Jobs
           </Button>
-        </div>}
-      />
+        </div>
+      </div>
 
       {/* Application Analytics */}
       {showStats && stats && (

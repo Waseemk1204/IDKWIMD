@@ -3,7 +3,6 @@ import { JobCard, Job } from '../../components/jobs/JobCard';
 import { apiService } from '../../services/api';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { PageHeader } from '../../components/layout/PageHeader';
 import { Search, Filter, MapPin, DollarSign, Clock, Users, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -136,21 +135,26 @@ export const BrowseJobs: React.FC = () => {
   ).length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <PageHeader
-        title="Browse Jobs"
-        description={totalJobs > 0 ? `${totalJobs} jobs found` : 'Discover part-time opportunities that match your skills'}
-        actions={
-          <Button
-            onClick={() => setShowFilters(!showFilters)}
-            variant="outline"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-          </Button>
-        }
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Find Your Next Job
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {totalJobs > 0 ? `${totalJobs} jobs found` : 'Search for part-time opportunities'}
+          </p>
+        </div>
+        <Button
+          onClick={() => setShowFilters(!showFilters)}
+          variant="outline"
+          className="mt-4 sm:mt-0"
+        >
+          <Filter className="w-4 h-4 mr-2" />
+          Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+        </Button>
+      </div>
 
       {/* Search Bar */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">

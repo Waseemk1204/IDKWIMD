@@ -1,13 +1,9 @@
 import React from 'react';
-import { PageHeader } from '../../components/layout/PageHeader';
-import { SectionHeader } from '../../components/layout/SectionHeader';
-
 export const TimesheetSubmission: React.FC = () => {
-  return <div className="space-y-8">
-      <PageHeader
-        title="My Timesheet"
-        description="Submit and track your work hours"
-      />
+  return <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Submit Timesheet
+      </h1>
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <form className="space-y-6">
           <div>
@@ -44,9 +40,10 @@ export const TimesheetSubmission: React.FC = () => {
           </div>
         </form>
       </div>
-      <div>
-        <SectionHeader title="Recent Submissions" />
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          Recent Submissions
+        </h2>
         <div className="space-y-4">
           <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
             <div className="flex justify-between">
@@ -78,7 +75,6 @@ export const TimesheetSubmission: React.FC = () => {
               </span>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>;

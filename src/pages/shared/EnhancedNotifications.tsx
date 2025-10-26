@@ -63,17 +63,16 @@ export const EnhancedNotifications: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <PageHeader
-        title="Notifications"
-        description="Manage your notifications and preferences"
-        actions={
-          <Link to="/notifications/settings">
-            <Button variant="outline" leftIcon={<Settings className="h-4 w-4" />}>
-              Settings
-            </Button>
-          </Link>
-        }
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-neutral-100">
+            Notifications
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            Manage your notifications and preferences
+          </p>
+        </div>
+      </div>
 
       {isLoading ? (
         <Card>
