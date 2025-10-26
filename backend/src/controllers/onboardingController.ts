@@ -37,7 +37,17 @@ export const saveOnboardingProgress = async (req: AuthRequest, res: Response): P
     if (draft) {
       // Update existing draft
       draft.currentStep = currentStep !== undefined ? currentStep : draft.currentStep;
-      draft.data = { ...draft.data, ...cleanData };
+      
+      // Clean the EXISTING draft.data as well (to remove old "undefined" strings)
+      const existingCleanData = draft.data ? JSON.parse(JSON.stringify(draft.data, (key, value) => {
+        if (value === undefined || value === null || value === "undefined") {
+          return undefined;
+        }
+        return value;
+      })) : {};
+      
+      // Now merge cleaned existing data with new cleaned data
+      draft.data = { ...existingCleanData, ...cleanData };
       await draft.save(); // Pre-save hook will update completion percentage
     } else {
       // Create new draft

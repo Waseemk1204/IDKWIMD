@@ -106,6 +106,16 @@ router.get(
         // User exists - update LinkedIn profile data
         const profileData = extractUserDataFromLinkedIn(linkedInProfile, role);
         
+        // Ensure required fields are set (in case this is an incomplete account)
+        if (!user.username) {
+          const baseUsername = profileData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+          const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+          user.username = `${baseUsername}_${randomSuffix}`;
+        }
+        if (!user.fullName) {
+          user.fullName = profileData.fullName;
+        }
+        
         // Store LinkedIn profile data (if field exists in User model)
         (user as any).linkedinProfile = {
           linkedinId: linkedInProfile.linkedinId,
