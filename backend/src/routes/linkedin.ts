@@ -37,9 +37,36 @@ router.get(
     }
     next();
   },
-  passport.authenticate('linkedin', {
-    session: false,
-  })
+  (req, res, next) => {
+    console.log('🔍 Attempting LinkedIn authentication...');
+    passport.authenticate('linkedin', {
+      session: false,
+    }, (err: any, user: any, info: any) => {
+      console.log('🔍 LinkedIn auth callback:', { err, user, info });
+      if (err) {
+        console.error('❌ LinkedIn auth error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'LinkedIn authentication failed',
+          error: err.message || 'Unknown error'
+        });
+      }
+      if (!user) {
+        console.warn('⚠️ LinkedIn auth: No user returned', info);
+        return res.status(401).json({
+          success: false,
+          message: info?.message || 'Authentication failed',
+        });
+      }
+      // Authentication successful, redirect to LinkedIn
+      const authUrl = info?.authUrl;
+      if (authUrl) {
+        console.log('✅ Redirecting to LinkedIn:', authUrl);
+        return res.redirect(authUrl);
+      }
+      next();
+    })(req, res, next);
+  }
 );
 
 /**
