@@ -26,7 +26,7 @@ COPY . .
 RUN cd python-services && \
     python3 -m venv venv && \
     ./venv/bin/pip install --upgrade pip && \
-    ./venv/bin/pip install -r requirements.txt && \
+    ./venv/bin/pip install --no-cache-dir -r requirements.txt && \
     ./venv/bin/python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt'); nltk.download('averaged_perceptron_tagger'); nltk.download('maxent_ne_chunker'); nltk.download('words')"
 
 # Build TypeScript
