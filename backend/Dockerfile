@@ -28,8 +28,7 @@ RUN cd python-services && \
     ./venv/bin/pip install --upgrade pip && \
     ./venv/bin/pip install --no-cache-dir -r requirements.txt && \
     ./venv/bin/pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl && \
-    ./venv/bin/python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt'); nltk.download('averaged_perceptron_tagger'); nltk.download('maxent_ne_chunker'); nltk.download('words')" && \
-    cp config.cfg ./venv/lib/python3.11/site-packages/pyresparser/config.cfg
+    ./venv/bin/python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt'); nltk.download('averaged_perceptron_tagger'); nltk.download('maxent_ne_chunker'); nltk.download('words')"
 
 # Build TypeScript
 RUN npm run build

@@ -42,7 +42,7 @@ class ResumeParserService {
   constructor() {
     // Set up directories
     this.uploadDir = path.join(__dirname, '../../uploads/resumes');
-    this.pythonScript = path.join(__dirname, '../../python-services/resume_parser.py');
+    this.pythonScript = path.join(__dirname, '../../python-services/simple_resume_parser.py');
     
     // Determine Python executable (use venv if available)
     const venvPython = path.join(__dirname, '../../python-services/venv/bin/python');
