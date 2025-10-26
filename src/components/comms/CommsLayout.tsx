@@ -20,6 +20,7 @@ export const CommsLayout: React.FC<CommsLayoutProps> = ({ className }) => {
   const [incomingCall, setIncomingCall] = useState<any>(null);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileView, setMobileView] = useState<'list' | 'chat' | 'panel'>('list');
 
   useEffect(() => {
     if (!user) return;
@@ -55,12 +56,20 @@ export const CommsLayout: React.FC<CommsLayoutProps> = ({ className }) => {
     setSelectedConversation(conversationId);
     setSelectedChannel(null);
     setRightPanelOpen(false);
+    setMobileView('chat'); // Switch to chat view on mobile
   };
 
   const handleChannelSelect = (channelId: string) => {
     setSelectedChannel(channelId);
     setSelectedConversation(null);
     setRightPanelOpen(false);
+    setMobileView('chat'); // Switch to chat view on mobile
+  };
+
+  const handleBackToList = () => {
+    setMobileView('list');
+    setSelectedConversation(null);
+    setSelectedChannel(null);
   };
 
   const handleStartCall = (type: 'audio' | 'video', targetId?: string) => {
@@ -108,15 +117,17 @@ export const CommsLayout: React.FC<CommsLayoutProps> = ({ className }) => {
 
   return (
     <div className={`flex h-full bg-gray-50 dark:bg-gray-900 ${className}`}>
-      {/* Sidebar */}
-      <Sidebar 
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        onConversationSelect={handleConversationSelect}
-        onChannelSelect={handleChannelSelect}
-        selectedConversation={selectedConversation}
-        selectedChannel={selectedChannel}
-      />
+      {/* Sidebar - Hidden on mobile */}
+      <div className="hidden lg:block">
+        <Sidebar 
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onConversationSelect={handleConversationSelect}
+          onChannelSelect={handleChannelSelect}
+          selectedConversation={selectedConversation}
+          selectedChannel={selectedChannel}
+        />
+      </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
@@ -130,8 +141,12 @@ export const CommsLayout: React.FC<CommsLayoutProps> = ({ className }) => {
 
         {/* Main Content */}
         <div className="flex-1 flex">
-          {/* Conversation List */}
-          <div className={`${sidebarCollapsed ? 'w-80' : 'w-64'} border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800`}>
+          {/* Conversation List - Responsive */}
+          <div className={`${
+            mobileView === 'list' ? 'flex' : 'hidden'
+          } lg:flex ${
+            sidebarCollapsed ? 'lg:w-80' : 'lg:w-64'
+          } w-full border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800`}>
             <ConversationList
               selectedConversation={selectedConversation}
               selectedChannel={selectedChannel}
@@ -140,19 +155,22 @@ export const CommsLayout: React.FC<CommsLayoutProps> = ({ className }) => {
             />
           </div>
 
-          {/* Message Area */}
-          <div className="flex-1 flex flex-col">
+          {/* Message Area - Responsive */}
+          <div className={`${
+            mobileView === 'chat' ? 'flex' : 'hidden'
+          } lg:flex flex-1 flex-col`}>
             <MessageArea
               conversationId={selectedConversation}
               channelId={selectedChannel}
               onStartCall={handleStartCall}
               onToggleRightPanel={() => setRightPanelOpen(!rightPanelOpen)}
+              onBack={handleBackToList}
             />
           </div>
 
-          {/* Right Panel */}
+          {/* Right Panel - Responsive */}
           {rightPanelOpen && (
-            <div className="w-80 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="hidden lg:block w-80 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
               <RightPanel
                 conversationId={selectedConversation}
                 channelId={selectedChannel}

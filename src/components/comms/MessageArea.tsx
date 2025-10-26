@@ -6,7 +6,7 @@ import { MessageBubble } from './MessageBubble';
 import { ComposeBox } from './ComposeBox';
 import { TypingIndicator } from './TypingIndicator';
 import { Button } from '../ui/Button';
-import { Phone, Video, Users, Info } from 'lucide-react';
+import { Phone, Video, Users, Info, ArrowLeft } from 'lucide-react';
 
 interface Message {
   _id: string;
@@ -48,13 +48,15 @@ interface MessageAreaProps {
   channelId?: string | null;
   onStartCall: (type: 'audio' | 'video', targetId?: string) => void;
   onToggleRightPanel: () => void;
+  onBack?: () => void;
 }
 
 export const MessageArea: React.FC<MessageAreaProps> = ({
   conversationId,
   channelId,
   onStartCall,
-  onToggleRightPanel
+  onToggleRightPanel,
+  onBack
 }) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -229,6 +231,17 @@ export const MessageArea: React.FC<MessageAreaProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
+          {/* Back button for mobile */}
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {getHeaderTitle()}
           </h2>
