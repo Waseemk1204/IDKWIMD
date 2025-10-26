@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import sessionService from '../services/sessionService';
 
 export interface OnboardingData {
   // Basic info
