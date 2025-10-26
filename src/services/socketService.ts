@@ -15,7 +15,12 @@ class SocketService {
       return;
     }
 
-    const serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // Socket.io connects to the base URL, not the API path
+    // Remove /api/v1 suffix if present
+    let serverUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    serverUrl = serverUrl.replace(/\/api\/v1\/?$/, '');
+    
+    logger.info(`SocketService - Connecting to: ${serverUrl}`);
     
     this.socket = io(serverUrl, {
       auth: {

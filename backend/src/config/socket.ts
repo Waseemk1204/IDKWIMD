@@ -30,6 +30,7 @@ export const configureSocket = (server: HTTPServer): SocketIOServer => {
 
         const allowedOrigins = [
           process.env.FRONTEND_URL || 'http://localhost:5173',
+          'https://parttimepays.in', // Production frontend
           'http://localhost:3000',
           'http://localhost:5173',
           'http://127.0.0.1:3000',
