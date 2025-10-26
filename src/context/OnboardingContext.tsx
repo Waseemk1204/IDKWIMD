@@ -237,7 +237,7 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
     try {
       // Try to load from backend API first
       try {
-        const response = await fetch(`/api/v1/onboarding/load/${role}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/onboarding/load/${role}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

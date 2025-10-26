@@ -44,7 +44,7 @@ class ResumeService {
       const formData = new FormData();
       formData.append('resume', file);
 
-      const response = await fetch(`${apiService['baseURL']}/v1/users/resume/upload`, {
+      const response = await fetch(`${apiService['baseURL']}/users/resume/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiService.getToken()}`
