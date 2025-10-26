@@ -31,39 +31,34 @@ export const ProfileStep: React.FC = () => {
   const handleResumeUploadSuccess = (parsedData: any) => {
     console.log('📄 Resume parsed successfully! Data:', parsedData);
     
-    // Auto-fill form with parsed data (Workday-style comprehensive)
-    if (parsedData.fullName) {
-      console.log('✅ Setting fullName:', parsedData.fullName);
-      setFullName(parsedData.fullName);
-    }
-    if (parsedData.email) {
-      console.log('✅ Setting email:', parsedData.email);
-      setEmail(parsedData.email);
-    }
-    if (parsedData.phone) {
-      console.log('✅ Setting phone:', parsedData.phone);
-      setPhone(parsedData.phone);
-    }
-    if (parsedData.location) {
-      console.log('✅ Setting location:', parsedData.location);
-      setLocation(parsedData.location);
-    }
-    if (parsedData.about) {
-      console.log('✅ Setting about:', parsedData.about);
-      setAbout(parsedData.about);
-    }
+    // FORCE OVERWRITE all fields with parsed data (Workday-style comprehensive)
+    // Always use parsed data, even if fields are already filled
+    console.log('✅ Force overwriting fullName:', parsedData.fullName);
+    setFullName(parsedData.fullName || fullName);
     
-    // Update onboarding context with ALL parsed info
-    console.log('📦 Updating onboarding data with comprehensive info...');
+    console.log('✅ Force overwriting email:', parsedData.email);
+    setEmail(parsedData.email || email);
+    
+    console.log('✅ Force overwriting phone:', parsedData.phone);
+    setPhone(parsedData.phone || phone);
+    
+    console.log('✅ Force overwriting location:', parsedData.location);
+    setLocation(parsedData.location || location);
+    
+    console.log('✅ Force overwriting about:', parsedData.about);
+    setAbout(parsedData.about || about);
+    
+    // Update onboarding context with ALL parsed info (FORCE OVERWRITE)
+    console.log('📦 Force updating onboarding data with comprehensive info...');
     updateData({
       fullName: parsedData.fullName || fullName,
       email: parsedData.email || email,
       phone: parsedData.phone || phone,
       location: parsedData.location || location,
       about: parsedData.about || about,
-      skills: parsedData.skills || data.skills,
-      experiences: parsedData.experiences || data.experiences,
-      education: parsedData.education || data.education,
+      skills: parsedData.skills || [], // Force overwrite skills
+      experiences: parsedData.experiences || [], // Force overwrite experiences
+      education: parsedData.education || [], // Force overwrite education
       resumeData: {
         fileName: parsedData.fileName,
         uploadedAt: new Date(),
@@ -71,7 +66,7 @@ export const ProfileStep: React.FC = () => {
       }
     });
     
-    console.log('✅ Form auto-filled and onboarding data updated!');
+    console.log('✅ Form FORCE auto-filled and onboarding data updated!');
     setShowResumeUpload(false);
   };
 
@@ -113,8 +108,8 @@ export const ProfileStep: React.FC = () => {
       {showResumeUpload && (
         <div className="mb-8">
           <ResumeUpload
-            onUploadSuccess={handleResumeUploadSuccess}
-            onUploadError={(error) => console.error('Resume upload error:', error)}
+            onParseComplete={handleResumeUploadSuccess}
+            onError={(error) => console.error('Resume upload error:', error)}
           />
           <div className="text-center mt-4">
             <Button
