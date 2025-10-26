@@ -1,17 +1,14 @@
-# Use Node.js 18 LTS
-FROM node:18-alpine
+# Use Node.js 18 LTS on Debian (has pre-built spaCy wheels)
+FROM node:18-slim
 
-# Install Python and build dependencies for resume parsing
-# build-base includes gcc, g++, make - needed to compile spaCy
-RUN apk add --no-cache \
+# Install Python and curl for resume parsing and healthcheck
+# Using Debian instead of Alpine because spaCy has pre-built wheels
+RUN apt-get update && apt-get install -y \
     python3 \
-    py3-pip \
-    python3-dev \
-    build-base \
-    gcc \
-    g++ \
-    musl-dev \
-    linux-headers
+    python3-pip \
+    python3-venv \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
