@@ -80,9 +80,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchConversations();
-    fetchChannels();
-  }, []);
+    // Only fetch if user is authenticated
+    if (user) {
+      fetchConversations();
+      fetchChannels();
+    }
+  }, [user]);
 
   useEffect(() => {
     // Listen for new messages
@@ -100,6 +103,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   }, []);
 
   const fetchConversations = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await apiService.getConversations();
       if (response.success) {
@@ -111,6 +119,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   const fetchChannels = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await apiService.getChannels();
       if (response.success) {
