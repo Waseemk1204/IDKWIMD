@@ -143,6 +143,18 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
       }
       if (Array.isArray(updateData.experiences)) {
         console.log('✅ Experiences is array with', updateData.experiences.length, 'items');
+        // Filter out empty/invalid experiences and clean data
+        updateData.experiences = updateData.experiences
+          .filter((exp: any) => exp && exp.company && exp.title && exp.from)
+          .map((exp: any) => ({
+            company: exp.company,
+            title: exp.title,
+            from: exp.from,
+            to: exp.current ? undefined : (exp.to || undefined),
+            description: exp.description || '',
+            current: Boolean(exp.current)
+          }));
+        console.log('✅ Cleaned experiences:', updateData.experiences.length, 'valid items');
       }
     }
 
@@ -159,6 +171,19 @@ export const updateUserProfile = async (req: AuthRequest, res: Response): Promis
       }
       if (Array.isArray(updateData.education)) {
         console.log('✅ Education is array with', updateData.education.length, 'items');
+        // Filter out empty/invalid education entries and clean data
+        updateData.education = updateData.education
+          .filter((edu: any) => edu && edu.institution && edu.degree && edu.field && edu.from)
+          .map((edu: any) => ({
+            institution: edu.institution,
+            degree: edu.degree,
+            field: edu.field,
+            from: edu.from,
+            to: edu.current ? undefined : (edu.to || undefined),
+            gpa: edu.gpa || undefined,
+            current: Boolean(edu.current)
+          }));
+        console.log('✅ Cleaned education:', updateData.education.length, 'valid items');
       }
     }
 
