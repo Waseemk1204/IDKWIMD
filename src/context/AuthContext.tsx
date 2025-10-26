@@ -3,6 +3,7 @@ import apiService from '../services/api';
 import sessionService from '../services/sessionService';
 import { GoogleUserInfo } from '../services/googleAuth';
 import { LinkedInUserInfo } from '../services/linkedinAuth';
+import logger from '../utils/logger';
 
 type UserRole = 'employer' | 'employee' | 'admin' | null;
 
@@ -99,29 +100,21 @@ export const AuthProvider: React.FC<{
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get('token');
     
-    console.log('AuthContext - URL check:', {
+    logger.debug('AuthContext - URL check', {
       currentUrl: window.location.href,
       searchParams: window.location.search,
-      tokenFromUrl: !!tokenFromUrl,
-      allParams: Object.fromEntries(urlParams.entries())
+      hasToken: !!tokenFromUrl
     });
     
-    console.log('AuthContext - Full URL details:', window.location.href);
-    console.log('AuthContext - Search params:', window.location.search);
-    console.log('AuthContext - Token from URL:', tokenFromUrl);
-    console.log('AuthContext - All URL params:', Object.fromEntries(urlParams.entries()));
-    console.log('AuthContext - Pathname:', window.location.pathname);
-    console.log('AuthContext - Hash:', window.location.hash);
-    
     if (tokenFromUrl) {
-      console.log('AuthContext - Token found in URL, calling handleTokenFromUrl');
+      logger.info('AuthContext - Token found in URL, processing authentication');
       handleTokenFromUrl(tokenFromUrl)
         .then(() => {
           // Remove token from URL
           window.history.replaceState({}, document.title, window.location.pathname);
         })
         .catch((error) => {
-          console.error('AuthContext - Token authentication failed:', error);
+          logger.error('AuthContext - Token authentication failed', error);
           clearAuth();
         })
         .finally(() => {
@@ -134,13 +127,13 @@ export const AuthProvider: React.FC<{
     const savedUser = localStorage.getItem('user');
     const hasValidSession = sessionService.isAuthenticated();
     
-    console.log('AuthContext - Checking authentication:', { hasValidSession, savedUser: !!savedUser });
+    logger.debug('AuthContext - Checking authentication', { hasValidSession, hasSavedUser: !!savedUser });
     
     // Only try to get current user if we have a valid session
     if (hasValidSession) {
       apiService.getCurrentUser()
         .then(response => {
-          console.log('AuthContext - getCurrentUser response:', response.success);
+          logger.debug('AuthContext - getCurrentUser response', { success: response.success });
           if (response.success && response.data?.user) {
             setUser(response.data.user);
             localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -150,24 +143,24 @@ export const AuthProvider: React.FC<{
               const parsedUser = JSON.parse(savedUser);
               setUser(parsedUser);
             } catch (error) {
-              console.error('AuthContext - Failed to parse saved user:', error);
+              logger.error('AuthContext - Failed to parse saved user', error);
               clearAuth();
             }
           } else {
             // No valid authentication found
-            console.log('AuthContext - No valid authentication found');
+            logger.debug('AuthContext - No valid authentication found');
             clearAuth();
           }
         })
         .catch((error) => {
-          console.error('AuthContext - getCurrentUser failed:', error);
+          logger.error('AuthContext - getCurrentUser failed', error);
           // If API call fails, try localStorage fallback
           if (savedUser) {
             try {
               const parsedUser = JSON.parse(savedUser);
               setUser(parsedUser);
             } catch (parseError) {
-              console.error('AuthContext - Failed to parse saved user on fallback:', parseError);
+              logger.error('AuthContext - Failed to parse saved user on fallback', parseError);
               clearAuth();
             }
           } else {
@@ -184,7 +177,7 @@ export const AuthProvider: React.FC<{
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
         } catch (error) {
-          console.error('AuthContext - Failed to parse saved user:', error);
+          logger.error('AuthContext - Failed to parse saved user', error);
           clearAuth();
         }
       } else {
@@ -195,7 +188,7 @@ export const AuthProvider: React.FC<{
   }, []);
 
   const clearAuth = () => {
-    console.log('AuthContext - Clearing authentication');
+    logger.debug('AuthContext - Clearing authentication');
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token'); // Keep for backward compatibility
@@ -213,7 +206,7 @@ export const AuthProvider: React.FC<{
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
         
-        console.log('AuthContext - Login successful, setting session');
+        logger.info('AuthContext - Login successful');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
@@ -253,7 +246,7 @@ export const AuthProvider: React.FC<{
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
         
-        console.log('AuthContext - Signup successful, setting session');
+        logger.info('AuthContext - Signup successful');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
@@ -263,7 +256,7 @@ export const AuthProvider: React.FC<{
         throw new Error(response.message || 'Registration failed');
       }
     } catch (error) {
-      console.error('Signup error in AuthContext:', error);
+      logger.error('Signup error in AuthContext', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -273,7 +266,7 @@ export const AuthProvider: React.FC<{
   const loginWithGoogle = async (googleUser: GoogleUserInfo): Promise<User> => {
     setIsLoading(true);
     try {
-      console.log('AuthContext - loginWithGoogle called with:', googleUser);
+      logger.debug('AuthContext - loginWithGoogle called', { email: googleUser.email });
       
       const response = await apiService.loginWithGoogle({
         googleId: googleUser.id,
@@ -284,7 +277,7 @@ export const AuthProvider: React.FC<{
         familyName: googleUser.family_name
       });
       
-      console.log('AuthContext - API response:', response);
+      logger.debug('AuthContext - Google API response', { success: response.success });
       
       if (response.success && response.data?.user) {
         const userData = response.data.user;
@@ -292,20 +285,13 @@ export const AuthProvider: React.FC<{
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
         
-        console.log('AuthContext - Google login successful, setting session with:', {
-          hasToken: !!token,
-          hasRefreshToken: !!refreshToken,
-          expiresIn
-        });
+        logger.info('AuthContext - Google login successful');
         
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
-        
-        // Verify session was set
-        console.log('AuthContext - Session set, verifying:', sessionService.isAuthenticated());
         
         setIsLoading(false);
         return userData;
@@ -314,7 +300,7 @@ export const AuthProvider: React.FC<{
       }
     } catch (error) {
       setIsLoading(false);
-      console.error('Google login error:', error);
+      logger.error('Google login error', error);
       throw error;
     }
   };
@@ -322,7 +308,7 @@ export const AuthProvider: React.FC<{
   const loginWithLinkedIn = async (linkedinUser: LinkedInUserInfo): Promise<User> => {
     setIsLoading(true);
     try {
-      console.log('AuthContext - loginWithLinkedIn called with:', linkedinUser);
+      logger.debug('AuthContext - loginWithLinkedIn called', { email: linkedinUser.email });
       
       const response = await apiService.loginWithLinkedIn({
         linkedInId: linkedinUser.id,
@@ -333,7 +319,7 @@ export const AuthProvider: React.FC<{
         location: linkedinUser.location
       });
       
-      console.log('AuthContext - API response:', response);
+      logger.debug('AuthContext - LinkedIn API response', { success: response.success });
       
       if (response.success && response.data?.user) {
         const userData = response.data.user;
@@ -341,20 +327,13 @@ export const AuthProvider: React.FC<{
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
         
-        console.log('AuthContext - LinkedIn login successful, setting session with:', {
-          hasToken: !!token,
-          hasRefreshToken: !!refreshToken,
-          expiresIn
-        });
+        logger.info('AuthContext - LinkedIn login successful');
         
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
-        
-        // Verify session was set
-        console.log('AuthContext - Session set, verifying:', sessionService.isAuthenticated());
         
         setIsLoading(false);
         return userData;
@@ -363,7 +342,7 @@ export const AuthProvider: React.FC<{
       }
     } catch (error) {
       setIsLoading(false);
-      console.error('LinkedIn login error:', error);
+      logger.error('LinkedIn login error', error);
       throw error;
     }
   };
@@ -371,18 +350,16 @@ export const AuthProvider: React.FC<{
   const handleTokenFromUrl = async (token: string): Promise<User> => {
     setIsLoading(true);
     try {
-      console.log('AuthContext - handleTokenFromUrl called with token:', !!token);
+      logger.debug('AuthContext - Processing token from URL');
       
       // Use sessionService for proper token management
       // Set token with default 1 hour expiry (backend doesn't send refresh token in URL)
       sessionService.setSession(token, undefined, 3600);
       
-      console.log('AuthContext - Token set in sessionService, verifying:', sessionService.isAuthenticated());
-      
       // Get user data using the token
       const response = await apiService.getCurrentUser();
       
-      console.log('AuthContext - getCurrentUser response:', response.success);
+      logger.debug('AuthContext - getCurrentUser response', { success: response.success });
       
       if (response.success && response.data?.user) {
         const userData = response.data.user;
@@ -394,7 +371,7 @@ export const AuthProvider: React.FC<{
         throw new Error('Failed to get user data with token');
       }
     } catch (error) {
-      console.error('AuthContext - handleTokenFromUrl error:', error);
+      logger.error('AuthContext - handleTokenFromUrl error', error);
       // Clear invalid token
       sessionService.clearSession();
       localStorage.removeItem('user');
@@ -407,7 +384,7 @@ export const AuthProvider: React.FC<{
     try {
       await apiService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error', error);
     } finally {
       clearAuth();
       sessionService.clearSession();

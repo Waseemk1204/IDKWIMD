@@ -1,14 +1,18 @@
 // API service for communicating with the backend
 import { toast } from 'sonner';
 import sessionService from './sessionService';
+import logger from '../utils/logger';
 
 const getApiBaseUrl = () => {
-  // Always use VITE_API_URL if set (Railway backend in production)
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  // Use VITE_API_URL from environment variables
+  const apiUrl = import.meta.env.VITE_API_URL;
+  
+  if (!apiUrl) {
+    logger.error('CRITICAL: VITE_API_URL is not defined in environment variables');
+    throw new Error('API URL configuration is missing. Please set VITE_API_URL in your .env file.');
   }
-  // Fallback for local development
-  return 'http://localhost:3001/api/v1';
+  
+  return apiUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -22,12 +26,9 @@ interface ApiResponse<T = any> {
 
 class ApiService {
   private baseURL: string;
-  private token: string | null = null; // TODO: Implement token-based authentication
   
   constructor(baseURL: string) {
     this.baseURL = baseURL;
-    this.token = localStorage.getItem('token');
-    console.log('ApiService token:', this.token);
   }
 
   private async request<T>(
@@ -59,13 +60,13 @@ class ApiService {
         try {
           data = await response.json();
         } catch (jsonError) {
-          console.error('Failed to parse JSON response:', jsonError);
+          logger.error('Failed to parse JSON response', { endpoint, jsonError });
           throw new Error('Invalid JSON response from server');
         }
       } else {
         // If it's not JSON, read as text
         const textResponse = await response.text();
-        console.error('Non-JSON response received:', textResponse.substring(0, 200));
+        logger.error('Non-JSON response received', { endpoint, preview: textResponse.substring(0, 200) });
         throw new Error(`Server returned non-JSON response: ${textResponse.substring(0, 100)}`);
       }
 
@@ -97,7 +98,7 @@ class ApiService {
 
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      logger.error('API request failed', { endpoint, error });
       
       // Handle network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -1353,48 +1354,48 @@ class ApiService {
     attachments?: string[];
     replyTo?: string;
   }): Promise<ApiResponse> {
-    return this.request(`/v1/messages/conversations/${conversationId}/messages`, {
+    return this.request(`/messages/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async markMessagesAsRead(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/v1/messages/conversations/${conversationId}/read`, {
+    return this.request(`/messages/conversations/${conversationId}/read`, {
       method: 'PUT',
     });
   }
 
   async editMessage(messageId: string, content: string): Promise<ApiResponse> {
-    return this.request(`/v1/messages/messages/${messageId}`, {
+    return this.request(`/messages/messages/${messageId}`, {
       method: 'PUT',
       body: JSON.stringify({ content }),
     });
   }
 
   async deleteMessage(messageId: string): Promise<ApiResponse> {
-    return this.request(`/v1/messages/messages/${messageId}`, {
+    return this.request(`/messages/messages/${messageId}`, {
       method: 'DELETE',
     });
   }
 
   async getConversationParticipants(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/v1/messages/conversations/${conversationId}/participants`);
+    return this.request(`/messages/conversations/${conversationId}/participants`);
   }
 
   async deleteConversation(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/v1/messages/conversations/${conversationId}`, {
+    return this.request(`/messages/conversations/${conversationId}`, {
       method: 'DELETE',
     });
   }
 
   async getUnreadCount(): Promise<ApiResponse> {
-    return this.request('/v1/messages/unread-count');
+    return this.request('/messages/unread-count');
   }
 
   // Enhanced messaging methods
   async addReaction(messageId: string, reactionType: string): Promise<ApiResponse> {
-    return this.request(`/v1/messages/messages/${messageId}/reactions`, {
+    return this.request(`/messages/messages/${messageId}/reactions`, {
       method: 'POST',
       body: JSON.stringify({ reactionType }),
     });
@@ -1404,7 +1405,7 @@ class ApiService {
     parentMessageId: string;
     title?: string;
   }): Promise<ApiResponse> {
-    return this.request(`/v1/messages/conversations/${conversationId}/threads`, {
+    return this.request(`/messages/conversations/${conversationId}/threads`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -1415,7 +1416,7 @@ class ApiService {
     applicationId: string;
     jobId: string;
   }): Promise<ApiResponse> {
-    return this.request('/v1/unified-messaging/job-conversation', {
+    return this.request('/unified-messaging/job-conversation', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -1425,7 +1426,7 @@ class ApiService {
     postId: string;
     authorId: string;
   }): Promise<ApiResponse> {
-    return this.request('/v1/unified-messaging/community-conversation', {
+    return this.request('/unified-messaging/community-conversation', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -1435,24 +1436,24 @@ class ApiService {
     connectionId: string;
     targetUserId: string;
   }): Promise<ApiResponse> {
-    return this.request('/v1/unified-messaging/gang-conversation', {
+    return this.request('/unified-messaging/gang-conversation', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async getConversationSuggestions(): Promise<ApiResponse> {
-    return this.request('/v1/unified-messaging/suggestions');
+    return this.request('/unified-messaging/suggestions');
   }
 
   async getMessagingAnalytics(timeframe?: '7d' | '30d' | '90d'): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
     if (timeframe) queryParams.append('timeframe', timeframe);
-    return this.request(`/v1/unified-messaging/analytics?${queryParams.toString()}`);
+    return this.request(`/unified-messaging/analytics?${queryParams.toString()}`);
   }
 
   async updateConnectionStrength(conversationId: string): Promise<ApiResponse> {
-    return this.request(`/v1/unified-messaging/conversations/${conversationId}/connection-strength`, {
+    return this.request(`/unified-messaging/conversations/${conversationId}/connection-strength`, {
       method: 'PUT',
     });
   }
@@ -1656,8 +1657,7 @@ class ApiService {
     
     // Use basic /notifications endpoint (no /v1 prefix as it's already in base URL)
     const url = `/notifications?${queryParams.toString()}`;
-    console.log('API Service - getNotifications URL:', url);
-    console.log('API Service - getNotifications params:', params);
+    logger.debug('Fetching notifications', { params });
     
     return this.request(url);
   }
@@ -1729,27 +1729,27 @@ class ApiService {
     if (params?.module) queryParams.append('module', params.module);
     if (params?.priority) queryParams.append('priority', params.priority);
     if (params?.unreadOnly) queryParams.append('unreadOnly', params.unreadOnly.toString());
-    return this.request(`/v1/unified-notifications/notifications?${queryParams.toString()}`);
+    return this.request(`/unified-notifications/notifications?${queryParams.toString()}`);
   }
 
   async markUnifiedNotificationAsRead(notificationId: string): Promise<ApiResponse> {
-    return this.request(`/v1/unified-notifications/notifications/${notificationId}/read`, {
+    return this.request(`/unified-notifications/notifications/${notificationId}/read`, {
       method: 'PUT',
     });
   }
 
   async markAllUnifiedNotificationsAsRead(): Promise<ApiResponse> {
-    return this.request('/v1/unified-notifications/notifications/read-all', {
+    return this.request('/unified-notifications/notifications/read-all', {
       method: 'PUT',
     });
   }
 
   async getNotificationPreferences(): Promise<ApiResponse> {
-    return this.request('/v1/unified-notifications/preferences');
+    return this.request('/unified-notifications/preferences');
   }
 
   async updateNotificationPreferences(preferences: any): Promise<ApiResponse> {
-    return this.request('/v1/unified-notifications/preferences', {
+    return this.request('/unified-notifications/preferences', {
       method: 'PUT',
       body: JSON.stringify(preferences),
     });
@@ -1766,40 +1766,40 @@ class ApiService {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.module) queryParams.append('module', params.module);
     if (params?.timeframe) queryParams.append('timeframe', params.timeframe);
-    return this.request(`/v1/unified-notifications/activity?${queryParams.toString()}`);
+    return this.request(`/unified-notifications/activity?${queryParams.toString()}`);
   }
 
   async getSmartNotificationSuggestions(): Promise<ApiResponse> {
-    return this.request('/v1/unified-notifications/suggestions');
+    return this.request('/unified-notifications/suggestions');
   }
 
   async getNotificationAnalytics(timeframe?: string): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
     if (timeframe) queryParams.append('timeframe', timeframe);
-    return this.request(`/v1/unified-notifications/analytics?${queryParams.toString()}`);
+    return this.request(`/unified-notifications/analytics?${queryParams.toString()}`);
   }
 
   // Unified user context methods
   async getUnifiedUserContext(): Promise<ApiResponse> {
-    return this.request('/v1/unified-context/context');
+    return this.request('/unified-context/context');
   }
 
   async getCrossModuleActivitySummary(timeframe?: string): Promise<ApiResponse> {
     const queryParams = new URLSearchParams();
     if (timeframe) queryParams.append('timeframe', timeframe);
-    return this.request(`/v1/unified-context/activity-summary?${queryParams.toString()}`);
+    return this.request(`/unified-context/activity-summary?${queryParams.toString()}`);
   }
 
   async getUserNetworkInsights(): Promise<ApiResponse> {
-    return this.request('/v1/unified-context/network-insights');
+    return this.request('/unified-context/network-insights');
   }
 
   async getEcosystemIntegrationStatus(): Promise<ApiResponse> {
-    return this.request('/v1/unified-context/integration-status');
+    return this.request('/unified-context/integration-status');
   }
 
   async updateUserPreferences(preferences: any): Promise<ApiResponse> {
-    return this.request('/v1/unified-context/preferences', {
+    return this.request('/unified-context/preferences', {
       method: 'PUT',
       body: JSON.stringify(preferences),
     });
@@ -1809,7 +1809,7 @@ class ApiService {
 
   // Message post author
   async messagePostAuthor(postId: string, targetUserId: string): Promise<ApiResponse> {
-    return this.request(`/v1/community-enhanced/posts/${postId}/message-author`, {
+    return this.request(`/community-enhanced/posts/${postId}/message-author`, {
       method: 'POST',
       body: JSON.stringify({ targetUserId }),
     });
@@ -1817,7 +1817,7 @@ class ApiService {
 
   // Invite gang to discussion
   async inviteGangToDiscussion(postId: string, gangMemberIds: string[]): Promise<ApiResponse> {
-    return this.request(`/v1/community-enhanced/posts/${postId}/invite-gang`, {
+    return this.request(`/community-enhanced/posts/${postId}/invite-gang`, {
       method: 'POST',
       body: JSON.stringify({ gangMemberIds }),
     });
@@ -1825,12 +1825,12 @@ class ApiService {
 
   // Get personalized discussions
   async getPersonalizedDiscussions(limit: number = 10): Promise<ApiResponse> {
-    return this.request(`/v1/community-enhanced/posts/personalized?limit=${limit}`);
+    return this.request(`/community-enhanced/posts/personalized?limit=${limit}`);
   }
 
   // Update cross-module activity
   async updateCrossModuleActivity(module: string, action: string, data: any): Promise<ApiResponse> {
-    return this.request('/v1/community-enhanced/activity', {
+    return this.request('/community-enhanced/activity', {
       method: 'POST',
       body: JSON.stringify({ module, action, data }),
     });

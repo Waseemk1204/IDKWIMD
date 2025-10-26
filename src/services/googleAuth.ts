@@ -1,4 +1,6 @@
 // Google OAuth configuration
+import logger from '../utils/logger';
+
 const GOOGLE_CLIENT_ID = '916734429640-e7c73gltbkl4eijae1qso7sbp6kkaauh.apps.googleusercontent.com';
 
 export interface GoogleUserInfo {
@@ -44,13 +46,13 @@ class GoogleAuthService {
    */
   private initializeGoogleAuth(): void {
     if (typeof window !== 'undefined' && (window as any).google) {
-      console.log('Initializing Google Auth with client ID:', GOOGLE_CLIENT_ID);
+      logger.info('GoogleAuthService - Initializing Google Auth');
       
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: () => {
           // This will be overridden by the Promise callback
-          console.log('Default Google OAuth callback called');
+          logger.debug('GoogleAuthService - Default OAuth callback called');
         },
         auto_select: false,
         cancel_on_tap_outside: true,
@@ -61,9 +63,9 @@ class GoogleAuthService {
       });
       
       this.isLoaded = true;
-      console.log('Google Auth initialized successfully');
+      logger.info('GoogleAuthService - Initialized successfully');
     } else {
-      console.error('Google Identity Services not available');
+      logger.error('GoogleAuthService - Google Identity Services not available');
     }
   }
 
@@ -83,7 +85,7 @@ class GoogleAuthService {
     }
 
     try {
-      console.log('Initiating Google OAuth redirect...');
+      logger.info('GoogleAuthService - Initiating Google OAuth redirect', { mode, role });
       
       // Check if Google API is available
       if (!(window as any).google?.accounts?.id) {
@@ -103,8 +105,7 @@ class GoogleAuthService {
           : 'https://parttimepays.in/login';    // Production
       }
       
-      console.log('Google OAuth redirect URI:', loginUri);
-      console.log('Google OAuth client ID:', GOOGLE_CLIENT_ID);
+      logger.debug('GoogleAuthService - Redirect URI configured', { loginUri });
       
       // Reinitialize Google Auth with the specific login_uri for redirect mode
       const config = {
@@ -116,11 +117,9 @@ class GoogleAuthService {
         use_fedcm_for_prompt: false
       };
       
-      console.log('Google OAuth config:', config);
-      
       (window as any).google.accounts.id.initialize(config);
       
-      console.log('Google OAuth initialized with redirect mode');
+      logger.debug('GoogleAuthService - Initialized with redirect mode');
       
       // Create a temporary button element and trigger it
       const tempDiv = document.createElement('div');
@@ -141,14 +140,10 @@ class GoogleAuthService {
       setTimeout(() => {
         const button = tempDiv.querySelector('div[role="button"]') as HTMLElement;
         if (button) {
-          console.log('Clicking Google OAuth button programmatically');
-          console.log('Button element:', button);
-          console.log('Button clickable:', button.click);
+          logger.debug('GoogleAuthService - Clicking OAuth button programmatically');
           button.click();
-          console.log('Button clicked successfully');
         } else {
-          console.error('Google OAuth button not found');
-          console.log('Available elements in tempDiv:', tempDiv.innerHTML);
+          logger.error('GoogleAuthService - OAuth button not found');
           document.body.removeChild(tempDiv);
         }
       }, 100);
@@ -160,7 +155,7 @@ class GoogleAuthService {
         }
       }, 5000);
       
-      console.log('Google OAuth redirect initiated - user will be redirected to Google');
+      logger.info('GoogleAuthService - Redirect initiated, user will be redirected to Google');
       
       // For redirect mode, we return immediately as the user will be redirected
       return {
@@ -169,7 +164,7 @@ class GoogleAuthService {
       };
       
     } catch (error) {
-      console.error('Google OAuth error:', error);
+      logger.error('GoogleAuthService - OAuth error', error);
       return {
         success: false,
         error: 'Failed to initiate Google authentication. Please try email/password login.'

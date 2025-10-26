@@ -24,11 +24,13 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Environment variables (will be set in Netlify dashboard)
-[context.production.environment]
-  VITE_API_URL = "https://your-backend-url.railway.app/api/v1"
-  VITE_NODE_ENV = "production"
-
-[context.deploy-preview.environment]
-  VITE_API_URL = "https://your-backend-url.railway.app/api/v1"
-  VITE_NODE_ENV = "development"
+# Environment variables should be set in Netlify dashboard
+# Go to: Site settings > Build & deploy > Environment variables
+# Required variables:
+# - VITE_API_URL (e.g., https://your-backend.railway.app/api/v1)
+# - VITE_NODE_ENV (production or development)
+#
+# Optional variables (if features are used):
+# - VITE_GOOGLE_CLIENT_ID
+# - VITE_RAZORPAY_KEY_ID
+# - VITE_CLOUDINARY_CLOUD_NAME

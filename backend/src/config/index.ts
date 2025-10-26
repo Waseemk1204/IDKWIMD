@@ -13,10 +13,10 @@ export const config = {
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/parttimepay',
   MONGODB_TEST_URI: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/parttimepay_test',
 
-  // JWT Configuration
-  JWT_SECRET: process.env.JWT_SECRET || 'fallback-secret-key',
+  // JWT Configuration - No fallbacks for security
+  JWT_SECRET: process.env.JWT_SECRET!,
   JWT_EXPIRE: process.env.JWT_EXPIRE || '7d',
-  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret',
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET!,
   JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE || '30d',
 
   // OAuth Configuration
@@ -28,8 +28,8 @@ export const config = {
   LINKEDIN_CLIENT_SECRET: process.env.LINKEDIN_CLIENT_SECRET || '',
   LINKEDIN_CALLBACK_URL: process.env.LINKEDIN_CALLBACK_URL || 'http://localhost:3001/api/v1/auth/linkedin/callback',
 
-  // Session Configuration
-  SESSION_SECRET: process.env.SESSION_SECRET || 'fallback-session-secret',
+  // Session Configuration - No fallback for security
+  SESSION_SECRET: process.env.SESSION_SECRET!,
 
   // Email Configuration
   EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
@@ -66,12 +66,14 @@ export const config = {
 // Validate required environment variables
 const requiredEnvVars = [
   'JWT_SECRET',
+  'JWT_REFRESH_SECRET',
   'SESSION_SECRET',
 ];
 
 if (config.NODE_ENV === 'production') {
   requiredEnvVars.push(
-    'MONGODB_URI'
+    'MONGODB_URI',
+    'FRONTEND_URL'
     // OAuth and Cloudinary are optional
     // Google OAuth: Only needed if using Google login
     // Cloudinary: Only needed if using cloud storage (Railway uses local storage)
@@ -80,9 +82,14 @@ if (config.NODE_ENV === 'production') {
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
-if (missingEnvVars.length > 0) {
-  console.error('Missing required environment variables:', missingEnvVars);
+// Only enforce in production/development, not in test mode
+if (missingEnvVars.length > 0 && config.NODE_ENV !== 'test') {
+  console.error('❌ CRITICAL: Missing required environment variables:', missingEnvVars);
+  console.error('Application cannot start without these variables.');
   process.exit(1);
+} else if (missingEnvVars.length > 0 && config.NODE_ENV === 'test') {
+  console.warn('⚠️  Test mode: Missing environment variables:', missingEnvVars);
+  console.warn('Tests may fail if these variables are needed.');
 }
 
 export default config;

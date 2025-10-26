@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable no-undef, @typescript-eslint/no-unused-vars */
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';

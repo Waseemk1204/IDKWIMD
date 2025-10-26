@@ -3,6 +3,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss';
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
+import { logger } from '../utils/logger';
 
 // Helmet configuration for security headers
 export const helmetConfig = helmet({
@@ -26,7 +27,7 @@ export const helmetConfig = helmet({
 export const mongoSanitizeConfig = mongoSanitize({
   replaceWith: '_',
   onSanitize: ({ req, key }) => {
-    console.warn(`This request[${key}] is sanitized`, req);
+    logger.warn(`Request[${key}] was sanitized - potential injection attempt from IP: ${req.ip}`);
   },
 });
 
@@ -113,7 +114,7 @@ export const corsOptions = {
     if (isAllowed) {
       callback(null, true);
     } else {
-      console.log(`CORS blocked origin: ${origin}`);
+      logger.warn(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -129,21 +130,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
   
   res.on('finish', () => {
     const duration = Date.now() - start;
-    const logData = {
-      method: req.method,
-      url: req.url,
-      status: res.statusCode,
-      duration: `${duration}ms`,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date().toISOString()
-    };
-
-    if (res.statusCode >= 400) {
-      console.error('Request Error:', logData);
-    } else {
-      console.log('Request:', logData);
-    }
+    logger.request(req.method, req.url, res.statusCode, `${duration}ms`);
   });
 
   next();
@@ -155,7 +142,7 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
   error.message = err.message;
 
   // Log error
-  console.error('Error:', err);
+  logger.error('Error occurred:', err);
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {

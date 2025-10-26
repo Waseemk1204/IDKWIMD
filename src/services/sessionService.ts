@@ -1,5 +1,6 @@
 // Enhanced Session Management Service
 // Handles both httpOnly cookies (preferred) and localStorage fallback
+import logger from '../utils/logger';
 
 interface SessionData {
   token: string;
@@ -28,28 +29,27 @@ class SessionService {
   private loadSessionFromStorage(): void {
     try {
       const stored = localStorage.getItem('session');
-      console.log('SessionService - Loading session from storage:', !!stored);
+      logger.debug('SessionService - Loading session from storage', { hasStored: !!stored });
       if (stored) {
         const sessionData = JSON.parse(stored);
-        console.log('SessionService - Parsed session data:', { 
+        logger.debug('SessionService - Parsed session data', { 
           hasToken: !!sessionData.token, 
-          expiresAt: sessionData.expiresAt,
           isExpired: sessionData.expiresAt <= Date.now()
         });
         // Check if session is still valid
         if (sessionData.expiresAt && sessionData.expiresAt > Date.now()) {
           this.sessionData = sessionData;
-          console.log('SessionService - Session loaded successfully');
+          logger.info('SessionService - Session loaded successfully');
         } else {
           // Session expired, clear it
-          console.log('SessionService - Session expired, clearing');
+          logger.debug('SessionService - Session expired, clearing');
           this.clearSession();
         }
       } else {
-        console.log('SessionService - No session found in storage');
+        logger.debug('SessionService - No session found in storage');
       }
     } catch (error) {
-      console.error('SessionService - Failed to load session from storage:', error);
+      logger.error('SessionService - Failed to load session from storage', error);
       this.clearSession();
     }
   }
@@ -59,13 +59,13 @@ class SessionService {
     try {
       localStorage.setItem('session', JSON.stringify(sessionData));
     } catch (error) {
-      console.error('Failed to save session to storage:', error);
+      logger.error('Failed to save session to storage', error);
     }
   }
 
   // Set session data
   public setSession(token: string, refreshToken?: string, expiresIn: number = 3600): void {
-    console.log('SessionService - setSession called with:', {
+    logger.debug('SessionService - setSession called', {
       hasToken: !!token,
       hasRefreshToken: !!refreshToken,
       expiresIn
@@ -78,41 +78,33 @@ class SessionService {
       expiresAt,
     };
 
-    console.log('SessionService - Session data created:', {
-      hasToken: !!this.sessionData.token,
-      hasRefreshToken: !!this.sessionData.refreshToken,
-      expiresAt: this.sessionData.expiresAt
-    });
-
     // Save to localStorage as fallback
     this.saveSessionToStorage(this.sessionData);
     
-    console.log('SessionService - Session saved to storage');
+    logger.info('SessionService - Session saved successfully');
   }
 
   // Get current token
   public getToken(): string | null {
-    console.log('SessionService - getToken called, sessionData:', !!this.sessionData);
+    logger.debug('SessionService - getToken called', { hasSession: !!this.sessionData });
     if (!this.sessionData) {
-      console.log('SessionService - No session data available');
       return null;
     }
 
     // Check if token is expired
     if (this.sessionData.expiresAt <= Date.now()) {
-      console.log('SessionService - Token expired, attempting refresh');
+      logger.debug('SessionService - Token expired, attempting refresh');
       // Try to refresh if we have a refresh token
       if (this.sessionData.refreshToken) {
         this.refreshToken();
         return this.sessionData?.token || null;
       } else {
-        console.log('SessionService - No refresh token, clearing session');
+        logger.debug('SessionService - No refresh token, clearing session');
         this.clearSession();
         return null;
       }
     }
 
-    console.log('SessionService - Returning valid token');
     return this.sessionData.token;
   }
 
@@ -190,7 +182,7 @@ class SessionService {
       this.clearSession();
       throw new Error('Token refresh failed');
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      logger.error('Token refresh failed', error);
       this.clearSession();
       throw new Error('Token refresh failed');
     }

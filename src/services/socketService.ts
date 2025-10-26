@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import sessionService from './sessionService';
+import logger from '../utils/logger';
 
 class SocketService {
   private socket: Socket | null = null;
@@ -10,7 +11,7 @@ class SocketService {
 
     const token = sessionService.getToken();
     if (!token) {
-      console.error('No authentication token found');
+      logger.warn('SocketService - No authentication token found, cannot connect');
       return;
     }
 
@@ -24,16 +25,16 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('Connected to server');
+      logger.info('SocketService - Connected to server');
       this.emit('presence_update', 'online');
     });
 
     this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
+      logger.info('SocketService - Disconnected from server');
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
+      logger.error('SocketService - Connection error', error);
     });
 
     // Re-emit all events to registered listeners
@@ -44,7 +45,7 @@ class SocketService {
           try {
             listener(...args);
           } catch (error) {
-            console.error(`Error in event listener for ${event}:`, error);
+            logger.error(`SocketService - Error in event listener for ${event}`, error);
           }
         });
       }
@@ -63,7 +64,7 @@ class SocketService {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
-      console.warn(`Socket not connected. Cannot emit event: ${event}`);
+      logger.warn(`SocketService - Socket not connected, cannot emit event: ${event}`);
     }
   }
 
