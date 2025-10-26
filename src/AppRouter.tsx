@@ -39,7 +39,7 @@ import { DisputeManagement } from './pages/admin/DisputeManagement';
 // import { Notifications } from './pages/shared/Notifications';
 import { EnhancedNotifications } from './pages/shared/EnhancedNotifications';
 import { NotificationPreferences } from './pages/shared/NotificationPreferences';
-import { EnhancedProfile } from './pages/shared/EnhancedProfile';
+import { SimplifiedProfile } from './pages/shared/SimplifiedProfile';
 import { AboutUs } from './pages/shared/AboutUs';
 import { Blogs } from './pages/shared/Blogs';
 import { BlogPostPage } from './pages/shared/BlogPost';
@@ -220,7 +220,7 @@ export function AppRouter() {
         <Route path="/profile" element={<ProtectedRoute>
               <DashboardLayout />
             </ProtectedRoute>}>
-          <Route index element={<EnhancedProfile />} />
+          <Route index element={<SimplifiedProfile />} />
         </Route>
 
         {/* 404 Route */}
