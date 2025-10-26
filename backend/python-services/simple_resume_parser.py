@@ -93,13 +93,13 @@ def parse_resume(file_path):
         phone = extract_phone(text)
         skills = extract_skills(text)
         
-        # Return results
+        # Return results (using field names expected by frontend)
         return {
             "success": True,
             "data": {
-                "name": name,
+                "fullName": name,  # Changed from "name"
                 "email": email,
-                "mobile_number": phone,
+                "phone": phone,  # Changed from "mobile_number"
                 "skills": skills,
                 "raw_text": text[:500]  # First 500 chars for reference
             }

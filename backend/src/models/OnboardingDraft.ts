@@ -110,21 +110,21 @@ const onboardingDraftSchema = new Schema<IOnboardingDraft>(
       about: String,
       profilePhoto: String,
 
-      // Experience (employee)
+      // Experience (employee) - not required in draft
       experiences: [{
-        company: { type: String, required: true },
-        title: { type: String, required: true },
+        company: String,
+        title: String,
         from: Date,
         to: Date,
         description: String,
         current: { type: Boolean, default: false }
       }],
 
-      // Education (employee)
+      // Education (employee) - not required in draft
       education: [{
-        institution: { type: String, required: true },
-        degree: { type: String, required: true },
-        field: { type: String, required: true },
+        institution: String,
+        degree: String,
+        field: String,
         from: Date,
         to: Date,
         current: { type: Boolean, default: false }
