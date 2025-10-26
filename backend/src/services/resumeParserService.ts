@@ -123,7 +123,9 @@ class ResumeParserService {
 
       // Collect stdout data
       pythonProcess.stdout.on('data', (data) => {
-        stdoutData += data.toString();
+        const output = data.toString();
+        stdoutData += output;
+        console.log('Python stdout chunk:', output);
       });
 
       // Collect stderr data
@@ -144,26 +146,36 @@ class ResumeParserService {
           console.error('Failed to delete temporary file:', unlinkError);
         }
 
-        if (code !== 0) {
-          console.error('Python script failed with stderr:', stderrData);
-          resolve({
-            success: false,
-            error: `Resume parsing failed: ${stderrData || 'Unknown error'}`
-          });
-          return;
-        }
-
+        // Python script outputs JSON to stdout for both success and error
+        // Parse stdout regardless of exit code
         try {
+          if (!stdoutData || stdoutData.trim() === '') {
+            // No stdout data - check stderr
+            console.error('Python script failed with no stdout. stderr:', stderrData);
+            resolve({
+              success: false,
+              error: `Resume parsing failed: ${stderrData || 'Python script produced no output'}`
+            });
+            return;
+          }
+
           // Parse JSON output from Python
           const result: ResumeParserResult = JSON.parse(stdoutData);
-          console.log('Parsed result:', result);
+          console.log('Parsed result from Python:', result);
+          
+          // If exit code is non-zero but we got valid JSON, check if it's an error response
+          if (code !== 0 && result.success !== false) {
+            console.warn('Python exit code was non-zero but result shows success. stderr:', stderrData);
+          }
+          
           resolve(result);
         } catch (parseError) {
           console.error('Failed to parse Python output:', parseError);
-          console.error('Raw output:', stdoutData);
+          console.error('Raw stdout:', stdoutData);
+          console.error('Raw stderr:', stderrData);
           resolve({
             success: false,
-            error: `Failed to parse Python output: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`
+            error: `Failed to parse Python output: ${parseError instanceof Error ? parseError.message : 'Unknown error'}. ${stderrData ? 'Error: ' + stderrData : ''}`
           });
         }
       });
