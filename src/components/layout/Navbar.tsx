@@ -368,9 +368,9 @@ export const Navbar: React.FC = () => {
 
             {isAuthenticated ? (
               <>
-                {/* Notifications and Messages */}
+                {/* Notifications and Comms */}
                 {renderNotificationIcon(
-                  '/messaging', 
+                  '/comms', 
                   <MessageSquareIcon className="h-5 w-5" />, 
                   unreadMessageCount > 0, 
                   unreadMessageCount
@@ -494,7 +494,7 @@ export const Navbar: React.FC = () => {
                   {/* Mobile Notification Icons */}
                   <div className="flex items-center space-x-2">
                     {renderNotificationIcon(
-                      '/messaging', 
+                      '/comms', 
                       <MessageSquareIcon className="h-5 w-5" />, 
                       unreadMessageCount > 0, 
                       unreadMessageCount

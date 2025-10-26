@@ -193,11 +193,8 @@ export function AppRouter() {
           <Route path="disputes" element={<DisputeManagement />} />
         </Route>
 
-        {/* Messaging Routes - Available to all authenticated users */}
+        {/* Comms Routes - Available to all authenticated users */}
         <Route path="/comms" element={<ProtectedRoute>
-              <Comms />
-            </ProtectedRoute>} />
-        <Route path="/messaging" element={<ProtectedRoute>
               <Comms />
             </ProtectedRoute>} />
 

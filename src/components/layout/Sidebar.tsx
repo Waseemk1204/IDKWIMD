@@ -114,8 +114,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     // Common links available to all authenticated users
     const commonLinks: SidebarLink[] = [
       {
-        name: 'Messages',
-        href: '/messaging',
+        name: 'Comms',
+        href: '/comms',
         icon: <MessageSquareIcon className="w-5 h-5" />,
         badge: unreadMessages
       },

@@ -206,9 +206,9 @@ export const GlobalNavbar: React.FC<GlobalNavbarProps> = ({
                   </div>
                 </Link>
                 
-                {/* Messages */}
+                {/* Comms */}
                 <Link
-                  to="/messaging"
+                  to="/comms"
                   className="relative p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <span className="sr-only">View messages</span>
