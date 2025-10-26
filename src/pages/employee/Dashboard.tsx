@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/Button';
 import { VerifiedBadge } from '../../components/ui/StatusBadge';
 import { Skeleton, SkeletonJobCard, SkeletonCard } from '../../components/ui/Skeleton';
 import { LazyLoad } from '../../components/ui/LazyLoad';
+import { PageHeader } from '../../components/layout/PageHeader';
+import { SectionHeader } from '../../components/layout/SectionHeader';
 import { useAuth } from '../../hooks/useAuth';
 import { apiService } from '../../services/api';
 import { Job } from '../../components/jobs/JobCard';
@@ -238,24 +240,25 @@ export const EmployeeDashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Page Header - Simple & Professional */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Dashboard
-        </h1>
-        <div className="flex items-center gap-4">
-          {stats.rating > 0 && (
-            <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="text-base font-medium text-gray-900 dark:text-white">
-                {stats.rating}
-              </span>
-            </div>
-          )}
-          <VerifiedBadge size="sm" />
-        </div>
-      </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* Page Header - Standardized */}
+      <PageHeader
+        title="Dashboard"
+        description="Overview of your profile and job opportunities"
+        actions={
+          <div className="flex items-center gap-4">
+            {stats.rating > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span className="text-base font-medium text-gray-900 dark:text-white">
+                  {stats.rating}
+                </span>
+              </div>
+            )}
+            <VerifiedBadge size="sm" />
+          </div>
+        }
+      />
 
       {/* Profile Completion Checklist */}
       {profileCompletion < 100 && (
@@ -383,7 +386,10 @@ export const EmployeeDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <SectionHeader 
+          title="Quick Actions"
+          description="Jump to frequently used features"
+        />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
             <Link key={index} to={action.href}>
