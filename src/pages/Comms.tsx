@@ -1,6 +1,6 @@
 import React from 'react';
-import { CommsLayout } from '../components/comms/CommsLayout';
+import { ImprovedCommsLayout } from '../components/comms/ImprovedCommsLayout';
 
 export const Comms: React.FC = () => {
-  return <CommsLayout className="h-screen" />;
+  return <ImprovedCommsLayout className="h-screen" />;
 };

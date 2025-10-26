@@ -55,6 +55,7 @@ import { GoogleAuthCallback } from './pages/auth/GoogleAuthCallback';
 import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 // Messaging pages
 import { Comms } from './pages/Comms';
+import { Meet } from './pages/Meet';
 // Community pages
 import { CommunityHub } from './pages/community/CommunityHub';
 import { PostDetail } from './pages/community/PostDetail';
@@ -196,6 +197,11 @@ export function AppRouter() {
         {/* Comms Routes - Available to all authenticated users */}
         <Route path="/comms" element={<ProtectedRoute>
               <Comms />
+            </ProtectedRoute>} />
+        
+        {/* Meet Route - Video meetings */}
+        <Route path="/meet/:roomId" element={<ProtectedRoute>
+              <Meet />
             </ProtectedRoute>} />
 
         {/* Community Routes - Available to all authenticated users */}
