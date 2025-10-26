@@ -146,7 +146,24 @@ export const ComprehensiveProfile: React.FC = () => {
     setSuccessMessage('');
 
     try {
-      await updateProfile(formData);
+      // Clean data before sending
+      const cleanedData = {
+        ...formData,
+        // Filter out empty/invalid experiences
+        experiences: formData.experiences.filter(exp => 
+          exp.company && exp.title && exp.from
+        ),
+        // Filter out empty/invalid education
+        education: formData.education.filter(edu => 
+          edu.institution && edu.degree && edu.field && edu.from
+        ),
+        // Filter out empty skills
+        skills: formData.skills.filter(skill => skill.trim().length > 0)
+      };
+
+      console.log('📤 Sending cleaned data:', cleanedData);
+      
+      await updateProfile(cleanedData);
       setSuccessMessage('Profile updated successfully!');
       setIsEditing(false);
       setTimeout(() => setSuccessMessage(''), 3000);
