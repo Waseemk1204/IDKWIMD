@@ -20,13 +20,22 @@ export const saveOnboardingProgress = async (req: AuthRequest, res: Response): P
       return;
     }
 
+    // Clean data: remove undefined values and empty nested objects
+    const cleanData = data ? JSON.parse(JSON.stringify(data, (key, value) => {
+      // Filter out undefined, null, and "undefined" string
+      if (value === undefined || value === null || value === "undefined") {
+        return undefined;
+      }
+      return value;
+    })) : {};
+
     // Find existing draft or create new one
     let draft = await OnboardingDraft.findOne({ userId, role });
 
     if (draft) {
       // Update existing draft
       draft.currentStep = currentStep !== undefined ? currentStep : draft.currentStep;
-      draft.data = { ...draft.data, ...data };
+      draft.data = { ...draft.data, ...cleanData };
       await draft.save(); // Pre-save hook will update completion percentage
     } else {
       // Create new draft
@@ -34,7 +43,7 @@ export const saveOnboardingProgress = async (req: AuthRequest, res: Response): P
         userId,
         role,
         currentStep: currentStep || 0,
-        data: data || {}
+        data: cleanData
       });
       await draft.save();
     }

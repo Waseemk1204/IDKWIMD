@@ -29,16 +29,38 @@ export const ProfileStep: React.FC = () => {
   }, [fullName, email, phone, headline, location, about]);
 
   const handleResumeUploadSuccess = (parsedData: any) => {
-    // Auto-fill form with parsed data
-    if (parsedData.fullName) setFullName(parsedData.fullName);
-    if (parsedData.email) setEmail(parsedData.email);
-    if (parsedData.phone) setPhone(parsedData.phone);
+    console.log('📄 Resume parsed successfully! Data:', parsedData);
     
-    // Also update onboarding data with all parsed info
+    // Auto-fill form with parsed data (Workday-style comprehensive)
+    if (parsedData.fullName) {
+      console.log('✅ Setting fullName:', parsedData.fullName);
+      setFullName(parsedData.fullName);
+    }
+    if (parsedData.email) {
+      console.log('✅ Setting email:', parsedData.email);
+      setEmail(parsedData.email);
+    }
+    if (parsedData.phone) {
+      console.log('✅ Setting phone:', parsedData.phone);
+      setPhone(parsedData.phone);
+    }
+    if (parsedData.location) {
+      console.log('✅ Setting location:', parsedData.location);
+      setLocation(parsedData.location);
+    }
+    if (parsedData.about) {
+      console.log('✅ Setting about:', parsedData.about);
+      setAbout(parsedData.about);
+    }
+    
+    // Update onboarding context with ALL parsed info
+    console.log('📦 Updating onboarding data with comprehensive info...');
     updateData({
       fullName: parsedData.fullName || fullName,
       email: parsedData.email || email,
       phone: parsedData.phone || phone,
+      location: parsedData.location || location,
+      about: parsedData.about || about,
       skills: parsedData.skills || data.skills,
       experiences: parsedData.experiences || data.experiences,
       education: parsedData.education || data.education,
@@ -48,7 +70,8 @@ export const ProfileStep: React.FC = () => {
         parsedData
       }
     });
-
+    
+    console.log('✅ Form auto-filled and onboarding data updated!');
     setShowResumeUpload(false);
   };
 
