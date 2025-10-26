@@ -4,7 +4,7 @@ This document tracks all fixes applied to get resume parsing working in producti
 
 ## 🎯 Final Status: WORKING ✅
 
-After 5 incremental fixes, resume parsing is now fully functional.
+After 7 incremental fixes, resume parsing is now fully functional.
 
 ---
 
@@ -204,6 +204,52 @@ Now we see the ACTUAL Python error messages, making debugging possible!
 
 ---
 
+### Issue 7: spaCy Download Command Incompatible with Pip 25.3 ⚠️
+**Error**: `Invalid requirement: '==en_core_web_sm'`
+
+**Root Cause**:
+- Pip was upgraded to 25.3 in the virtual environment
+- `python -m spacy download` uses deprecated egg fragments
+- New pip versions reject this format (non-PEP 508 name)
+- Deprecation warning about egg fragment syntax
+
+**The Problem**:
+```bash
+./venv/bin/python -m spacy download en_core_web_sm
+# Generates: https://.../-en_core_web_sm.tar.gz#egg===en_core_web_sm
+# Pip 25.3 rejects this format
+```
+
+**Fix**: Use direct wheel URL instead of spacy's download helper
+```dockerfile
+# OLD (broken with pip 25.3)
+./venv/bin/python -m spacy download en_core_web_sm
+
+# NEW (works with all pip versions)
+./venv/bin/pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
+```
+
+**Why This Works**:
+- Direct wheel URL bypasses spacy's download helper
+- No deprecated egg fragments
+- Compatible with all pip versions (old and new)
+- Model version (3.5.0) matches spaCy version (3.5.0)
+
+**Model Source**:
+- Official spacy-models GitHub releases
+- URL: `https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/`
+- File: `en_core_web_sm-3.5.0-py3-none-any.whl`
+- Size: ~12MB
+
+**Alternative Solutions Considered**:
+1. Downgrade pip → ❌ Loses security updates
+2. Use older spacy → ❌ Requires full testing
+3. Direct wheel install → ✅ Clean, modern, future-proof
+
+**Commit**: `a8b7658`
+
+---
+
 ## 🏗️ Final Build Process (~3 minutes)
 
 1. **Pull Debian base image** (~10s)
@@ -321,7 +367,8 @@ Watch for these messages in Railway deployment logs:
 - `601c80d` - NLTK data download
 - `c061694` - numpy version pinning (binary compatibility)
 - `f333800` - Python error capture fix (debugging)
-- `43b57e8` - spaCy language model download ← **FINAL FIX**
+- `43b57e8` - spaCy language model download
+- `a8b7658` - spaCy pip 25.3 compatibility fix ← **FINAL FIX**
 
 **Status**: Deployed to Railway ✅  
 **URL**: https://idkwimd-production.up.railway.app  
