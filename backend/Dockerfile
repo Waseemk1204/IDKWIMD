@@ -1,8 +1,17 @@
 # Use Node.js 18 LTS
 FROM node:18-alpine
 
-# Install Python and pip for resume parsing
-RUN apk add --no-cache python3 py3-pip python3-dev
+# Install Python and build dependencies for resume parsing
+# build-base includes gcc, g++, make - needed to compile spaCy
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    python3-dev \
+    build-base \
+    gcc \
+    g++ \
+    musl-dev \
+    linux-headers
 
 # Set working directory
 WORKDIR /app
