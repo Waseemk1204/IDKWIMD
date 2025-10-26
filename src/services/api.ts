@@ -1366,6 +1366,25 @@ class ApiService {
     });
   }
 
+  async searchUsers(params?: {
+    query?: string;
+    limit?: number;
+    role?: string;
+  }): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.query) queryParams.append('q', params.query);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.role) queryParams.append('role', params.role);
+    return this.request(`/users/search?${queryParams.toString()}`);
+  }
+
+  async addGroupMembers(conversationId: string, members: string[]): Promise<ApiResponse> {
+    return this.request(`/messages/conversations/${conversationId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ members }),
+    });
+  }
+
   async editMessage(messageId: string, content: string): Promise<ApiResponse> {
     return this.request(`/messages/messages/${messageId}`, {
       method: 'PUT',

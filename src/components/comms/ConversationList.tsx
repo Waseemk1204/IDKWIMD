@@ -3,6 +3,9 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import { socketService } from '../../services/socketService';
 import { Avatar } from '../ui/Avatar';
+import { GroupChatModal } from './GroupChatModal';
+import { Button } from '../ui/Button';
+import { Plus, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Conversation {
@@ -74,6 +77,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'conversations' | 'channels'>('conversations');
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   useEffect(() => {
     fetchConversations();
@@ -177,6 +181,19 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   return (
     <div className="h-full flex flex-col">
+      {/* Header with Action Button */}
+      <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setIsGroupModalOpen(true)}
+          leftIcon={<Plus className="h-4 w-4" />}
+          className="w-full"
+        >
+          New Group Chat
+        </Button>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-gray-200 dark:border-gray-700">
         <button
@@ -307,6 +324,16 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           </div>
         )}
       </div>
+
+      {/* Group Chat Modal */}
+      <GroupChatModal
+        isOpen={isGroupModalOpen}
+        onClose={() => setIsGroupModalOpen(false)}
+        onGroupCreated={(groupId) => {
+          fetchConversations();
+          onConversationSelect(groupId);
+        }}
+      />
     </div>
   );
 };
