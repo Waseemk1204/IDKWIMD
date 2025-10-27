@@ -410,13 +410,6 @@ export const Navbar: React.FC = () => {
                       >
                         Your Profile
                       </Link>
-                      <Link
-                        to="/community"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
-                        onClick={() => setProfileMenuOpen(false)}
-                      >
-                        Community Hub
-                      </Link>
                       <button
                         onClick={() => {
                           logout();
@@ -515,13 +508,6 @@ export const Navbar: React.FC = () => {
                     onClick={closeMobileMenu}
                   >
                     Your Profile
-                  </Link>
-                  <Link
-                    to="/community"
-                    className="block px-3 py-2 rounded-lg text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
-                    onClick={closeMobileMenu}
-                  >
-                    Community Hub
                   </Link>
                   <button
                     onClick={() => {

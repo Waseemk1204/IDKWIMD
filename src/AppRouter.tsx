@@ -28,8 +28,6 @@ import { JobDetails } from './pages/employee/JobDetails';
 import { MyApplications } from './pages/employee/MyApplications';
 import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
 import { EmployeeWallet } from './pages/employee/Wallet';
-import { Connections } from './pages/employee/Connections';
-import { UnifiedDashboardPage } from './pages/shared/UnifiedDashboard';
 // Admin pages
 import { AdminDashboard } from './pages/admin/Dashboard';
 import { VerificationRequests } from './pages/admin/VerificationRequests';
@@ -56,10 +54,6 @@ import { StickyFeedbackButton } from './components/ui/StickyFeedbackButton';
 // Messaging pages
 import { Comms } from './pages/Comms';
 import { Meet } from './pages/Meet';
-// Community pages
-import { CommunityHub } from './pages/community/CommunityHub';
-import { PostDetail } from './pages/community/PostDetail';
-import { CreatePost } from './pages/community/CreatePost';
 // Public Landing component that redirects logged-in users
 const PublicLanding: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -174,14 +168,6 @@ export function AppRouter() {
           <Route path="applications" element={<MyApplications />} />
           <Route path="timesheet" element={<TimesheetSubmission />} />
           <Route path="wallet" element={<EmployeeWallet />} />
-          <Route path="connections" element={<Connections />} />
-        </Route>
-
-        {/* Unified Dashboard - Available to all authenticated users */}
-        <Route path="/unified-dashboard" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<UnifiedDashboardPage />} />
         </Route>
 
         {/* Admin Routes */}
@@ -203,15 +189,6 @@ export function AppRouter() {
         <Route path="/meet/:roomId" element={<ProtectedRoute>
               <Meet />
             </ProtectedRoute>} />
-
-        {/* Community Routes - Available to all authenticated users */}
-        <Route path="/community" element={<ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>}>
-          <Route index element={<CommunityHub />} />
-          <Route path="post/:id" element={<PostDetail />} />
-          <Route path="create" element={<CreatePost />} />
-        </Route>
 
         {/* Shared Routes */}
         <Route path="/notifications" element={<ProtectedRoute>

@@ -120,12 +120,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         badge: unreadMessages
       },
       {
-        name: 'Community Hub',
-        href: '/community',
-        icon: <UsersIcon className="w-5 h-5" />,
-        isNew: true // Highlight as new feature
-      },
-      {
         name: 'Notifications',
         href: '/notifications',
         icon: <BellIcon className="w-5 h-5" />,
@@ -187,18 +181,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           name: 'My Applications',
           href: '/employee/applications',
           icon: <FileTextIcon className="w-5 h-5" />
-        },
-        {
-          name: 'My Connections',
-          href: '/employee/connections',
-          icon: <UserPlusIcon className="w-5 h-5" />,
-          isNew: true
-        },
-        {
-          name: 'Unified Dashboard',
-          href: '/unified-dashboard',
-          icon: <TrendingUpIcon className="w-5 h-5" />,
-          isNew: true
         },
         {
           name: 'My Timesheet',
