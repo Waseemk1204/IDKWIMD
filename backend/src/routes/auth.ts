@@ -26,6 +26,7 @@ const router = express.Router();
 router.post('/register', authLimiter, validateRegister, register);
 router.post('/login', authLimiter, validateLogin, login);
 router.post('/google', authLimiter, loginWithGoogle);
+router.post('/google/callback', authLimiter, loginWithGoogle); // Google OAuth redirect callback
 router.post('/linkedin', authLimiter, loginWithLinkedIn);
 router.post('/refresh-token', refreshToken);
 

@@ -15,7 +15,7 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login, loginWithGoogle, loginWithLinkedIn, user } = useAuth();
+  const { login, loginWithGoogle, loginWithLinkedIn, handleTokenFromUrl, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,57 +37,41 @@ export const Login: React.FC = () => {
   useEffect(() => {
     const handleGoogleCallback = async () => {
       const urlParams = new URLSearchParams(location.search);
-      const credential = urlParams.get('credential');
+      const token = urlParams.get('token');
+      const googleAuth = urlParams.get('google_auth');
       const error = urlParams.get('error');
       
-      if (credential) {
-        console.log('Processing Google OAuth callback on login page');
+      // Handle token from backend redirect
+      if (token && googleAuth === 'success') {
+        console.log('Processing Google OAuth callback - token received from backend');
         setIsLoading(true);
         setError('');
         
         try {
-          // Decode the JWT token to get user info
-          const payload = JSON.parse(atob(credential.split('.')[1]));
-          console.log('Decoded JWT payload:', payload);
-          
-          const googleUser = {
-            id: payload.sub,
-            email: payload.email,
-            name: payload.name,
-            picture: payload.picture,
-            given_name: payload.given_name,
-            family_name: payload.family_name
-          };
-          
-          console.log('Google user data:', googleUser);
-          
-          // Login with Google user data
-          const user = await loginWithGoogle(googleUser);
+          // Use handleTokenFromUrl to process the token
+          const user = await handleTokenFromUrl(token);
           
           if (user) {
             console.log('Google login successful:', user);
             
-            // Redirect based on user role or intent
-            const params = new URLSearchParams(location.search);
-            const intent = params.get('intent');
+            // Clean up URL parameters
+            window.history.replaceState({}, document.title, '/login');
             
-            // Check for intended job ID from localStorage
+            // Redirect based on user role
             const intendedJobId = localStorage.getItem('intendedJobId');
             
             if (intendedJobId) {
-              // Clear the intended job ID and redirect to the specific job
               localStorage.removeItem('intendedJobId');
               navigate(`/employee/jobs/${intendedJobId}`);
             } else {
-              // Always redirect to dashboard based on user role or intent
-              if (intent === 'employer' || user?.role === 'employer') {
+              if (user?.role === 'employer') {
                 navigate('/employer');
-              } else if (intent === 'employee' || user?.role === 'employee') {
+              } else if (user?.role === 'employee') {
                 navigate('/employee');
               } else if (user?.role === 'admin') {
                 navigate('/admin');
               } else {
-                navigate('/employee'); // Default to employee dashboard
+                navigate('/employee');
               }
             }
           } else {
@@ -96,22 +80,26 @@ export const Login: React.FC = () => {
         } catch (loginError) {
           console.error('Google login error:', loginError);
           setError('Google authentication failed. Please try again.');
+          // Clean up URL parameters
+          window.history.replaceState({}, document.title, '/login');
         } finally {
           setIsLoading(false);
         }
       } else if (error) {
         console.error('Google OAuth error:', error);
         const message = urlParams.get('message');
-        if (error === 'user_not_found' && message) {
-          setError(message);
+        if (message) {
+          setError(`Google authentication failed: ${message}`);
         } else {
           setError('Google authentication failed. Please try again.');
         }
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, '/login');
       }
     };
 
     handleGoogleCallback();
-  }, [location, loginWithGoogle, navigate]);
+  }, [location, handleTokenFromUrl, navigate]);
 
   // LinkedIn OAuth is handled automatically by AuthContext
   // No need to do anything here - just let AuthContext process the token from URL

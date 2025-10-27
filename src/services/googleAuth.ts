@@ -107,26 +107,23 @@ class GoogleAuthService {
         throw new Error('Google Identity Services not loaded');
       }
       
-      // Use different redirect URIs for signup and login
-      let loginUri;
-      if (mode === 'signup') {
-        const rolePath = role || 'employee';
-        loginUri = window.location.hostname === 'localhost' 
-          ? `${window.location.origin}/signup/${rolePath}`  // Local development
-          : `https://parttimepays.in/signup/${rolePath}`;    // Production
-      } else {
-        loginUri = window.location.hostname === 'localhost' 
-          ? window.location.origin + '/login'  // Local development
-          : 'https://parttimepays.in/login';    // Production
+      // IMPORTANT: Use backend API endpoint for redirect, not frontend URL
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+      const loginUri = `${apiBaseUrl}/auth/google/callback`;
+      
+      // Store mode and role in sessionStorage to retrieve after redirect
+      sessionStorage.setItem('google_oauth_mode', mode);
+      if (role) {
+        sessionStorage.setItem('google_oauth_role', role);
       }
       
       logger.debug('GoogleAuthService - Redirect URI configured', { loginUri });
       
-      // Reinitialize Google Auth with the specific login_uri for redirect mode
+      // Reinitialize Google Auth with the backend API endpoint for redirect mode
       const config = {
         client_id: GOOGLE_CLIENT_ID,
         ux_mode: 'redirect',
-        login_uri: loginUri, // This is where Google will POST the credential
+        login_uri: loginUri, // Backend endpoint that will receive the credential
         auto_select: false,
         cancel_on_tap_outside: true,
         use_fedcm_for_prompt: false
@@ -134,7 +131,7 @@ class GoogleAuthService {
       
       (window as any).google.accounts.id.initialize(config);
       
-      logger.debug('GoogleAuthService - Initialized with redirect mode');
+      logger.debug('GoogleAuthService - Initialized with redirect mode to backend');
       
       // Create a temporary button element and trigger it
       const tempDiv = document.createElement('div');

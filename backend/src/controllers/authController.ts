@@ -482,24 +482,56 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 // Google OAuth login
 export const loginWithGoogle = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { googleId, email, fullName, profilePhoto, givenName, familyName } = req.body;
+    // Check if this is a Google OAuth callback (has 'credential' field)
+    const { credential, googleId, email, fullName, profilePhoto, givenName, familyName } = req.body;
 
-    console.log('🔐 Google OAuth login attempt:', { googleId, email, fullName });
-
-    if (!googleId || !email || !fullName) {
+    // If credential is present, decode it (Google OAuth redirect callback)
+    let userData;
+    if (credential) {
+      console.log('🔐 Google OAuth callback - decoding credential');
+      try {
+        // Decode the JWT token
+        const payload = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
+        console.log('✅ Decoded Google JWT:', { sub: payload.sub, email: payload.email });
+        
+        userData = {
+          googleId: payload.sub,
+          email: payload.email,
+          fullName: payload.name,
+          profilePhoto: payload.picture,
+          givenName: payload.given_name,
+          familyName: payload.family_name
+        };
+      } catch (decodeError) {
+        console.error('❌ Failed to decode Google credential:', decodeError);
+        // Redirect to frontend with error
+        res.redirect(`${config.FRONTEND_URL}/login?error=google_auth_failed&message=Failed to decode credential`);
+        return;
+      }
+    } else if (googleId && email && fullName) {
+      // Direct API call (from frontend)
+      userData = { googleId, email, fullName, profilePhoto, givenName, familyName };
+    } else {
       console.error('❌ Missing required Google user data');
-      res.status(400).json({
-        success: false,
-        message: 'Missing required Google user data'
-      });
+      if (req.headers.accept?.includes('text/html')) {
+        // Redirect to frontend with error
+        res.redirect(`${config.FRONTEND_URL}/login?error=google_auth_failed&message=Missing user data`);
+      } else {
+        res.status(400).json({
+          success: false,
+          message: 'Missing required Google user data'
+        });
+      }
       return;
     }
+
+    console.log('🔐 Google OAuth login attempt:', { googleId: userData.googleId, email: userData.email, fullName: userData.fullName });
 
     // Check if user already exists with this Google ID
     let user;
     try {
-      console.log('🔍 Searching for user by Google ID:', googleId);
-      user = await User.findOne({ googleId }).maxTimeMS(5000); // 5 second timeout
+      console.log('🔍 Searching for user by Google ID:', userData.googleId);
+      user = await User.findOne({ googleId: userData.googleId }).maxTimeMS(5000); // 5 second timeout
       console.log('✅ Google ID lookup complete:', user ? 'User found' : 'No user found');
     } catch (dbError: any) {
       console.error('❌ Database error during Google ID lookup:', {
@@ -507,19 +539,24 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         code: dbError.code,
         name: dbError.name
       });
-      res.status(503).json({
-        success: false,
-        message: 'Database temporarily unavailable. Please try again.',
-        error: 'database_unavailable'
-      });
+      if (credential) {
+        // OAuth callback - redirect with error
+        res.redirect(`${config.FRONTEND_URL}/login?error=database_unavailable&message=Database connection error`);
+      } else {
+        res.status(503).json({
+          success: false,
+          message: 'Database temporarily unavailable. Please try again.',
+          error: 'database_unavailable'
+        });
+      }
       return;
     }
     
     if (!user) {
       // Check if user exists with this email
       try {
-        console.log('🔍 Searching for user by email:', email);
-        user = await User.findOne({ email }).maxTimeMS(5000); // 5 second timeout
+        console.log('🔍 Searching for user by email:', userData.email);
+        user = await User.findOne({ email: userData.email }).maxTimeMS(5000); // 5 second timeout
         console.log('✅ Email lookup complete:', user ? 'User found' : 'No user found');
       } catch (dbError: any) {
         console.error('❌ Database error during email lookup:', {
@@ -527,18 +564,23 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
           code: dbError.code,
           name: dbError.name
         });
-        res.status(503).json({
-          success: false,
-          message: 'Database temporarily unavailable. Please try again.',
-          error: 'database_unavailable'
-        });
+        if (credential) {
+          // OAuth callback - redirect with error
+          res.redirect(`${config.FRONTEND_URL}/login?error=database_unavailable&message=Database connection error`);
+        } else {
+          res.status(503).json({
+            success: false,
+            message: 'Database temporarily unavailable. Please try again.',
+            error: 'database_unavailable'
+          });
+        }
         return;
       }
       
       if (user) {
         // Link Google account to existing user
-        user.googleId = googleId;
-        user.profilePhoto = profilePhoto || user.profilePhoto;
+        user.googleId = userData.googleId;
+        user.profilePhoto = userData.profilePhoto || user.profilePhoto;
         
         // Clean corrupted data before saving (fix empty strings in array/object fields)
         if (!Array.isArray(user.skills) || typeof user.skills === 'string') {
@@ -580,7 +622,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         }
       } else {
         // Create new user with Google data
-        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+        const username = userData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
         
         // Ensure username is unique
         let uniqueUsername = username;
@@ -610,13 +652,13 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
           }
         }
 
-        console.log('👤 Creating new Google user:', { email, username: uniqueUsername });
+        console.log('👤 Creating new Google user:', { email: userData.email, username: uniqueUsername });
         user = new User({
-          googleId,
-          email,
-          fullName,
+          googleId: userData.googleId,
+          email: userData.email,
+          fullName: userData.fullName,
           username: uniqueUsername,
-          profilePhoto,
+          profilePhoto: userData.profilePhoto,
           role: 'employee', // Default role for Google users
           isVerified: true, // Google users are considered verified
           verificationStatus: 'verified',
@@ -648,7 +690,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
 
     // Generate tokens
     const token = generateToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const refreshTokenStr = generateRefreshToken(user._id);
 
     // Set cookie
     res.cookie('token', token, {
@@ -658,43 +700,58 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    res.json({
-      success: true,
-      message: 'Google login successful',
-      data: {
-        user: {
-          id: user._id,
-          fullName: user.fullName,
-          displayName: user.displayName,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          profilePhoto: user.profilePhoto,
-          phone: user.phone,
-          location: user.location,
-          headline: user.headline,
-          about: user.about,
-          website: user.website,
-          skills: user.skills,
-          experiences: user.experiences,
-          education: user.education,
-          socialLinks: user.socialLinks,
-          companyInfo: user.companyInfo,
-          isVerified: user.isVerified,
-          isActive: user.isActive,
-          lastLogin: user.lastLogin,
-          createdAt: user.createdAt
-        },
-        token,
-        refreshToken
-      }
-    });
+    // If this is an OAuth callback (credential present), redirect to frontend
+    if (credential) {
+      console.log('✅ Google OAuth successful - redirecting to frontend');
+      const redirectUrl = `${config.FRONTEND_URL}/login?token=${encodeURIComponent(token)}&google_auth=success`;
+      res.redirect(redirectUrl);
+    } else {
+      // Direct API call - return JSON
+      res.json({
+        success: true,
+        message: 'Google login successful',
+        data: {
+          user: {
+            id: user._id,
+            fullName: user.fullName,
+            displayName: user.displayName,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            profilePhoto: user.profilePhoto,
+            phone: user.phone,
+            location: user.location,
+            headline: user.headline,
+            about: user.about,
+            website: user.website,
+            skills: user.skills,
+            experiences: user.experiences,
+            education: user.education,
+            socialLinks: user.socialLinks,
+            companyInfo: user.companyInfo,
+            isVerified: user.isVerified,
+            isActive: user.isActive,
+            lastLogin: user.lastLogin,
+            createdAt: user.createdAt
+          },
+          token,
+          refreshToken: refreshTokenStr
+        }
+      });
+    }
   } catch (error) {
     console.error('Google login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
+    
+    // Check if this is an OAuth callback
+    const { credential } = req.body;
+    if (credential) {
+      res.redirect(`${config.FRONTEND_URL}/login?error=google_auth_failed&message=An unexpected error occurred`);
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
   }
 };
 
