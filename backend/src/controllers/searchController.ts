@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import Job from '../models/Job';
 import User from '../models/User';
 import Blog from '../models/Blog';
-import { CommunityPost } from '../models/CommunityPost';
+// Removed: CommunityPost (MVP cleanup)
 import { AuthRequest } from '../middlewares/auth';
 
 // Global search across all content types
@@ -167,14 +167,9 @@ export const globalSearch = async (req: Request, res: Response): Promise<void> =
         ]
       };
 
-      const communityPosts = await CommunityPost.find(communityFilter)
-        .populate('author', 'name email profileImage role')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limitNum)
-        .lean();
-
-      const totalCommunity = await CommunityPost.countDocuments(communityFilter);
+      // Removed: Community posts search (MVP cleanup)
+      const communityPosts: any[] = [];
+      const totalCommunity = 0;
       results.community = communityPosts;
       results.totalResults += totalCommunity;
     }

@@ -5,9 +5,7 @@ import Job from '../models/Job';
 import Application from '../models/Application';
 import { Wallet } from '../models/Wallet';
 import { Transaction } from '../models/Transaction';
-import { CommunityPost } from '../models/CommunityPost';
-import { CommunityComment } from '../models/CommunityComment';
-import { Connection } from '../models/Connection';
+// Removed: Community and Connection models (MVP cleanup)
 import { Follow } from '../models/Follow';
 import mongoose from 'mongoose';
 
@@ -439,20 +437,9 @@ export const getModerationData = async (req: AuthRequest, res: Response): Promis
       .sort({ createdAt: -1 })
       .limit(20);
 
-    // Recent community posts (for moderation)
-    const recentCommunityPosts = await CommunityPost.find({ status: 'active' })
-      .populate('author', 'name email')
-      .select('title content tags likes views createdAt')
-      .sort({ createdAt: -1 })
-      .limit(20);
-
-    // Recent comments (for moderation)
-    const recentComments = await CommunityComment.find({ isApproved: true })
-      .populate('author', 'name email')
-      .populate('post', 'title')
-      .select('content likes createdAt')
-      .sort({ createdAt: -1 })
-      .limit(20);
+    // Removed: Community posts and comments (MVP cleanup)
+    const recentCommunityPosts: any[] = [];
+    const recentComments: any[] = [];
 
     // User reports (if report model exists)
     // TODO: Implement report model and fetch reports
@@ -577,36 +564,15 @@ export const moderateCommunityContent = async (req: AuthRequest, res: Response):
       return;
     }
 
-    let content;
-    if (contentType === 'post') {
-      content = await CommunityPost.findById(contentId);
-      if (content) {
-        if (action === 'delete') {
-          content.status = 'deleted';
-        } else if (action === 'reject') {
-          content.status = 'archived';
-        }
-        if (reason) {
-          (content as any).moderationNotes = reason;
-        }
-        await content.save();
-      }
-    } else if (contentType === 'comment') {
-      content = await CommunityComment.findById(contentId);
-      if (content) {
-        if (action === 'approve') {
-          content.isApproved = true;
-        } else if (action === 'reject') {
-          content.isApproved = false;
-        } else if (action === 'delete') {
-          content.isDeleted = true;
-          content.deletedAt = new Date();
-        }
-        if (reason) {
-          (content as any).moderationNotes = reason;
-        }
-        await content.save();
-      }
+    // Removed: Community content moderation (MVP cleanup)
+    let content: any = null;
+    
+    if (contentType === 'post' || contentType === 'comment') {
+      res.status(400).json({
+        success: false,
+        message: 'Community features have been removed from MVP'
+      });
+      return;
     }
 
     if (!content) {

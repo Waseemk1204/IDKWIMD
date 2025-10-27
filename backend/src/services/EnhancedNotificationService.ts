@@ -3,9 +3,8 @@ import { EnhancedNotification, IEnhancedNotification } from '../models/EnhancedN
 import { NotificationPreferences } from '../models/NotificationPreferences';
 import User from '../models/User';
 import Job from '../models/Job';
-import { CommunityPost } from '../models/CommunityPost';
+// Removed: CommunityPost and Connection (MVP cleanup)
 import Message from '../models/Message';
-import { Connection } from '../models/Connection';
 import mongoose from 'mongoose';
 
 export interface CreateNotificationData {
@@ -272,13 +271,8 @@ export class EnhancedNotificationService {
 
     // Increase score based on user interaction history
     if (data.sender) {
-      const connection = await Connection.findOne({
-        $or: [
-          { requester: data.recipient, recipient: data.sender },
-          { requester: data.sender, recipient: data.recipient }
-        ],
-        status: 'accepted'
-      });
+      // Removed: Connection check (MVP cleanup)
+      const connection = null;
 
       if (connection) {
         score += 20; // Connected users get higher relevance
@@ -374,13 +368,8 @@ export class EnhancedNotificationService {
           }
           break;
         case 'post':
-          const post = await CommunityPost.findById(id).select('title');
-          if (post) {
-            richContent.metadata = {
-              ...richContent.metadata,
-              postTitle: post.title
-            };
-          }
+          // Removed: Community post lookup (MVP cleanup)
+          // const post = null;
           break;
       }
     }
