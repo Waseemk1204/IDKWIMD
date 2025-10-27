@@ -67,7 +67,8 @@ export const Login: React.FC = () => {
             // NEW users should go through onboarding
             if (isNewAccount) {
               console.log('🎉 New Google user - redirecting to onboarding');
-              navigate('/onboarding');
+              const onboardingPath = user.role === 'employer' ? '/onboarding/employer' : '/onboarding/employee';
+              navigate(onboardingPath);
               return;
             }
             

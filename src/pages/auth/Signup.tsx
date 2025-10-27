@@ -129,7 +129,8 @@ export const Signup: React.FC = () => {
             // Redirect to onboarding after 2 seconds
             setTimeout(() => {
               console.log('🎉 New Google user - redirecting to onboarding');
-              navigate('/onboarding');
+              const onboardingPath = user.role === 'employer' ? '/onboarding/employer' : '/onboarding/employee';
+              navigate(onboardingPath);
             }, 2000);
           }
         } catch (error) {
