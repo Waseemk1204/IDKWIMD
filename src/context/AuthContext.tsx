@@ -415,20 +415,35 @@ export const AuthProvider: React.FC<{
   };
 
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
-    if (!user) return;
+    console.log('=== AuthContext.updateProfile CALLED ===');
+    console.log('Current user:', user ? user.email : 'null');
+    console.log('Update data:', userData);
+    
+    if (!user) {
+      console.error('=== ERROR: No user in AuthContext ===');
+      throw new Error('No user logged in');
+    }
     
     setIsLoading(true);
     try {
+      console.log('=== Calling apiService.updateProfile ===');
       const response = await apiService.updateProfile(userData);
+      console.log('=== apiService.updateProfile response ===', response);
       
       if (response.success && response.data?.user) {
         const updatedUser = response.data.user;
+        console.log('=== Profile updated successfully ===');
+        console.log('Updated user data:', updatedUser);
+        
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        console.log('=== User state and localStorage updated ===');
       } else {
+        console.error('=== Profile update failed ===', response.message);
         throw new Error(response.message || 'Profile update failed');
       }
     } catch (error) {
+      console.error('=== AuthContext.updateProfile ERROR ===', error);
       throw error;
     } finally {
       setIsLoading(false);

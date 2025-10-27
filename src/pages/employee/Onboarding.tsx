@@ -49,6 +49,7 @@ export const EmployeeOnboarding: React.FC = () => {
 
   const handleComplete = async (data: any) => {
     try {
+      console.log('=== ONBOARDING COMPLETE - STARTED ===');
       console.log('=== ONBOARDING COMPLETE - RAW DATA ===', data);
 
       // Ensure experiences and education are properly formatted arrays
@@ -89,14 +90,18 @@ export const EmployeeOnboarding: React.FC = () => {
       };
 
       console.log('=== ONBOARDING COMPLETE - CLEANED PAYLOAD ===', JSON.stringify(updatePayload, null, 2));
+      console.log('=== CALLING updateProfile FROM AuthContext ===');
 
       // Call AuthContext updateProfile to update both backend AND local user state
       await updateProfile(updatePayload);
 
+      console.log('=== updateProfile COMPLETED SUCCESSFULLY ===');
       toast.success('Your profile has been created successfully!');
       return { success: true };
     } catch (error: any) {
-      console.error('Onboarding completion error:', error);
+      console.error('=== ONBOARDING COMPLETION ERROR ===', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       toast.error(error.message || 'Failed to complete onboarding');
       throw error;
     }

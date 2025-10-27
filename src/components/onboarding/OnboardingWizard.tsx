@@ -182,9 +182,23 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   };
 
   const handleSaveAndExit = async () => {
-    await saveProgress();
-    toast.success('Progress saved! You can continue later.');
-    navigate(role === 'employee' ? '/employee/dashboard' : '/employer/dashboard');
+    setIsSubmitting(true);
+    try {
+      // Save progress to draft
+      await saveProgress();
+      
+      // ALSO update user profile with current data
+      console.log('=== SAVE & EXIT - Updating profile with current data ===');
+      await onComplete(data);
+      
+      toast.success('Progress saved to your profile! You can continue editing anytime.');
+      navigate(role === 'employee' ? '/employee/dashboard' : '/employer/dashboard');
+    } catch (error) {
+      console.error('Failed to save and exit:', error);
+      toast.error('Failed to save progress. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -212,9 +226,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={handleSaveAndExit}
+                disabled={isSubmitting}
                 leftIcon={<Save className="w-4 h-4" />}
               >
-                Save & Exit
+                {isSubmitting ? 'Saving...' : 'Save & Exit'}
               </Button>
             </div>
           </div>
