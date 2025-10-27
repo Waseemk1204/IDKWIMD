@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import {
   register,
   login,
@@ -22,11 +23,21 @@ import {
 
 const router = express.Router();
 
+// OAuth callback CORS bypass middleware (for Google/LinkedIn OAuth redirects)
+// These endpoints receive POST requests from OAuth providers with origin: null
+const oauthCallbackCors = cors({
+  origin: true, // Allow all origins for OAuth callbacks
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['POST', 'GET'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+});
+
 // Public routes
 router.post('/register', authLimiter, validateRegister, register);
 router.post('/login', authLimiter, validateLogin, login);
 router.post('/google', authLimiter, loginWithGoogle);
-router.post('/google/callback', authLimiter, loginWithGoogle); // Google OAuth redirect callback
+router.post('/google/callback', oauthCallbackCors, authLimiter, loginWithGoogle); // Google OAuth redirect callback with CORS bypass
 router.post('/linkedin', authLimiter, loginWithLinkedIn);
 router.post('/refresh-token', refreshToken);
 
