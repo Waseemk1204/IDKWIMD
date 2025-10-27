@@ -68,7 +68,8 @@ export const ProfileStep: React.FC = () => {
     });
     
     console.log('✅ Form FORCE auto-filled and onboarding data updated!');
-    setShowResumeUpload(false);
+    // DON'T hide the upload component - let user change if needed
+    // setShowResumeUpload(false);
   };
 
   return (
@@ -84,22 +85,25 @@ export const ProfileStep: React.FC = () => {
       </div>
 
       {/* Resume Upload Option */}
-      {!showResumeUpload && !data.resumeData && (
+      {!showResumeUpload && (
         <div className="mb-8 p-6 bg-primary-50 dark:bg-primary-900/20 border-2 border-dashed border-primary-300 dark:border-primary-700 rounded-xl">
           <div className="text-center">
             <FileText className="w-12 h-12 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-              Save Time with Your Resume
+              {data.resumeData ? 'Update Your Resume' : 'Save Time with Your Resume'}
             </h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-              Upload your resume and we'll automatically fill in your profile details
+              {data.resumeData 
+                ? 'Upload a different resume to update your information' 
+                : 'Upload your resume and we\'ll automatically fill in your profile details'
+              }
             </p>
             <Button
               variant="primary"
               onClick={() => setShowResumeUpload(true)}
               leftIcon={<Upload className="w-4 h-4" />}
             >
-              Upload Resume
+              {data.resumeData ? 'Upload Different Resume' : 'Upload Resume'}
             </Button>
           </div>
         </div>
@@ -118,25 +122,8 @@ export const ProfileStep: React.FC = () => {
               size="sm"
               onClick={() => setShowResumeUpload(false)}
             >
-              Skip for now
+              {data.resumeData ? 'Done' : 'Skip for now'}
             </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Resume Uploaded Indicator */}
-      {data.resumeData && (
-        <div className="mb-8 p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
-          <div className="flex items-center gap-3">
-            <FileText className="w-5 h-5 text-success-600 dark:text-success-400" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-success-900 dark:text-success-100">
-                Resume uploaded successfully!
-              </p>
-              <p className="text-xs text-success-700 dark:text-success-300">
-                We've pre-filled your profile with information from your resume. Review and edit as needed.
-              </p>
-            </div>
           </div>
         </div>
       )}

@@ -193,21 +193,31 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
               Resume parsed successfully!
             </h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
               {uploadedFile.name}
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setUploadedFile(null);
-                setSuccess(false);
-                setUploadProgress(0);
-              }}
-            >
-              Upload Another
-            </Button>
+            <p className="text-xs text-success-600 dark:text-success-400 mb-4">
+              ✓ Your information has been extracted and auto-filled
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUploadedFile(null);
+                  setSuccess(false);
+                  setUploadProgress(0);
+                  setError('');
+                }}
+                leftIcon={<Upload className="w-4 h-4" />}
+              >
+                Change Resume
+              </Button>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-3">
+              Upload a different resume to update your information
+            </p>
           </div>
         )}
       </div>
