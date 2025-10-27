@@ -38,7 +38,7 @@ const EMPLOYER_STEPS = [
 ];
 
 export const EmployerOnboarding: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const handleComplete = async (data: any) => {
     try {
@@ -49,18 +49,11 @@ export const EmployerOnboarding: React.FC = () => {
         hiringPreferences: data.hiringNeeds
       };
 
-      // Call API to update user profile
-      const response = await apiService.request('/users/profile', {
-        method: 'PUT',
-        body: JSON.stringify(updatePayload)
-      });
-
-      if (!response.success) {
-        throw new Error(response.message || 'Failed to update profile');
-      }
+      // Call AuthContext updateProfile to update both backend AND local user state
+      await updateProfile(updatePayload);
 
       toast.success('Your company profile has been created successfully!');
-      return response;
+      return { success: true };
     } catch (error: any) {
       console.error('Onboarding completion error:', error);
       toast.error(error.message || 'Failed to complete onboarding');
