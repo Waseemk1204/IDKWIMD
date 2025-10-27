@@ -1,7 +1,8 @@
 // Google OAuth configuration
 import logger from '../utils/logger';
 
-const GOOGLE_CLIENT_ID = '916734429640-e7c73gltbkl4eijae1qso7sbp6kkaauh.apps.googleusercontent.com';
+// Get Google Client ID from environment variable (set during build time)
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export interface GoogleUserInfo {
   id: string;
@@ -46,6 +47,12 @@ class GoogleAuthService {
    */
   private initializeGoogleAuth(): void {
     if (typeof window !== 'undefined' && (window as any).google) {
+      // Security check: Ensure Google Client ID is configured
+      if (!GOOGLE_CLIENT_ID) {
+        logger.error('GoogleAuthService - VITE_GOOGLE_CLIENT_ID not configured');
+        return;
+      }
+      
       logger.info('GoogleAuthService - Initializing Google Auth');
       
       (window as any).google.accounts.id.initialize({
@@ -77,6 +84,14 @@ class GoogleAuthService {
    * @param role - 'employee' or 'employer' for signup
    */
   async signIn(mode: 'login' | 'signup' = 'login', role?: 'employee' | 'employer'): Promise<GoogleAuthResponse> {
+    // Security check: Ensure Google Client ID is configured
+    if (!GOOGLE_CLIENT_ID) {
+      return {
+        success: false,
+        error: 'Google authentication is not configured. Please contact support.'
+      };
+    }
+    
     if (!this.isLoaded) {
       return {
         success: false,

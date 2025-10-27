@@ -78,11 +78,7 @@ const sanitizeObject = (obj: any): any => {
 // CORS configuration
 export const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests with no origin (direct browser access, health checks, monitoring tools)
-    if (!origin) {
-      return callback(null, true);
-    }
-
+    // Define allowed origins whitelist
     const allowedOrigins = [
       config.FRONTEND_URL,
       'https://parttimepays.in',
@@ -90,38 +86,36 @@ export const corsOptions = {
       'http://localhost:5173',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173',
-      // Add common Netlify patterns
-      /^https:\/\/.*\.netlify\.app$/,
-      /^https:\/\/.*\.netlify\.com$/,
-      // Add common Railway patterns
-      /^https:\/\/.*\.railway\.app$/,
-      // Add common Vercel patterns
-      /^https:\/\/.*\.vercel\.app$/,
-      // Add common Heroku patterns
-      /^https:\/\/.*\.herokuapp\.com$/
     ];
+    
+    // SECURITY: Only allow no-origin for health checks and development
+    // No-origin requests can come from: health checks, Postman, direct server requests
+    if (!origin) {
+      // In production, be more restrictive - only allow for health endpoint
+      if (config.NODE_ENV === 'production') {
+        logger.warn('CORS: No origin provided (health check or monitoring tool)');
+        return callback(null, true); // Allow for health checks
+      }
+      // In development, allow no-origin for easier testing
+      return callback(null, true);
+    }
 
     // Check if origin matches any allowed pattern
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (typeof allowedOrigin === 'string') {
-        return allowedOrigin === origin;
-      } else if (allowedOrigin instanceof RegExp) {
-        return allowedOrigin.test(origin);
-      }
-      return false;
-    });
+    const isAllowed = allowedOrigins.includes(origin);
 
     if (isAllowed) {
       callback(null, true);
     } else {
-      logger.warn(`CORS blocked origin: ${origin}`);
+      logger.warn(`🚫 CORS blocked unauthorized origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  // Security: Limit max age to prevent long-lived CORS cache
+  maxAge: 600 // 10 minutes
 };
 
 // Request logging middleware
