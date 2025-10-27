@@ -69,7 +69,7 @@ export const LinkedInAuthButton: React.FC<LinkedInAuthButtonProps> = ({
       case 'ghost':
         return 'bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100';
       default:
-        return 'bg-white border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm';
+        return 'bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm dark:shadow-neutral-900/30';
     }
   };
 
@@ -82,7 +82,7 @@ export const LinkedInAuthButton: React.FC<LinkedInAuthButtonProps> = ({
         ${getVariantClasses()}
         rounded-lg font-medium transition-all duration-200
         flex items-center justify-center space-x-3
-        hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2
+        hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2 dark:focus:ring-offset-neutral-900
         disabled:opacity-50 disabled:cursor-not-allowed
         ${className}
       `}
