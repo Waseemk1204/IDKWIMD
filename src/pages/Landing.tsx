@@ -513,34 +513,34 @@ export const Landing = () => {
                           </Link>
                         </div>
                         
-                {/* Trust Stats - Centered & Clean */}
-                <div className="inline-flex items-center gap-8 px-6 py-4 bg-white/50 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                {/* Trust Stats - Centered & Clean - Responsive */}
+                <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 px-4 sm:px-6 py-4 bg-white/50 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg max-w-full">
+                  <div className="text-center min-w-[80px]">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">
                       2K+
-                      </div>
+                    </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       Students Hired
                     </div>
                   </div>
-                  <div className="w-px h-10 bg-gray-300 dark:bg-gray-700"></div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                  <div className="hidden sm:block w-px h-10 bg-gray-300 dark:bg-gray-700"></div>
+                  <div className="text-center min-w-[80px]">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">
                       500+
-                </div>
+                    </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       Active Jobs
-              </div>
-            </div>
-                  <div className="w-px h-10 bg-gray-300 dark:bg-gray-700"></div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                    </div>
+                  </div>
+                  <div className="hidden sm:block w-px h-10 bg-gray-300 dark:bg-gray-700"></div>
+                  <div className="text-center min-w-[80px]">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1">
                       ₹10L+
-          </div>
+                    </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       Paid Out
-            </div>
-          </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
