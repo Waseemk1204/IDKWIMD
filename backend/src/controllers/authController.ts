@@ -524,6 +524,27 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         // Link Google account to existing user
         user.googleId = googleId;
         user.profilePhoto = profilePhoto || user.profilePhoto;
+        
+        // Clean corrupted data before saving (fix empty strings in array/object fields)
+        if (!Array.isArray(user.skills) || typeof user.skills === 'string') {
+          user.skills = [];
+        }
+        if (!Array.isArray(user.experiences) || typeof user.experiences === 'string') {
+          user.experiences = [];
+        }
+        if (!Array.isArray(user.education) || typeof user.education === 'string') {
+          user.education = [];
+        }
+        if (typeof user.jobPreferences !== 'object' || user.jobPreferences === null || typeof (user.jobPreferences as any) === 'string') {
+          user.jobPreferences = undefined;
+        }
+        if (typeof user.companyInfo !== 'object' || user.companyInfo === null || typeof (user.companyInfo as any) === 'string') {
+          user.companyInfo = undefined;
+        }
+        if (typeof user.socialLinks !== 'object' || user.socialLinks === null || typeof (user.socialLinks as any) === 'string') {
+          user.socialLinks = undefined;
+        }
+        
         try {
           await user.save();
         } catch (dbError) {
