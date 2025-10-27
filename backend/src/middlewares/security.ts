@@ -88,8 +88,12 @@ export const corsOptions = {
       'http://127.0.0.1:5173',
     ];
     
-    // SECURITY: Allow no-origin for specific scenarios
-    if (!origin) {
+    // SECURITY: Allow no-origin or "null" origin for specific scenarios
+    // Note: Google OAuth sends string "null" as origin, not undefined!
+    if (!origin || origin === 'null') {
+      // Log the incoming request for debugging
+      logger.info(`CORS: No-origin request to path: ${req?.path}`);
+      
       // Always allow health checks
       if (req?.path === '/health') {
         logger.debug('CORS: Health check allowed');
@@ -98,7 +102,7 @@ export const corsOptions = {
       
       // Allow OAuth callbacks (Google/LinkedIn POST with origin: null)
       if (req?.path?.includes('/auth/google/callback') || req?.path?.includes('/auth/linkedin/callback')) {
-        logger.info('CORS: OAuth callback allowed (origin: null)');
+        logger.info('✅ CORS: OAuth callback allowed (origin: null)');
         return callback(null, true);
       }
       
@@ -118,7 +122,7 @@ export const corsOptions = {
     if (isAllowed) {
       callback(null, true);
     } else {
-      logger.warn(`🚫 CORS blocked unauthorized origin: ${origin}`);
+      logger.warn(`🚫 CORS blocked unauthorized origin: ${origin} (path: ${req?.path})`);
       callback(new Error('Not allowed by CORS'));
     }
   },
