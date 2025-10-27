@@ -30,7 +30,7 @@ export const Signup: React.FC = () => {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [userName, setUserName] = useState('');
   
-  const { signup, loginWithGoogle, loginWithLinkedIn } = useAuth();
+  const { signup, loginWithGoogle, loginWithLinkedIn, handleTokenFromUrl } = useAuth();
   const navigate = useNavigate();
 
   // Enhanced validation
@@ -106,16 +106,41 @@ export const Signup: React.FC = () => {
     
     // Handle Google OAuth callback for new users
     if (googleAuth === 'success' && newUser === 'true' && token) {
-      const storedRole = localStorage.getItem('signup_role') || 'employee';
-      setRole(storedRole as 'employee' | 'employer');
+      const handleNewUserAuth = async () => {
+        const storedRole = localStorage.getItem('signup_role') || authRole || 'employee';
+        setRole(storedRole as 'employee' | 'employer');
+        
+        // Set loading and show animation
+        setIsLoading(true);
+        setShowSuccessAnimation(true);
+        
+        // Process the token to log the user in
+        try {
+          const user = await handleTokenFromUrl(token);
+          
+          if (user) {
+            // Extract name for personalization
+            const name = user.fullName || user.email?.split('@')[0] || 'there';
+            setUserName(name);
+            
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/signup');
+            
+            // Redirect to onboarding after 2 seconds
+            setTimeout(() => {
+              console.log('🎉 New Google user - redirecting to onboarding');
+              navigate('/onboarding');
+            }, 2000);
+          }
+        } catch (error) {
+          console.error('Failed to process auth token:', error);
+          setError('Authentication failed. Please try again.');
+          setIsLoading(false);
+          setShowSuccessAnimation(false);
+        }
+      };
       
-      // Set loading and show animation
-      setIsLoading(true);
-      setShowSuccessAnimation(true);
-      
-      // User name will be set by AuthContext when it processes the token
-      // For now, use a placeholder
-      setUserName('there');
+      handleNewUserAuth();
     }
     
     // Handle LinkedIn OAuth callback with animation for new users
@@ -166,7 +191,7 @@ export const Signup: React.FC = () => {
         setError('Failed to process LinkedIn profile data. Please try manual signup.');
       }
     }
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, handleTokenFromUrl]);
   
   // Update role if URL parameters change
   useEffect(() => {

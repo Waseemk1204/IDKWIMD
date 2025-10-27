@@ -57,7 +57,21 @@ export const Login: React.FC = () => {
             // Clean up URL parameters
             window.history.replaceState({}, document.title, '/login');
             
-            // Redirect based on user role
+            // Check if user is NEW (just created via Google OAuth)
+            // New users created within the last 60 seconds should go through onboarding
+            const accountAge = user.createdAt ? Date.now() - new Date(user.createdAt).getTime() : Infinity;
+            const isNewAccount = accountAge < 60000; // Less than 60 seconds old
+            
+            console.log('Account age (ms):', accountAge, 'Is new?', isNewAccount);
+            
+            // NEW users should go through onboarding
+            if (isNewAccount) {
+              console.log('🎉 New Google user - redirecting to onboarding');
+              navigate('/onboarding');
+              return;
+            }
+            
+            // EXISTING users go to their dashboard
             const intendedJobId = localStorage.getItem('intendedJobId');
             
             if (intendedJobId) {

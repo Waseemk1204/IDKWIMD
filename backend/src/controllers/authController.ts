@@ -685,6 +685,9 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       }
     }
 
+    // Track if this is a new user
+    const isNewUser = user.createdAt && (Date.now() - new Date(user.createdAt).getTime()) < 60000;
+    
     // Update last login
     await User.findByIdAndUpdate(user._id, { lastLogin: new Date() }, { runValidators: false });
 
@@ -703,8 +706,18 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     // If this is an OAuth callback (credential present), redirect to frontend
     if (credential) {
       console.log('✅ Google OAuth successful - redirecting to frontend');
-      const redirectUrl = `${config.FRONTEND_URL}/login?token=${encodeURIComponent(token)}&google_auth=success`;
-      res.redirect(redirectUrl);
+      
+      // NEW users go to /signup with success animation, then onboarding
+      // EXISTING users go to /login and then dashboard
+      if (isNewUser) {
+        console.log('🎉 New user created - redirecting to signup page with animation');
+        const redirectUrl = `${config.FRONTEND_URL}/signup?token=${encodeURIComponent(token)}&google_auth=success&new_user=true&role=${user.role}`;
+        res.redirect(redirectUrl);
+      } else {
+        console.log('👤 Existing user - redirecting to login page');
+        const redirectUrl = `${config.FRONTEND_URL}/login?token=${encodeURIComponent(token)}&google_auth=success`;
+        res.redirect(redirectUrl);
+      }
     } else {
       // Direct API call - return JSON
       res.json({
