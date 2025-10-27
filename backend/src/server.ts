@@ -67,7 +67,16 @@ class Server {
   private initializeMiddlewares(): void {
     // Security middlewares
     this.app.use(helmetConfig);
-    this.app.use(cors(corsOptions));
+    // Dynamic CORS with request context
+    this.app.use((req, res, next) => {
+      cors({
+        ...corsOptions,
+        origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+          // Pass request object to origin function
+          (corsOptions.origin as any)(origin, callback, req);
+        }
+      })(req, res, next);
+    });
     this.app.use(mongoSanitizeConfig);
     this.app.use(xssProtection);
 

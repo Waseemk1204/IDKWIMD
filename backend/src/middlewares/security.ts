@@ -77,7 +77,7 @@ const sanitizeObject = (obj: any): any => {
 
 // CORS configuration
 export const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void, req?: any) {
     // Define allowed origins whitelist
     const allowedOrigins = [
       config.FRONTEND_URL,
@@ -88,14 +88,26 @@ export const corsOptions = {
       'http://127.0.0.1:5173',
     ];
     
-    // SECURITY: Only allow no-origin for health checks and development
-    // No-origin requests can come from: health checks, Postman, direct server requests
+    // SECURITY: Allow no-origin for specific scenarios
     if (!origin) {
-      // In production, be more restrictive - only allow for health endpoint
+      // Always allow health checks
+      if (req?.path === '/health') {
+        logger.debug('CORS: Health check allowed');
+        return callback(null, true);
+      }
+      
+      // Allow OAuth callbacks (Google/LinkedIn POST with origin: null)
+      if (req?.path?.includes('/auth/google/callback') || req?.path?.includes('/auth/linkedin/callback')) {
+        logger.info('CORS: OAuth callback allowed (origin: null)');
+        return callback(null, true);
+      }
+      
+      // In production, log and allow (for health checks and monitoring)
       if (config.NODE_ENV === 'production') {
         logger.warn('CORS: No origin provided (health check or monitoring tool)');
-        return callback(null, true); // Allow for health checks
+        return callback(null, true);
       }
+      
       // In development, allow no-origin for easier testing
       return callback(null, true);
     }
