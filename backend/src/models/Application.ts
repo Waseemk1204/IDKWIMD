@@ -34,8 +34,8 @@ const applicationSchema = new Schema<IApplication>({
   },
   coverLetter: {
     type: String,
-    required: [true, 'Cover letter is required'],
-    maxlength: [1000, 'Cover letter cannot be more than 1000 characters']
+    maxlength: [1000, 'Cover letter cannot be more than 1000 characters'],
+    default: ''
   },
   resume: {
     type: String // URL to uploaded resume

@@ -193,11 +193,17 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
       message: 'Application submitted successfully',
       data: { application }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Submit application error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
