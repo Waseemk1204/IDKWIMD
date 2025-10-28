@@ -549,26 +549,99 @@ export const Landing = () => {
           </div>
         </section>
 
-        {/* Career Tips Section - Horizontal Scroll */}
+        {/* Career Tips Section - Grid Display */}
         <section className="py-20 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-12">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Career Tips
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Career Tips
               </h2>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  Tips and insights for your career journey
-                </p>
-              </div>
-              <Link to="/blogs">
-                <Button variant="secondary" size="md">
-                  View All Career Tips
-                </Button>
-              </Link>
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Tips and insights to help you navigate your career journey
+              </p>
             </div>
             
-            <HorizontalBlogScroll blogs={blogPosts} isLoading={isLoadingBlogs} />
+            {isLoadingBlogs ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+                    <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
+                    <div className="p-6">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-3/4"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-1/2"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : blogPosts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {blogPosts.map((blog: any) => (
+                  <Link
+                    key={blog._id || blog.id}
+                    to={`/blogs/${blog._id || blog.id}`}
+                    className="group block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-200"
+                  >
+                    {/* Thumbnail */}
+                    <div className="h-48 overflow-hidden">
+                      <img 
+                        src={blog.thumbnail} 
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-6">
+                      {/* Category Badge */}
+                      {blog.category && (
+                        <span className="inline-block px-3 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-full mb-3">
+                          {blog.category}
+                        </span>
+                      )}
+                      
+                      {/* Title */}
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                        {blog.title}
+                      </h3>
+                      
+                      {/* Excerpt */}
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
+                        {blog.excerpt || blog.description}
+                      </p>
+                      
+                      {/* Meta */}
+                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                        {blog.publishedAt && (
+                          <span>{new Date(blog.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        )}
+                        {blog.readTime && (
+                          <>
+                            <span>•</span>
+                            <span>{blog.readTime} min read</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400">No career tips available at the moment.</p>
+              </div>
+            )}
+            
+            {blogPosts.length > 0 && (
+              <div className="text-center mt-12">
+                <Link to="/blogs">
+                  <Button variant="primary" size="lg">
+                    View All Career Tips
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
 

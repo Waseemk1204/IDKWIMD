@@ -206,7 +206,7 @@ export const BrowseJobs: React.FC = () => {
                   <select
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-0 dark:bg-gray-700 dark:text-white text-sm"
                   >
                     <option value="">All Categories</option>
                     <option value="IT">IT & Development</option>
@@ -231,7 +231,7 @@ export const BrowseJobs: React.FC = () => {
                   <select
                     value={filters.experienceLevel}
                     onChange={(e) => handleFilterChange('experienceLevel', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-0 dark:bg-gray-700 dark:text-white text-sm"
                   >
                     <option value="">All Levels</option>
                     <option value="fresher">Fresher</option>
@@ -250,7 +250,7 @@ export const BrowseJobs: React.FC = () => {
                   <select
                     value={filters.jobType}
                     onChange={(e) => handleFilterChange('jobType', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-0 dark:bg-gray-700 dark:text-white text-sm"
                   >
                     <option value="">All Types</option>
                     <option value="part-time">Part-time</option>

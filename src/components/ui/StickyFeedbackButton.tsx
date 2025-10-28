@@ -142,8 +142,8 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
     buttonDiv.innerHTML = `
       <div style="
         position: fixed !important;
-        bottom: 24px !important;
-        right: 24px !important;
+        bottom: 20px !important;
+        right: 20px !important;
         z-index: 999999 !important;
         width: 56px !important;
         height: 56px !important;
@@ -154,10 +154,15 @@ export const StickyFeedbackButton: React.FC<StickyFeedbackButtonProps> = ({ clas
         justify-content: center !important;
         cursor: pointer !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        transition: all 0.3s ease !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
         border: none !important;
         outline: none !important;
-      " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        transform: translateZ(0) !important;
+        -webkit-transform: translateZ(0) !important;
+        backface-visibility: hidden !important;
+        -webkit-backface-visibility: hidden !important;
+        will-change: transform !important;
+      " onmouseover="this.style.transform='scale(1.1) translateZ(0)'" onmouseout="this.style.transform='scale(1) translateZ(0)'" ontouchstart="this.style.transform='scale(0.95) translateZ(0)'" ontouchend="this.style.transform='scale(1) translateZ(0)'">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
