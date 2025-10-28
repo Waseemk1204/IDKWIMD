@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { apiService } from '../../services/api';
 
 interface VideoCallProps {
   callId: string;
@@ -29,37 +28,23 @@ export const VideoCall: React.FC<VideoCallProps> = ({
   const jitsiApiRef = useRef<any>(null);
 
   useEffect(() => {
-    const initializeJitsi = async () => {
-      try {
-        // Create meeting room
-        const response = await apiService.createMeetingRoom({
-          callType,
-          participants: [user.id]
-        });
-
-        if (response.success) {
-          const { jitsiRoomUrl } = response.data;
-          
-          // Load Jitsi Meet API script
-          if (!window.JitsiMeetExternalAPI) {
-            const script = document.createElement('script');
-            script.src = 'https://meet.jit.si/external_api.js';
-            script.async = true;
-            document.head.appendChild(script);
-            
-            script.onload = () => {
-              createJitsiMeeting(jitsiRoomUrl);
-            };
-          } else {
-            createJitsiMeeting(jitsiRoomUrl);
-          }
-        }
-      } catch (error) {
-        console.error('Error initializing Jitsi meeting:', error);
+    const initializeJitsi = () => {
+      // Load Jitsi Meet API script
+      if (!window.JitsiMeetExternalAPI) {
+        const script = document.createElement('script');
+        script.src = 'https://meet.jit.si/external_api.js';
+        script.async = true;
+        document.head.appendChild(script);
+        
+        script.onload = () => {
+          createJitsiMeeting();
+        };
+      } else {
+        createJitsiMeeting();
       }
     };
 
-    const createJitsiMeeting = (_roomUrl: string) => {
+    const createJitsiMeeting = () => {
       if (!jitsiContainerRef.current) return;
 
       const domain = 'meet.jit.si';
@@ -70,18 +55,20 @@ export const VideoCall: React.FC<VideoCallProps> = ({
         parentNode: jitsiContainerRef.current,
         userInfo: {
           displayName: user.name,
-          email: user.email,
-          avatar: user.avatar
+          email: user.email
         },
         configOverwrite: {
-          startWithAudioMuted: callType === 'video',
+          startWithAudioMuted: false,
           startWithVideoMuted: callType === 'audio',
           enableWelcomePage: false,
+          // Skip prejoin page to join directly as first user (becomes moderator automatically)
           prejoinPageEnabled: false,
           hideDisplayName: false,
-          hideEmail: false,
-          enableLayerSizing: true,
-          enableNoisyMicDetection: true
+          disableModeratorIndicator: false,
+          enableLayerSuspension: true,
+          enableNoisyMicDetection: true,
+          // Note: Public Jitsi instance may still enforce lobby, but first user becomes moderator
+          requireDisplayName: false
         },
         interfaceConfigOverwrite: {
           TOOLBAR_BUTTONS: [
@@ -93,7 +80,9 @@ export const VideoCall: React.FC<VideoCallProps> = ({
           ],
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
-          SHOW_POWERED_BY: false
+          SHOW_POWERED_BY: false,
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
+          HIDE_INVITE_MORE_HEADER: false
         }
       };
 
