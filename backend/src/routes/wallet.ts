@@ -7,7 +7,8 @@ import {
   verifyPayment,
   withdrawFunds,
   transferFunds,
-  getWalletStats
+  getWalletStats,
+  testAddFunds
 } from '../controllers/walletController';
 import {
   validatePagination,
@@ -29,6 +30,7 @@ router.get('/stats', getWalletStats as any);
 // Payment routes
 router.post('/topup', validateWalletTopUp, createTopUpOrder as any);
 router.post('/verify-payment', verifyPayment as any);
+router.post('/test-add-funds', testAddFunds as any); // For testing without Razorpay
 
 // Transfer routes
 router.post('/withdraw', validateWithdrawal, withdrawFunds as any);

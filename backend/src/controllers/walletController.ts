@@ -452,6 +452,79 @@ export const transferFunds = async (req: AuthRequest, res: Response): Promise<vo
   }
 };
 
+// Test wallet top-up (for development/testing without Razorpay)
+export const testAddFunds = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { amount } = req.body;
+    const userId = req.user._id;
+
+    if (!amount || amount < 100) {
+      res.status(400).json({
+        success: false,
+        message: 'Minimum amount is ₹100'
+      });
+      return;
+    }
+
+    if (amount > 1000000) {
+      res.status(400).json({
+        success: false,
+        message: 'Maximum amount is ₹10,00,000 for test top-up'
+      });
+      return;
+    }
+
+    // Get or create wallet
+    let wallet = await Wallet.findOne({ userId, isActive: true });
+    if (!wallet) {
+      wallet = new Wallet({
+        userId,
+        balance: 0,
+        currency: 'INR'
+      });
+      await wallet.save();
+    }
+
+    // Create transaction record
+    const transaction = new Transaction({
+      userId,
+      walletId: wallet._id,
+      type: 'credit',
+      amount,
+      currency: 'INR',
+      status: 'completed',
+      description: `Test wallet top-up of ₹${amount} (No payment gateway)`,
+      metadata: {
+        testTransaction: true,
+        addedAt: new Date()
+      }
+    });
+
+    await transaction.save();
+
+    // Add to wallet balance
+    wallet.balance += amount;
+    await wallet.save();
+
+    res.json({
+      success: true,
+      message: `Test funds of ₹${amount.toLocaleString()} added successfully`,
+      data: {
+        transaction,
+        wallet: {
+          balance: wallet.balance
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Test add funds error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add test funds'
+    });
+  }
+};
+
 // Get wallet statistics
 export const getWalletStats = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

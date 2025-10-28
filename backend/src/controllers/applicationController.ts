@@ -5,6 +5,7 @@ import Job from '../models/Job';
 import User from '../models/User';
 import { AuthRequest } from '../middlewares/auth';
 import { EnhancedNotificationService } from '../services/EnhancedNotificationService';
+import { createContractFromApplication } from './contractController';
 
 // Get user's applications
 export const getUserApplications = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -307,6 +308,43 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
       { path: 'job', select: 'title company location hourlyRate' },
       { path: 'applicant', select: 'name email profileImage' }
     ]);
+
+    // If application is accepted, create a contract
+    if (status === 'accepted') {
+      try {
+        const contractResult = await createContractFromApplication(id, employerId);
+        if (contractResult.success) {
+          console.log('✅ Contract created successfully for application:', id);
+          res.json({
+            success: true,
+            message: 'Application accepted and contract created successfully',
+            data: { 
+              application: updatedApplication,
+              contract: contractResult.contract
+            }
+          });
+          return;
+        } else {
+          // Revert application status if contract creation failed
+          await Application.findByIdAndUpdate(id, { status: 'shortlisted' });
+          res.status(400).json({
+            success: false,
+            message: `Failed to create contract: ${contractResult.message}`,
+            data: { application: updatedApplication }
+          });
+          return;
+        }
+      } catch (contractError: any) {
+        console.error('Contract creation error:', contractError);
+        // Revert application status
+        await Application.findByIdAndUpdate(id, { status: 'shortlisted' });
+        res.status(500).json({
+          success: false,
+          message: `Failed to create contract: ${contractError.message}`
+        });
+        return;
+      }
+    }
 
     res.json({
       success: true,

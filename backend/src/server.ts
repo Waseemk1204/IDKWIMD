@@ -29,6 +29,7 @@ import notificationRoutes from './routes/notifications';
 import enhancedNotificationRoutes from './routes/enhancedNotifications';
 import searchRoutes from './routes/search';
 import walletRoutes from './routes/wallet';
+import contractRoutes from './routes/contractRoutes';
 import adminRoutes from './routes/admin';
 import verificationRoutes from './routes/verification';
 import channelRoutes from './routes/channels';
@@ -166,6 +167,7 @@ class Server {
     this.app.use('/api/v1/notifications-enhanced', enhancedNotificationRoutes);
     this.app.use('/api/v1/search', searchRoutes);
     this.app.use('/api/v1/wallet', walletRoutes);
+    this.app.use('/api/v1/contracts', contractRoutes);
     this.app.use('/api/v1/admin', adminRoutes);
     this.app.use('/api/v1/verification', verificationRoutes);
     this.app.use('/api/v1/channels', channelRoutes);
