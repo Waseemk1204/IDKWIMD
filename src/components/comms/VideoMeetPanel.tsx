@@ -13,14 +13,14 @@ export const VideoMeetPanel: React.FC = () => {
   const handleCreateInstantMeeting = async () => {
     setIsCreating(true);
     try {
-      const roomId = `meet-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const link = `${window.location.origin}/meet/${roomId}`;
-      setMeetingLink(link);
-      
-      // Open in new window
-      window.open(`/meet/${roomId}`, '_blank');
+      // Open Google Meet deep link for instant meeting
+      const meetUrl = 'https://meet.google.com/new';
+      window.open(meetUrl, '_blank', 'noopener');
+
+      // Update UI with helpful message
+      setMeetingLink(meetUrl);
     } catch (error) {
-      console.error('Error creating meeting:', error);
+      console.error('Error launching Google Meet:', error);
     } finally {
       setIsCreating(false);
     }
@@ -53,9 +53,9 @@ export const VideoMeetPanel: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Video Meetings
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Free, unlimited video calls with screen sharing powered by Jitsi Meet
-          </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Instant meetings powered by Google Meet (opens in a new tab)
+            </p>
         </div>
 
         {/* Action Cards */}
@@ -125,7 +125,7 @@ export const VideoMeetPanel: React.FC = () => {
             <div className="flex items-center space-x-2">
               <input
                 type="text"
-                value={meetingLink}
+                value={meetingLink || 'https://meet.google.com/new'}
                 readOnly
                 className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
               />
@@ -139,7 +139,7 @@ export const VideoMeetPanel: React.FC = () => {
             </div>
 
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Share this link with participants. The meeting has already opened in a new window.
+              A new Google Meet tab has opened. If not, click the Copy button and paste in a new tab.
             </p>
           </div>
         )}
@@ -195,7 +195,7 @@ export const VideoMeetPanel: React.FC = () => {
         {/* Cost Info */}
         <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            💰 <strong className="text-green-600 dark:text-green-400">100% Free Forever</strong> - Powered by Jitsi Meet
+            Uses Google Meet deep link (no embed, no API required)
           </p>
         </div>
       </div>
