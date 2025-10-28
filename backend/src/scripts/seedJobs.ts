@@ -36,9 +36,11 @@ const cities = [
 const categories = [
   'IT', 'Marketing', 'Sales', 'Design', 'Content', 'Customer Service',
   'Data', 'Finance', 'Education', 'Healthcare'
-];
+] as const;
 
-const skills = {
+type Category = typeof categories[number];
+
+const skills: Record<Category, string[]> = {
   IT: ['JavaScript', 'Python', 'Java', 'React', 'Node.js', 'Angular', 'Vue.js', 'TypeScript', 'PHP', 'Ruby', 'C++', 'Swift', 'Kotlin', 'SQL', 'MongoDB', 'AWS', 'Docker', 'Kubernetes', 'Git'],
   Marketing: ['Digital Marketing', 'SEO', 'SEM', 'Social Media', 'Content Strategy', 'Google Analytics', 'Facebook Ads', 'Email Marketing', 'Brand Management', 'Market Research', 'Copywriting', 'Campaign Management'],
   Sales: ['B2B Sales', 'B2C Sales', 'Cold Calling', 'Lead Generation', 'CRM', 'Salesforce', 'Negotiation', 'Client Relations', 'Territory Management', 'Account Management'],
@@ -51,7 +53,7 @@ const skills = {
   Healthcare: ['Patient Care', 'Medical Records', 'Healthcare IT', 'Medical Billing', 'HIPAA Compliance', 'EMR Systems', 'Healthcare Administration', 'Medical Coding']
 };
 
-const jobTitles = {
+const jobTitles: Record<Category, string[]> = {
   IT: ['Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Mobile App Developer', 'DevOps Engineer', 'QA Engineer', 'UI Developer', 'Software Engineer', 'Web Developer', 'Systems Administrator'],
   Marketing: ['Digital Marketing Specialist', 'SEO Analyst', 'Social Media Manager', 'Marketing Coordinator', 'Content Marketer', 'Brand Manager', 'Marketing Assistant', 'Growth Hacker', 'Email Marketing Specialist'],
   Sales: ['Sales Representative', 'Business Development Executive', 'Inside Sales Representative', 'Account Executive', 'Sales Associate', 'Territory Manager', 'Lead Generation Specialist', 'Sales Coordinator'],
@@ -103,7 +105,7 @@ const requirements = [
 ];
 
 const generateRandomJob = (employerId: string) => {
-  const category = categories[Math.floor(Math.random() * categories.length)];
+  const category: Category = categories[Math.floor(Math.random() * categories.length)];
   const title = jobTitles[category][Math.floor(Math.random() * jobTitles[category].length)];
   const company = companies[Math.floor(Math.random() * companies.length)];
   const location = cities[Math.floor(Math.random() * cities.length)];
