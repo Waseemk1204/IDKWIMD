@@ -27,13 +27,26 @@ export const VideoMeetPanel: React.FC = () => {
   };
 
   const handleJoinMeeting = () => {
-    const roomId = prompt('Enter meeting ID or link:');
-    if (roomId) {
-      // Extract room ID from link if full URL provided
-      const match = roomId.match(/\/meet\/([^\/]+)/);
-      const finalRoomId = match ? match[1] : roomId;
-      window.open(`/meet/${finalRoomId}`, '_blank');
+    const input = prompt('Enter Google Meet link or code (e.g., abc-defg-hij):');
+    if (!input) return;
+
+    const value = input.trim();
+
+    // If full URL, open as-is
+    if (/^https?:\/\//i.test(value)) {
+      window.open(value, '_blank', 'noopener');
+      return;
     }
+
+    // If only the code
+    const code = value.match(/[a-zA-Z0-9-]+/g)?.join('-') || '';
+    if (code && /^[a-zA-Z0-9-]{3,}$/i.test(code)) {
+      const meetUrl = `https://meet.google.com/${code}`;
+      window.open(meetUrl, '_blank', 'noopener');
+      return;
+    }
+
+    alert('Please enter a valid Google Meet link or code');
   };
 
   const copyToClipboard = () => {
@@ -144,60 +157,7 @@ export const VideoMeetPanel: React.FC = () => {
           </div>
         )}
 
-        {/* Features List */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Meeting Features
-          </h3>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Video className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">HD Video</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Crystal clear video quality</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">Unlimited Participants</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">No limits on attendees</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Video className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">Screen Sharing</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Share your screen easily</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div>
-                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">No Time Limit</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Meet as long as you need</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Cost Info */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Uses Google Meet deep link (no embed, no API required)
-          </p>
-        </div>
+        {/* Removed marketing/features and cost info per requirement */}
       </div>
     </div>
   );
