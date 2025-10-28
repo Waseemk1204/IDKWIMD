@@ -61,14 +61,21 @@ export const VideoCall: React.FC<VideoCallProps> = ({
           startWithAudioMuted: false,
           startWithVideoMuted: callType === 'audio',
           enableWelcomePage: false,
-          // Skip prejoin page to join directly as first user (becomes moderator automatically)
+          // Skip prejoin page to join directly
           prejoinPageEnabled: false,
           hideDisplayName: false,
           disableModeratorIndicator: false,
           enableLayerSuspension: true,
           enableNoisyMicDetection: true,
-          // Note: Public Jitsi instance may still enforce lobby, but first user becomes moderator
-          requireDisplayName: false
+          requireDisplayName: false,
+          // Disable lobby/waiting room completely
+          disableLobbyPassword: true,
+          enableLobbyChat: false,
+          // Room security settings - make room open by default
+          roomPasswordNumberOfDigits: false,
+          // Ensure everyone can join without approval
+          autoKnockLobby: false,
+          enableAutomaticUrlCopy: false
         },
         interfaceConfigOverwrite: {
           TOOLBAR_BUTTONS: [
