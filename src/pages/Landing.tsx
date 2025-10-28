@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, ArrowRight, X, Menu, CheckCircle, Briefcase, Clock, DollarSign } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowRight, X, Menu, CheckCircle, Briefcase, Clock, DollarSign, Users } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
 import apiService from '../services/api';
@@ -462,10 +462,30 @@ export const Landing = () => {
                       </h1>
                 
                 {/* Supporting Text - Centered */}
-                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto mb-10">
+                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto mb-8">
                   Connect with flexible opportunities designed for students. 
                   Build your career while balancing your studies.
                 </p>
+                
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+                  <Link to="/browse-jobs">
+                    <button className="group relative px-8 py-4 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 w-full sm:w-auto">
+                      <span className="flex items-center justify-center gap-2">
+                        <Briefcase className="w-5 h-5" />
+                        Find Your Next Job
+                      </span>
+                    </button>
+                  </Link>
+                  <Link to="/signup">
+                    <button className="group relative px-8 py-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full sm:w-auto">
+                      <span className="flex items-center justify-center gap-2">
+                        <Users className="w-5 h-5" />
+                        Post a Job
+                      </span>
+                    </button>
+                  </Link>
+                </div>
                 
                 {/* Hero Search Bar */}
                 <HeroSearchBar />

@@ -109,13 +109,13 @@ export const JobCard: React.FC<JobCardProps> = ({
 
   if (variant === 'compact') {
     return (
-      <div className={`${baseClasses} p-4 ${clickableClasses} ${hoverClasses} ${className}`} onClick={!showActions ? handleJobClick : undefined}>
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 dark:text-white transition-colors">
+      <div className={`${baseClasses} p-4 ${clickableClasses} ${hoverClasses} ${className} h-full flex flex-col`} onClick={!showActions ? handleJobClick : undefined}>
+        <div className="flex justify-between items-start gap-4 flex-1">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-white transition-colors line-clamp-2">
               {job.title}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
               {job.company}
             </p>
             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -134,17 +134,17 @@ export const JobCard: React.FC<JobCardProps> = ({
               )}
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm font-semibold text-success-600 dark:text-success-400">
+          <div className="text-right flex-shrink-0">
+            <p className="text-sm font-semibold text-success-600 dark:text-success-400 whitespace-nowrap">
               {formatPayRate(job)}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">
               {formatDate(job.postedDate)}
             </p>
           </div>
         </div>
         {!showActions && (
-          <div className="mt-3">
+          <div className="mt-4">
             <Link to={isAuthenticated ? `/employee/jobs/${job.id}` : '/login'}>
               <button className="w-full px-4 py-2 text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-colors duration-200">
                 View Details

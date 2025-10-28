@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 
 interface HorizontalBlogScrollProps {
   blogs: any[];
@@ -54,10 +54,10 @@ export const HorizontalBlogScroll: React.FC<HorizontalBlogScrollProps> = ({ blog
       {/* Left Arrow - Desktop Only */}
       <button
         onClick={() => scroll('left')}
-        className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all opacity-0 group-hover:opacity-100"
+        className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all opacity-0 group-hover:opacity-100"
         aria-label="Scroll left"
       >
-        <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+        <span className="text-2xl font-bold text-gray-700 dark:text-gray-300">&lt;</span>
       </button>
 
       {/* Scrollable Container */}
@@ -133,10 +133,10 @@ export const HorizontalBlogScroll: React.FC<HorizontalBlogScrollProps> = ({ blog
       {/* Right Arrow - Desktop Only */}
       <button
         onClick={() => scroll('right')}
-        className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all opacity-0 group-hover:opacity-100"
+        className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all opacity-0 group-hover:opacity-100"
         aria-label="Scroll right"
       >
-        <ChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+        <span className="text-2xl font-bold text-gray-700 dark:text-gray-300">&gt;</span>
       </button>
     </div>
   );
