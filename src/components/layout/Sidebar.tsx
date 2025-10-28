@@ -104,6 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     icon: React.ReactNode;
     badge?: number; // For notification counts
     isNew?: boolean; // For highlighting new features
+    showDot?: boolean; // Show a red dot instead of number (for Comms)
   };
 
   /**
@@ -117,13 +118,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         name: 'Comms',
         href: '/comms',
         icon: <MessageSquareIcon className="w-5 h-5" />,
-        badge: unreadMessages
-      },
-      {
-        name: 'Notifications',
-        href: '/notifications',
-        icon: <BellIcon className="w-5 h-5" />,
-        badge: unreadNotifications
+        badge: unreadMessages,
+        showDot: true // Show red dot instead of number
       },
       {
         name: 'My Profile',
@@ -297,18 +293,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Badges and Indicators - Hidden when collapsed */}
         {!collapsed && (
           <div className="flex items-center space-x-2">
-            {/* Notification Badge */}
+            {/* Notification Badge or Dot */}
             {item.badge && item.badge > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary-500 text-[10px] font-semibold text-white">
-                {item.badge > 9 ? '9+' : item.badge}
-              </span>
+              item.showDot ? (
+                <div className="h-2.5 w-2.5 rounded-full bg-red-500"></div>
+              ) : (
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary-500 text-[10px] font-semibold text-white">
+                  {item.badge > 9 ? '9+' : item.badge}
+                </span>
+              )
             )}
           </div>
         )}
 
         {/* Notification Badge for collapsed state */}
         {collapsed && item.badge && item.badge > 0 && (
-          <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary-500 border-2 border-white dark:border-gray-900"></div>
+          <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-gray-900"></div>
         )}
       </Link>
     );
