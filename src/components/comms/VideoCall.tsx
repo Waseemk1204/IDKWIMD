@@ -47,8 +47,7 @@ export const VideoCall: React.FC<VideoCallProps> = ({
     const createJitsiMeeting = () => {
       if (!jitsiContainerRef.current) return;
 
-      // Use custom domain if set in env, otherwise use public Jitsi instance
-      const domain = import.meta.env.VITE_JITSI_DOMAIN || 'meet.jit.si';
+      const domain = 'meet.jit.si';
       const options = {
         roomName: callId,
         width: '100%',
