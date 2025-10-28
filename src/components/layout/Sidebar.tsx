@@ -294,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!collapsed && (
           <div className="flex items-center space-x-2">
             {/* Notification Badge or Dot */}
-            {item.badge && item.badge > 0 && (
+            {(item.badge !== undefined && item.badge > 0) && (
               item.showDot ? (
                 <div className="h-2.5 w-2.5 rounded-full bg-red-500"></div>
               ) : (
@@ -307,7 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Notification Badge for collapsed state */}
-        {collapsed && item.badge && item.badge > 0 && (
+        {collapsed && (item.badge !== undefined && item.badge > 0) && (
           <div className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-gray-900"></div>
         )}
       </Link>
