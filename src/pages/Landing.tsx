@@ -8,7 +8,6 @@ import { SEO, pageSEO } from '../utils/seo';
 import { DevelopmentNotice } from '../components/ui/DevelopmentNotice';
 import { HeroSearchBar } from '../components/landing/HeroSearchBar';
 import { HorizontalJobScroll } from '../components/landing/HorizontalJobScroll';
-import { HorizontalBlogScroll } from '../components/landing/HorizontalBlogScroll';
 
 // API Test Component for debugging - TODO: Remove or implement
 const ApiTestComponent = () => { // eslint-disable-line @typescript-eslint/no-unused-vars

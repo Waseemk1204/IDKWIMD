@@ -36,7 +36,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   
   const baseInputStyles = variant === 'professional' 
     ? 'input-professional'
-    : `w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-soft placeholder-neutral-400 dark:placeholder-neutral-500 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 ${hasError ? 'border-error-300 dark:border-error-600 bg-error-50 dark:bg-error-900/20' : ''}`;
+    : `w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-soft placeholder-neutral-400 dark:placeholder-neutral-500 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 focus:border-primary-500 transition-all duration-200 ${hasError ? 'border-error-300 dark:border-error-600 bg-error-50 dark:bg-error-900/20' : ''}`;
 
   return (
     <div className={`${isFullWidth ? 'w-full' : ''} space-y-2`}>

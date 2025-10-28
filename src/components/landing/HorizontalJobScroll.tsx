@@ -71,7 +71,7 @@ export const HorizontalJobScroll: React.FC<HorizontalJobScrollProps> = ({ jobs, 
       >
         <div 
           className="grid grid-flow-col auto-cols-[calc(85%)] sm:auto-cols-[calc(45%)] md:auto-cols-[calc(32%)] lg:auto-cols-[calc(23%)] xl:auto-cols-[calc((100%-3*1rem)/4.5)] gap-4"
-          style={{ minWidth: 'min-content', height: '220px' }}
+          style={{ minWidth: 'min-content' }}
         >
           {jobs.map((job) => (
             <div 
