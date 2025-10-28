@@ -93,12 +93,7 @@ export const createMeetingRoom = async (req: AuthRequest, res: Response) => {
   try {
     const { conversationId, channelId, callType = 'video', participants } = req.body;
 
-    if (!conversationId && !channelId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Either conversationId or channelId is required'
-      });
-    }
+    // Note: conversationId and channelId are now optional to support instant meetings
 
     // Generate unique room name
     const roomName = `comms-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -107,7 +102,7 @@ export const createMeetingRoom = async (req: AuthRequest, res: Response) => {
     const jitsiRoomUrl = `https://meet.jit.si/${roomName}`;
 
     // Create call history record
-    const callHistory = new CallHistory({
+    const callHistoryData: any = {
       callId: roomName,
       participants: [
         {
@@ -116,13 +111,21 @@ export const createMeetingRoom = async (req: AuthRequest, res: Response) => {
           status: 'joined'
         }
       ],
-      conversation: conversationId,
-      channel: channelId,
       callType,
       status: 'initiated',
       initiatedBy: req.user._id,
       jitsiRoomUrl
-    });
+    };
+
+    // Only add conversation/channel if provided
+    if (conversationId) {
+      callHistoryData.conversation = conversationId;
+    }
+    if (channelId) {
+      callHistoryData.channel = channelId;
+    }
+
+    const callHistory = new CallHistory(callHistoryData);
 
     await callHistory.save();
 
