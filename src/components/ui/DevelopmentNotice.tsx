@@ -24,23 +24,25 @@ export const DevelopmentNotice: React.FC<DevelopmentNoticeProps> = ({ onDismiss 
     }
   }, []);
 
-  // Lock body scroll when modal is visible
+  // Lock body scroll when modal is visible (simpler approach)
   useEffect(() => {
     if (isVisible) {
-      // Save current scroll position
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflowY = 'scroll'; // Prevent layout shift
+      // Prevent body scroll by hiding overflow
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      
+      // Calculate scrollbar width to prevent layout shift
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
       
       return () => {
-        // Restore scroll position
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflowY = '';
-        window.scrollTo(0, scrollY);
+        // Restore original styles
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
       };
     }
   }, [isVisible]);
