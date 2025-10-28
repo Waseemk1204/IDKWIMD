@@ -13,12 +13,14 @@ export const VideoMeetPanel: React.FC = () => {
   const handleCreateInstantMeeting = async () => {
     setIsCreating(true);
     try {
-      // Open Google Meet deep link for instant meeting
+      // Create a shareable internal link like /meet/<roomId>
+      const roomId = `meet-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const internalLink = `${window.location.origin}/meet/${roomId}`;
+      setMeetingLink(internalLink);
+
+      // Open Google Meet deep link for the host in a new tab
       const meetUrl = 'https://meet.google.com/new';
       window.open(meetUrl, '_blank', 'noopener');
-
-      // Update UI with helpful message
-      setMeetingLink(meetUrl);
     } catch (error) {
       console.error('Error launching Google Meet:', error);
     } finally {
@@ -143,7 +145,7 @@ export const VideoMeetPanel: React.FC = () => {
             <div className="flex items-center space-x-2">
               <input
                 type="text"
-                value={meetingLink || 'https://meet.google.com/new'}
+                value={meetingLink}
                 readOnly
                 className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
               />
@@ -157,7 +159,7 @@ export const VideoMeetPanel: React.FC = () => {
             </div>
 
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Copy this link and paste it in your browser. If a new tab didn’t open, use this link.
+              Share this link with participants. The meeting has already opened in a new window.
             </p>
           </div>
         )}
