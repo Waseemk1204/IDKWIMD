@@ -284,17 +284,17 @@ export const JobCard: React.FC<JobCardProps> = ({
 
   // Default variant - Clean, Industry-standard design
   return (
-    <div className={`${baseClasses} ${clickableClasses} ${hoverClasses} ${className}`} onClick={!showActions ? handleJobClick : undefined}>
+    <div className={`${baseClasses} ${clickableClasses} ${hoverClasses} ${className} h-full flex flex-col`} onClick={!showActions ? handleJobClick : undefined}>
       {/* Header */}
       <div className="p-4 border-b border-gray-100 dark:border-gray-700">
         <div className="flex items-start justify-between gap-4 mb-2">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2 h-12 leading-6">
               {job.title}
             </h3>
             <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
               <Building2 className="w-4 h-4" />
-              <span className="font-medium">{job.company}</span>
+              <span className="font-medium truncate max-w-[16rem] sm:max-w-[20rem]">{job.company}</span>
             </div>
           </div>
           {job.type && (
@@ -331,14 +331,14 @@ export const JobCard: React.FC<JobCardProps> = ({
 
       {/* Description */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10">
           {job.description}
         </p>
       </div>
 
       {/* Skills */}
       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 h-8 overflow-hidden">
           {job.skills.slice(0, 6).map((skill, skillIndex) => (
             <span 
               key={skillIndex}
@@ -356,7 +356,7 @@ export const JobCard: React.FC<JobCardProps> = ({
       </div>
       
       {/* Footer */}
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 mt-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
