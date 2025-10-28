@@ -1,4 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Copy, Check } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface VideoCallProps {
   callId: string;
@@ -12,121 +14,94 @@ interface VideoCallProps {
   callType: 'audio' | 'video';
 }
 
-declare global {
-  interface Window {
-    JitsiMeetExternalAPI: any;
-  }
-}
-
 export const VideoCall: React.FC<VideoCallProps> = ({
   callId,
   user,
   onCallEnd,
   callType
 }) => {
-  const jitsiContainerRef = useRef<HTMLDivElement>(null);
-  const jitsiApiRef = useRef<any>(null);
+  const [copied, setCopied] = useState(false);
+  
+  // Whereby embed URL with user display name
+  const wherebyUrl = `https://whereby.com/${callId}?displayName=${encodeURIComponent(user.name)}&background=off`;
+  const shareUrl = `${window.location.origin}/meet/${callId}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Show prejoin screen for a moment before auto-joining
+  const [showPrejoin, setShowPrejoin] = useState(true);
 
   useEffect(() => {
-    const initializeJitsi = () => {
-      // Load Jitsi Meet API script
-      if (!window.JitsiMeetExternalAPI) {
-        const script = document.createElement('script');
-        script.src = 'https://meet.jit.si/external_api.js';
-        script.async = true;
-        document.head.appendChild(script);
-        
-        script.onload = () => {
-          createJitsiMeeting();
-        };
-      } else {
-        createJitsiMeeting();
-      }
-    };
+    // Auto-join after 1 second
+    const timer = setTimeout(() => {
+      setShowPrejoin(false);
+    }, 1000);
 
-    const createJitsiMeeting = () => {
-      if (!jitsiContainerRef.current) return;
-
-      const domain = 'meet.jit.si';
-      const options = {
-        roomName: callId,
-        width: '100%',
-        height: '100%',
-        parentNode: jitsiContainerRef.current,
-        userInfo: {
-          displayName: user.name,
-          email: user.email
-        },
-        configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: callType === 'audio',
-          enableWelcomePage: false,
-          // Skip prejoin page to join directly
-          prejoinPageEnabled: false,
-          hideDisplayName: false,
-          disableModeratorIndicator: false,
-          enableLayerSuspension: true,
-          enableNoisyMicDetection: true,
-          requireDisplayName: false,
-          // Disable lobby/waiting room completely
-          disableLobbyPassword: true,
-          enableLobbyChat: false,
-          // Room security settings - make room open by default
-          roomPasswordNumberOfDigits: false,
-          // Ensure everyone can join without approval
-          autoKnockLobby: false,
-          enableAutomaticUrlCopy: false
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-            'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-            'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-            'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone'
-          ],
-          SHOW_JITSI_WATERMARK: false,
-          SHOW_WATERMARK_FOR_GUESTS: false,
-          SHOW_POWERED_BY: false,
-          DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
-          HIDE_INVITE_MORE_HEADER: false
-        }
-      };
-
-      jitsiApiRef.current = new window.JitsiMeetExternalAPI(domain, options);
-
-      // Event listeners
-      jitsiApiRef.current.addEventListeners({
-        readyToClose: () => {
-          onCallEnd();
-        },
-        videoConferenceLeft: () => {
-          onCallEnd();
-        },
-        videoConferenceJoined: () => {
-          console.log('Joined video conference');
-        },
-        participantJoined: (participant: any) => {
-          console.log('Participant joined:', participant);
-        },
-        participantLeft: (participant: any) => {
-          console.log('Participant left:', participant);
-        }
-      });
-    };
-
-    initializeJitsi();
-
-    return () => {
-      if (jitsiApiRef.current) {
-        jitsiApiRef.current.dispose();
-      }
-    };
-  }, [callId, user, callType, onCallEnd]);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      <div className="flex-1" ref={jitsiContainerRef} />
+    <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
+      {/* Header with controls */}
+      <div className="bg-gray-800 border-b border-gray-700 p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-white font-semibold">Part-Time Pay$ Meet</h2>
+          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-gray-700 rounded-lg">
+            <span className="text-gray-300 text-sm">Meeting ID:</span>
+            <span className="text-white text-sm font-mono">{callId}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyLink}
+            leftIcon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+          >
+            {copied ? 'Copied!' : 'Copy Link'}
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCallEnd}
+            className="bg-red-600 border-red-700 text-white hover:bg-red-700"
+          >
+            Leave Meeting
+          </Button>
+        </div>
+      </div>
+
+      {/* Whereby iframe */}
+      {showPrejoin ? (
+        <div className="flex-1 flex items-center justify-center bg-gray-900">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white text-lg">Joining meeting...</p>
+            <p className="text-gray-400 text-sm mt-2">Please allow camera and microphone access</p>
+          </div>
+        </div>
+      ) : (
+        <iframe
+          src={wherebyUrl}
+          allow="camera; microphone; fullscreen; speaker; display-capture"
+          className="flex-1 w-full h-full border-0"
+          title="Whereby Video Call"
+        />
+      )}
+
+      {/* Footer info */}
+      <div className="bg-gray-800 border-t border-gray-700 px-4 py-2">
+        <p className="text-gray-400 text-xs text-center">
+          Powered by Whereby • End-to-end encrypted • No downloads required
+        </p>
+      </div>
     </div>
   );
 };
