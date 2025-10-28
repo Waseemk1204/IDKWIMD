@@ -7,6 +7,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { Landing } from './pages/Landing';
 import { Login } from './pages/auth/Login';
 import { Signup } from './pages/auth/Signup';
+import { BrowseJobs } from './pages/BrowseJobs';
 import { OnboardingEmployer as OnboardingEmployerOld } from './pages/auth/OnboardingEmployer';
 import { OnboardingEmployee as OnboardingEmployeeOld } from './pages/auth/OnboardingEmployee';
 import { AdditionalInfo } from './pages/auth/AdditionalInfo';
@@ -23,7 +24,7 @@ import { JobManagement } from './pages/employer/JobManagement';
 import { JobApplicants } from './pages/employer/JobApplicants';
 // Employee pages
 import { EmployeeDashboard } from './pages/employee/Dashboard';
-import { BrowseJobs } from './pages/employee/BrowseJobs';
+import { BrowseJobs as EmployeeBrowseJobs } from './pages/employee/BrowseJobs';
 import { JobDetails } from './pages/employee/JobDetails';
 import { MyApplications } from './pages/employee/MyApplications';
 import { TimesheetSubmission } from './pages/employee/TimesheetSubmission';
@@ -124,6 +125,7 @@ export function AppRouter() {
         <Route path="/" element={<PublicLanding />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/browse-jobs" element={<BrowseJobs />} />
         <Route path="/additional-info" element={<AdditionalInfo />} />
         {/* New wizard-based onboarding */}
         <Route path="/onboarding/employer" element={<EmployerOnboarding />} />
@@ -163,7 +165,7 @@ export function AppRouter() {
             </ProtectedRoute>}>
           <Route index element={<EmployeeDashboard />} />
           <Route path="dashboard" element={<EmployeeDashboard />} />
-          <Route path="jobs" element={<BrowseJobs />} />
+          <Route path="jobs" element={<EmployeeBrowseJobs />} />
           <Route path="jobs/:id" element={<JobDetails />} />
           <Route path="applications" element={<MyApplications />} />
           <Route path="timesheet" element={<TimesheetSubmission />} />

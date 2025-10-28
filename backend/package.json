@@ -16,6 +16,7 @@
     "test:ci": "jest --ci --coverage --watchAll=false",
     "populate:blogs": "ts-node src/scripts/populateBlogs.ts",
     "populate:community": "ts-node src/scripts/populateCommunityPosts.ts",
+    "seed:jobs": "ts-node src/scripts/seedJobs.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit"

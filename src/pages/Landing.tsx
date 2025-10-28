@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, ArrowRight, X, Menu, CheckCircle, Briefcase, Clock, DollarSign } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
-import { JobCard } from '../components/jobs/JobCard';
 import apiService from '../services/api';
 import { SEO, pageSEO } from '../utils/seo';
 import { DevelopmentNotice } from '../components/ui/DevelopmentNotice';
+import { HeroSearchBar } from '../components/landing/HeroSearchBar';
+import { HorizontalJobScroll } from '../components/landing/HorizontalJobScroll';
+import { HorizontalBlogScroll } from '../components/landing/HorizontalBlogScroll';
 
 // API Test Component for debugging - TODO: Remove or implement
 const ApiTestComponent = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -116,7 +118,7 @@ const ApiTestComponent = () => { // eslint-disable-line @typescript-eslint/no-un
 };
 
 // Responsive Navbar component for landing page
-const Navbar = ({ onHowItWorksClick, onContactClick }: { onHowItWorksClick: () => void; onContactClick: () => void }) => {
+const Navbar = ({ onContactClick }: { onContactClick: () => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -141,23 +143,17 @@ const Navbar = ({ onHowItWorksClick, onContactClick }: { onHowItWorksClick: () =
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             <Link 
+              to="/browse-jobs"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors px-3 py-2 text-sm font-medium"
+            >
+              Jobs
+            </Link>
+            <Link 
               to="/blogs"
               className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors px-3 py-2 text-sm font-medium"
             >
-              Blogs
+              Career Tips
             </Link>
-            <Link 
-              to="/about-us"
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors px-3 py-2 text-sm font-medium"
-            >
-              About
-            </Link>
-            <button 
-              onClick={onContactClick}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors px-3 py-2 text-sm font-medium"
-            >
-              Contact
-            </button>
             <ThemeToggle />
             <Link 
               to="/login"
@@ -189,28 +185,19 @@ const Navbar = ({ onHowItWorksClick, onContactClick }: { onHowItWorksClick: () =
           <div className="md:hidden">
             <div className="px-4 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
               <Link 
+                to="/browse-jobs"
+                onClick={closeMobileMenu}
+                className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              >
+                Jobs
+              </Link>
+              <Link 
                 to="/blogs"
                 onClick={closeMobileMenu}
                 className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
               >
-                Blogs
+                Career Tips
               </Link>
-              <Link 
-                to="/about-us"
-                onClick={closeMobileMenu}
-                className="block px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-              >
-                About
-              </Link>
-              <button 
-                onClick={() => {
-                  onContactClick();
-                  closeMobileMenu();
-                }}
-                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-              >
-                Contact
-              </button>
               <Link 
                 to="/login"
                 onClick={closeMobileMenu}
@@ -317,7 +304,6 @@ export const Landing = () => {
   console.log('ApiTestComponent available:', ApiTestComponent);
   
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
   const [visibleJobs, setVisibleJobs] = useState(6);
@@ -356,7 +342,7 @@ export const Landing = () => {
 
   // Handle body scroll locking when modals are open
   useEffect(() => {
-    const isModalOpen = showHowItWorks || showContact;
+    const isModalOpen = showContact;
     
     if (isModalOpen) {
       // Simply prevent scrolling without any position manipulation
@@ -430,14 +416,8 @@ export const Landing = () => {
   };
 
 
-  const handleHowItWorksClick = () => {
-    setShowHowItWorks(true);
-    setShowContact(false);
-  };
-
   const handleContactClick = () => {
     setShowContact(true);
-    setShowHowItWorks(false);
   };
 
   return (
@@ -447,7 +427,7 @@ export const Landing = () => {
       {/* Development Notice Dialog - Only on Landing Page */}
       <DevelopmentNotice />
       
-      <Navbar onHowItWorksClick={handleHowItWorksClick} onContactClick={handleContactClick} />
+      <Navbar onContactClick={handleContactClick} />
       
       <main role="main">
         {/* Hero Section - Premium & Impactful */}
@@ -488,30 +468,8 @@ export const Landing = () => {
                   Build your career while balancing your studies.
                 </p>
                 
-                {/* CTA Buttons - Centered & Prominent */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-                  <Link to="/signup?role=employee" className="group">
-                            <Button 
-                      variant="primary" 
-                              size="lg" 
-                      className="px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
-                            >
-                      <span className="flex items-center gap-2">
-                        Find Your Next Job
-                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                            </Button>
-                          </Link>
-                  <Link to="/signup?role=employer">
-                            <Button 
-                      variant="secondary" 
-                              size="lg" 
-                      className="px-8 py-3 text-base font-semibold"
-                            >
-                      Post a Job
-                            </Button>
-                          </Link>
-                        </div>
+                {/* Hero Search Bar */}
+                <HeroSearchBar />
                         
                 {/* Trust Stats - Centered & Clean - Responsive */}
                 <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 px-4 sm:px-6 py-4 bg-white/50 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg max-w-full">
@@ -547,73 +505,9 @@ export const Landing = () => {
           </div>
         </section>
 
-        {/* Remove Statistics Section - Now integrated in hero */}
+        {/* How It Works section removed - simplified homepage */}
 
-        {/* Features Section - Simplified */}
-        <section 
-          className="py-20 bg-gray-50 dark:bg-gray-900"
-          aria-labelledby="features-heading"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 
-                id="features-heading"
-                className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl"
-              >
-                How It Works
-              </h2>
-              <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                A simple platform for students and employers to connect
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Create Profile
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Sign up and complete your profile with skills and experience
-              </p>
-            </div>
-              
-              <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                    <Briefcase className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Find Opportunities
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Browse jobs that match your schedule and skills
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                    <DollarSign className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Get Paid
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Track your hours and receive payments securely
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Job Listings Section - Clean Design */}
+        {/* Job Listings Section - Horizontal Scroll */}
         <section className="py-20 bg-white dark:bg-gray-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-12">
@@ -625,43 +519,24 @@ export const Landing = () => {
                   Find part-time work that fits your schedule
                 </p>
               </div>
-              <Link to="/employee/jobs">
+              <Link to="/browse-jobs">
                 <Button variant="secondary" size="md">
                   View All Jobs
                 </Button>
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {isLoadingJobs ? (
-                // Loading skeleton
-                Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-3/4"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-1/2"></div>
-                    <div className="flex justify-between items-center mt-4">
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
-                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                jobPosts.slice(0, 6).map((job) => (
-                  <JobCard key={job._id || job.id} job={job} />
-                ))
-              )}
-            </div>
+            <HorizontalJobScroll jobs={jobPosts} isLoading={isLoadingJobs} />
           </div>
         </section>
 
-        {/* Blog Section - Simplified */}
+        {/* Career Tips Section - Horizontal Scroll */}
         <section className="py-20 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Latest from Our Blog
+                  Career Tips
               </h2>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">
                   Tips and insights for your career journey
@@ -669,65 +544,12 @@ export const Landing = () => {
               </div>
               <Link to="/blogs">
                 <Button variant="secondary" size="md">
-                  View All Posts
+                  View All Career Tips
                 </Button>
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {isLoadingBlogs ? (
-                // Loading skeleton
-                Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
-                    <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
-                    <div className="p-6">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-3/4"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-1/2"></div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                blogPosts.map((blog) => (
-                <Link
-                  key={blog._id || blog.id}
-                  to={`/blogs/${blog._id || blog.id}`}
-                  className="block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-150"
-                >
-                  <div className="h-48">
-                    <img 
-                      src={blog.thumbnail} 
-                      alt={blog.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  <div className="p-6">
-                    <div className="mb-3">
-                      <span className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wide">
-                        {blog.category}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                      {blog.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-4">
-                      {blog.excerpt}
-                    </p>
-                    
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(blog.publishedDate || blog.publishDate).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                        day: 'numeric',
-                        year: 'numeric'
-                      })} • {blog.readingTime || blog.readTime} min read
-                    </div>
-                  </div>
-                </Link>
-                ))
-              )}
-            </div>
-            
+            <HorizontalBlogScroll blogs={blogPosts} isLoading={isLoadingBlogs} />
           </div>
         </section>
 
@@ -828,7 +650,7 @@ export const Landing = () => {
               <ul className="space-y-2">
                 <li>
                   <Link to="/blogs" className="text-sm text-gray-400 hover:text-white transition-colors duration-150">
-                    Blog
+                    Career Tips
                   </Link>
                 </li>
                 <li>
@@ -866,98 +688,6 @@ export const Landing = () => {
           </div>
         </div>
       </footer>
-
-      {/* How It Works Modal */}
-      {showHowItWorks && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]"
-          onClick={() => setShowHowItWorks(false)}
-        >
-          <div 
-            className="bg-white dark:bg-neutral-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-neutral-900 dark:text-white">How It Works</h2>
-                <button
-                  onClick={() => setShowHowItWorks(false)}
-                  className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">For Students</h3>
-                  <div className="space-y-4">
-                    {steps.map((step) => (
-                      <div key={step.id} className="flex items-start">
-                        <div className="flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full text-primary-600 dark:text-primary-400 font-semibold text-sm mr-4 flex-shrink-0">
-                          {step.id}
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-neutral-900 dark:text-white">{step.title}</h4>
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{step.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">For Employers</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <div className="flex items-center justify-center w-8 h-8 bg-secondary-100 dark:bg-secondary-900 rounded-full text-secondary-600 dark:text-secondary-400 font-semibold text-sm mr-4 flex-shrink-0">
-                        1
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-neutral-900 dark:text-white">Post Your Job</h4>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Create detailed job postings with requirements and budget</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <div className="flex items-center justify-center w-8 h-8 bg-secondary-100 dark:bg-secondary-900 rounded-full text-secondary-600 dark:text-secondary-400 font-semibold text-sm mr-4 flex-shrink-0">
-                        2
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-neutral-900 dark:text-white">Review Applications</h4>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Browse student profiles and select the best candidates</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <div className="flex items-center justify-center w-8 h-8 bg-secondary-100 dark:bg-secondary-900 rounded-full text-secondary-600 dark:text-secondary-400 font-semibold text-sm mr-4 flex-shrink-0">
-                        3
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-neutral-900 dark:text-white">Manage Projects</h4>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Track progress and communicate with your team</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <div className="flex items-center justify-center w-8 h-8 bg-secondary-100 dark:bg-secondary-900 rounded-full text-secondary-600 dark:text-secondary-400 font-semibold text-sm mr-4 flex-shrink-0">
-                        4
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-neutral-900 dark:text-white">Pay Securely</h4>
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Approve timesheets and release payments automatically</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-8 flex justify-end">
-                <Button onClick={() => setShowHowItWorks(false)} variant="primary">
-                  Got it
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Contact Modal */}
       {showContact && (
