@@ -327,10 +327,10 @@ export const EmployerDashboard: React.FC = () => {
       </div>
 
       {/* Team Performance */}
-      <TrustCard>
+      <ElevatedCard>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Users className="h-5 w-5 mr-2 text-trust-600" />
+            <Users className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" />
             Team Performance
           </CardTitle>
           <CardDescription>
@@ -339,29 +339,30 @@ export const EmployerDashboard: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-white/50 dark:bg-neutral-700/50 rounded-xl">
-              <div className="text-3xl font-bold text-primary-600 mb-2">{stats.activeWorkers}</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">Active Workers</div>
+            <div className="text-center p-6 bg-white/50 dark:bg-gray-700/50 rounded-xl">
+              <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">{stats.activeWorkers}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Workers</div>
               <div className="text-xs text-success-600 dark:text-success-400">+2 this month</div>
             </div>
-            <div className="text-center p-6 bg-white/50 dark:bg-neutral-700/50 rounded-xl">
-              <div className="text-3xl font-bold text-success-600 mb-2">{stats.averageRating}★</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">Average Rating</div>
+            <div className="text-center p-6 bg-white/50 dark:bg-gray-700/50 rounded-xl">
+              <div className="text-3xl font-bold text-success-600 dark:text-success-400 mb-2">{stats.averageRating}★</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Average Rating</div>
               <div className="text-xs text-success-600 dark:text-success-400">+0.2 this month</div>
             </div>
-            <div className="text-center p-6 bg-white/50 dark:bg-neutral-700/50 rounded-xl">
-              <div className="text-3xl font-bold text-trust-600 mb-2">₹{stats.totalSpent.toLocaleString()}</div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">Total Spent</div>
-              <div className="text-xs text-neutral-500">This month</div>
+            <div className="text-center p-6 bg-white/50 dark:bg-gray-700/50 rounded-xl">
+              <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">₹{stats.totalSpent.toLocaleString()}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Spent</div>
+              <div className="text-xs text-gray-500 dark:text-gray-500">This month</div>
             </div>
           </div>
           <div className="mt-6 text-center">
-            <Button variant="trust" size="md" rightIcon={<Target className="h-4 w-4" />}>
+            <Button variant="primary" size="md">
+              <Target className="h-4 w-4 mr-2" />
               View Detailed Analytics
             </Button>
           </div>
         </CardContent>
-      </TrustCard>
+      </ElevatedCard>
     </div>
   );
 };
