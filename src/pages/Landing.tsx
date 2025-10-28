@@ -313,7 +313,7 @@ export const Landing = () => {
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true);
 
-  // Load featured jobs and blogs from API
+  // Load featured jobs and all blogs from API
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -324,8 +324,8 @@ export const Landing = () => {
         }
         setIsLoadingJobs(false);
 
-        // Load featured blogs
-        const blogsResponse = await apiService.getFeaturedBlogs(3);
+        // Load all blogs for horizontal scroll (limit 12)
+        const blogsResponse = await apiService.getBlogs({ limit: 12 });
         if (blogsResponse.success && blogsResponse.data?.blogs) {
           setBlogPosts(blogsResponse.data.blogs);
         }
