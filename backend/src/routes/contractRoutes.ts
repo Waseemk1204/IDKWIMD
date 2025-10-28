@@ -12,13 +12,13 @@ const router = Router();
 router.use(authenticate);
 
 // Get user's contracts (employer or employee)
-router.get('/', getUserContracts);
+router.get('/', getUserContracts as any);
 
 // Get contract by ID
-router.get('/:id', getContractById);
+router.get('/:id', getContractById as any);
 
 // Complete contract (employer only)
-router.post('/:id/complete', completeContract);
+router.post('/:id/complete', completeContract as any);
 
 export default router;
 
