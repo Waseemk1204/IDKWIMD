@@ -217,7 +217,7 @@ const Navbar = ({ onContactClick }: { onContactClick: () => void }) => {
 // Statistics data - simplified and professional
 const stats = [
   { id: 1, name: 'Active Jobs', value: '500+', icon: Briefcase },
-  { id: 2, name: 'Students Hired', value: '2,000+', icon: CheckCircle },
+  { id: 2, name: 'Employees Hired', value: '2,000+', icon: CheckCircle },
   { id: 3, name: 'Hours Tracked', value: '50K+', icon: Clock },
   { id: 4, name: 'Paid Out', value: '₹10L+', icon: DollarSign },
 ];
@@ -463,13 +463,13 @@ export const Landing = () => {
                 
                 {/* Supporting Text - Centered */}
                 <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto mb-8">
-                  Connect with flexible opportunities designed for students. 
-                  Build your career while balancing your studies.
+                  Connect with flexible opportunities designed for job seekers. 
+                  Build your career with part-time and flexible work.
                 </p>
                 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-                  <Link to="/browse-jobs">
+                  <Link to="/login">
                     <button className="group relative px-8 py-4 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 w-full sm:w-auto">
                       <span className="flex items-center justify-center gap-2">
                         <Briefcase className="w-5 h-5" />
@@ -477,7 +477,7 @@ export const Landing = () => {
                       </span>
                     </button>
                   </Link>
-                  <Link to="/signup">
+                  <Link to="/signup?role=employer">
                     <button className="group relative px-8 py-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full sm:w-auto">
                       <span className="flex items-center justify-center gap-2">
                         <Users className="w-5 h-5" />
@@ -497,7 +497,7 @@ export const Landing = () => {
                       2K+
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Students Hired
+                      Employees Hired
                     </div>
                   </div>
                   <div className="hidden sm:block w-px h-10 bg-gray-300 dark:bg-gray-700"></div>
@@ -645,7 +645,7 @@ export const Landing = () => {
                 Ready to Get Started?
                 </h2>
               <p className="mt-4 text-lg text-primary-100 max-w-2xl mx-auto">
-                Join thousands of students and employers on Part-Time Pays
+                Join thousands of employees and employers on Part-Time Pays
               </p>
               
               <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
@@ -683,7 +683,7 @@ export const Landing = () => {
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-xl font-bold text-white">PART-TIME PAY$</h3>
               <p className="mt-3 text-sm text-gray-400 max-w-md">
-                Connecting students with flexible work opportunities
+                Connecting job seekers with flexible work opportunities
               </p>
             </div>
             <div>

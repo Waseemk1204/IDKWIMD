@@ -266,7 +266,7 @@ export const Signup: React.FC = () => {
             Create Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join thousands of students and employers
+            Join thousands of employees and employers
           </p>
         </div>
 
@@ -303,7 +303,7 @@ export const Signup: React.FC = () => {
                       ? 'text-primary-700 dark:text-primary-300'
                       : 'text-gray-700 dark:text-gray-300'
                   }`}>
-                    Student
+                    Employee
                   </p>
                 </button>
                 <button
@@ -387,7 +387,7 @@ export const Signup: React.FC = () => {
                 isLoading={isLoading}
                 loadingText="Creating account..."
               >
-                Create {role === 'employee' ? 'Student' : 'Employer'} Account
+                Create {role === 'employee' ? 'Employee' : 'Employer'} Account
               </Button>
             </form>
 
