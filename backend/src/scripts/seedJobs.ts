@@ -66,7 +66,8 @@ const jobTitles: Record<Category, string[]> = {
   Healthcare: ['Medical Records Specialist', 'Healthcare Data Analyst', 'Medical Billing Specialist', 'Healthcare IT Support', 'Patient Care Coordinator', 'Medical Transcriptionist']
 };
 
-const experienceLevels = ['fresher', '1-2', '3-5', '5+'];
+// Map experience into model enum: 'entry' | 'mid' | 'senior'
+const experienceLevels = ['entry', 'mid', 'senior'] as const;
 const jobTypes = ['part-time', 'contract', 'freelance', 'internship'];
 
 const descriptions = [
@@ -116,20 +117,17 @@ const generateRandomJob = (employerId: string) => {
   // Generate salary based on experience
   let minSalary, maxSalary;
   switch (experienceLevel) {
-    case 'fresher':
+    case 'entry':
       minSalary = 50 + Math.floor(Math.random() * 50);
       maxSalary = minSalary + 50 + Math.floor(Math.random() * 50);
       break;
-    case '1-2':
-      minSalary = 100 + Math.floor(Math.random() * 100);
+    case 'mid':
+      minSalary = 150 + Math.floor(Math.random() * 100);
       maxSalary = minSalary + 100 + Math.floor(Math.random() * 100);
       break;
-    case '3-5':
-      minSalary = 200 + Math.floor(Math.random() * 150);
-      maxSalary = minSalary + 150 + Math.floor(Math.random() * 150);
-      break;
-    default: // 5+
-      minSalary = 350 + Math.floor(Math.random() * 150);
+    case 'senior':
+    default:
+      minSalary = 300 + Math.floor(Math.random() * 150);
       maxSalary = minSalary + 150 + Math.floor(Math.random() * 200);
   }
   
@@ -163,6 +161,10 @@ const generateRandomJob = (employerId: string) => {
   const postedDate = new Date();
   postedDate.setDate(postedDate.getDate() - daysAgo);
   
+  // Generate hours per week string (e.g., "10-20")
+  const minHours = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
+  const maxHours = minHours + [5, 10, 15][Math.floor(Math.random() * 3)];
+
   return {
     title,
     description: `${description} ${title} position available at ${company}.`,
@@ -172,18 +174,19 @@ const generateRandomJob = (employerId: string) => {
     maxHourlyRate: maxSalary,
     hourlyRate: Math.floor((minSalary + maxSalary) / 2),
     category,
-    type: jobType,
+    // type is not part of the schema, omit
     experienceLevel,
     skills: selectedSkills,
     responsibilities: selectedResponsibilities,
     requirements: selectedRequirements,
     isRemote,
+    hoursPerWeek: `${minHours}-${maxHours}`,
     duration: ['1 month', '2 months', '3 months', '6 months', 'Ongoing'][Math.floor(Math.random() * 5)],
     urgency: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
     status: 'active',
-    postedBy: employerId,
+    employer: new mongoose.Types.ObjectId(employerId),
     postedDate,
-    applicantCount: Math.floor(Math.random() * 50),
+    // fields not in schema removed
   };
 };
 
