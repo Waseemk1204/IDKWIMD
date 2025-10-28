@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Video, Users, Copy, Check, Calendar, Clock, Link as LinkIcon } from 'lucide-react';
+import { Video, Users, Copy, Check, Link as LinkIcon } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { apiService } from '../../services/api';
 
 export const VideoMeetPanel: React.FC = () => {
   const { user } = useAuth();
   const [meetingLink, setMeetingLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [joinInput, setJoinInput] = useState('');
 
   const handleCreateInstantMeeting = async () => {
     setIsCreating(true);
@@ -27,10 +27,8 @@ export const VideoMeetPanel: React.FC = () => {
   };
 
   const handleJoinMeeting = () => {
-    const input = prompt('Enter Google Meet link or code (e.g., abc-defg-hij):');
-    if (!input) return;
-
-    const value = input.trim();
+    const value = joinInput.trim();
+    if (!value) return;
 
     // If full URL, open as-is
     if (/^https?:\/\//i.test(value)) {
@@ -50,14 +48,15 @@ export const VideoMeetPanel: React.FC = () => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(meetingLink);
+    const link = meetingLink || 'https://meet.google.com/new';
+    navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-2xl w-full space-y-8">
+      <div className="max-w-3xl w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -66,15 +65,15 @@ export const VideoMeetPanel: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Video Meetings
           </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Instant meetings powered by Google Meet (opens in a new tab)
-            </p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Instant meetings powered by Google Meet (opens in a new tab)
+          </p>
         </div>
 
         {/* Action Cards */}
         <div className="grid md:grid-cols-2 gap-4">
           {/* Create Instant Meeting */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-primary-500 dark:hover:border-primary-500 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow flex flex-col">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Video className="h-6 w-6 text-primary-600 dark:text-primary-400" />
@@ -100,7 +99,7 @@ export const VideoMeetPanel: React.FC = () => {
           </div>
 
           {/* Join Meeting */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-primary-500 dark:hover:border-primary-500 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow flex flex-col">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <LinkIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -109,17 +108,23 @@ export const VideoMeetPanel: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Join Meeting
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Enter meeting ID or link
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={handleJoinMeeting}
-                  className="w-full"
-                  leftIcon={<Users className="h-4 w-4" />}
-                >
-                  Join
-                </Button>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter Google Meet link or code</p>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={joinInput}
+                    onChange={(e) => setJoinInput(e.target.value)}
+                    placeholder="e.g., https://meet.google.com/abc-defg-hij or abc-defg-hij"
+                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleJoinMeeting}
+                    leftIcon={<Users className="h-4 w-4" />}
+                  >
+                    Join
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -152,12 +157,12 @@ export const VideoMeetPanel: React.FC = () => {
             </div>
 
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              A new Google Meet tab has opened. If not, click the Copy button and paste in a new tab.
+              Copy this link and paste it in your browser. If a new tab didn’t open, use this link.
             </p>
           </div>
         )}
 
-        {/* Removed marketing/features and cost info per requirement */}
+        {/* Minimal layout, marketing removed */}
       </div>
     </div>
   );
