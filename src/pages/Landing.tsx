@@ -371,25 +371,24 @@ export const Landing = () => {
       document.documentElement.style.overflowX = 'hidden';
       document.documentElement.style.overflowY = '';
     };
-  }, [showHowItWorks, showContact]);
+  }, [showContact]);
 
   // Handle keyboard events for modal closing
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (showHowItWorks) setShowHowItWorks(false);
         if (showContact) setShowContact(false);
       }
     };
 
-    if (showHowItWorks || showContact) {
+    if (showContact) {
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showHowItWorks, showContact]);
+  }, [showContact]);
 
   const toggleFaq = (id: number) => {
     setOpenFaq(openFaq === id ? null : id);
