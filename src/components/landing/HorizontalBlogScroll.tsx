@@ -77,11 +77,11 @@ export const HorizontalBlogScroll: React.FC<HorizontalBlogScrollProps> = ({ blog
             <Link
               key={blog._id || blog.id}
               to={`/blogs/${blog._id || blog.id}`}
-              className="block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all duration-150 scroll-snap-align-start"
+              className="block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all duration-200 scroll-snap-align-start h-full flex flex-col"
               style={{ scrollSnapAlign: 'start' }}
             >
               {/* Thumbnail */}
-              <div className="h-40 overflow-hidden">
+              <div className="h-40 overflow-hidden flex-shrink-0">
                 <img 
                   src={blog.thumbnail} 
                   alt={blog.title}
@@ -91,26 +91,28 @@ export const HorizontalBlogScroll: React.FC<HorizontalBlogScrollProps> = ({ blog
               </div>
               
               {/* Content */}
-              <div className="p-4">
-                {/* Category Badge */}
-                {blog.category && (
-                  <span className="inline-block px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded mb-2">
-                    {blog.category}
-                  </span>
-                )}
-                
-                {/* Title */}
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                  {blog.title}
-                </h3>
-                
-                {/* Excerpt */}
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-                  {blog.excerpt || blog.description}
-                </p>
+              <div className="p-4 flex-1 flex flex-col justify-between">
+                <div className="flex-1">
+                  {/* Category Badge */}
+                  {blog.category && (
+                    <span className="inline-block px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded mb-2">
+                      {blog.category}
+                    </span>
+                  )}
+                  
+                  {/* Title */}
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 min-h-[3rem]">
+                    {blog.title}
+                  </h3>
+                  
+                  {/* Excerpt */}
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                    {blog.excerpt || blog.description}
+                  </p>
+                </div>
                 
                 {/* Meta */}
-                <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-700">
                   {blog.publishedAt && (
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />

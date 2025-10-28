@@ -8,6 +8,7 @@ import { SEO, pageSEO } from '../utils/seo';
 import { DevelopmentNotice } from '../components/ui/DevelopmentNotice';
 import { HeroSearchBar } from '../components/landing/HeroSearchBar';
 import { HorizontalJobScroll } from '../components/landing/HorizontalJobScroll';
+import { HorizontalBlogScroll } from '../components/landing/HorizontalBlogScroll';
 
 // API Test Component for debugging - TODO: Remove or implement
 const ApiTestComponent = () => { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -574,58 +575,7 @@ export const Landing = () => {
                 ))}
               </div>
             ) : blogPosts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {blogPosts.map((blog: any) => (
-                  <Link
-                    key={blog._id || blog.id}
-                    to={`/blogs/${blog._id || blog.id}`}
-                    className="group block bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-200"
-                  >
-                    {/* Thumbnail */}
-                    <div className="h-48 overflow-hidden">
-                      <img 
-                        src={blog.thumbnail} 
-                        alt={blog.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="p-6">
-                      {/* Category Badge */}
-                      {blog.category && (
-                        <span className="inline-block px-3 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-full mb-3">
-                          {blog.category}
-                        </span>
-                      )}
-                      
-                      {/* Title */}
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                        {blog.title}
-                      </h3>
-                      
-                      {/* Excerpt */}
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4">
-                        {blog.excerpt || blog.description}
-                      </p>
-                      
-                      {/* Meta */}
-                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                        {blog.publishedAt && (
-                          <span>{new Date(blog.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                        )}
-                        {blog.readTime && (
-                          <>
-                            <span>•</span>
-                            <span>{blog.readTime} min read</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              <HorizontalBlogScroll blogs={blogPosts} />
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500 dark:text-gray-400">No career tips available at the moment.</p>

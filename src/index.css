@@ -283,13 +283,13 @@
     outline-offset: 2px !important;
   }
   
-  /* Ensure form inputs still show focus for usability */
+  /* Ensure form inputs still show focus for usability - NO OUTLINES */
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
     outline: none !important;
     border-color: theme('colors.primary.500') !important;
-    box-shadow: 0 0 0 3px theme('colors.primary.50') !important;
+    box-shadow: none !important;
   }
 }
 
