@@ -92,6 +92,40 @@ export const JobCard: React.FC<JobCardProps> = ({
     return `₹${job.hourlyRate.toLocaleString()}/hr`;
   };
 
+  const formatDuration = (duration?: string) => {
+    if (!duration) return '';
+    
+    // Remove any existing "months" or "month" text and trim
+    const cleaned = duration.trim().toLowerCase().replace(/\s*(months?|month)\s*/gi, '').trim();
+    
+    // Check if it's just a number
+    const numMatch = cleaned.match(/^(\d+)$/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      return `${num} ${num === 1 ? 'month' : 'months'}`;
+    }
+    
+    // If it already has a unit or is a descriptive string, return as is but ensure proper formatting
+    // Check for common patterns
+    if (cleaned.match(/^(ongoing|permanent|contract|temporary)$/i)) {
+      return duration.trim();
+    }
+    
+    // If it has a number followed by text, ensure it has "months" if it's a number
+    const numWithText = cleaned.match(/^(\d+)\s*(.+)$/);
+    if (numWithText) {
+      const num = parseInt(numWithText[1], 10);
+      const unit = numWithText[2].toLowerCase();
+      if (unit === 'm' || unit === 'mo') {
+        return `${num} ${num === 1 ? 'month' : 'months'}`;
+      }
+      return duration.trim();
+    }
+    
+    // Default: return original if we can't parse it
+    return duration.trim();
+  };
+
   const handleJobClick = () => {
     if (isAuthenticated) {
       navigate(`/employee/jobs/${job.id}`);
@@ -216,7 +250,7 @@ export const JobCard: React.FC<JobCardProps> = ({
               {job.duration && (
                 <>
                   <span>•</span>
-                  <span>{job.duration}</span>
+                  <span className="whitespace-nowrap">{formatDuration(job.duration)}</span>
                 </>
               )}
             </div>
@@ -348,9 +382,9 @@ export const JobCard: React.FC<JobCardProps> = ({
             {job.isRemote && <span className="text-primary-600 dark:text-primary-400 whitespace-nowrap">(Remote)</span>}
           </div>
           {job.duration && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 min-w-[90px]">
               <Clock className="w-3 h-3 flex-shrink-0" />
-              <span className="whitespace-nowrap">{job.duration}</span>
+              <span className="whitespace-nowrap">{formatDuration(job.duration)}</span>
             </div>
           )}
           <div className="flex items-center gap-1 min-w-[80px]">
