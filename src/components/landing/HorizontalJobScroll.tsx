@@ -70,16 +70,16 @@ export const HorizontalJobScroll: React.FC<HorizontalJobScrollProps> = ({ jobs, 
         }}
       >
         <div 
-          className="grid grid-flow-col auto-cols-[calc(85%)] sm:auto-cols-[calc(45%)] md:auto-cols-[calc(32%)] lg:auto-cols-[calc(23%)] xl:auto-cols-[calc((100%-3*1rem)/4.5)] gap-4"
+          className="flex gap-4"
           style={{ minWidth: 'min-content' }}
         >
           {jobs.map((job) => (
             <div 
               key={job._id || job.id}
-              className="scroll-snap-align-start h-full"
+              className="scroll-snap-align-start h-full flex-shrink-0 w-[85%] sm:w-[45%] md:w-[32%] lg:w-[22%] xl:w-[calc((100%-4*1rem)/4.5)]"
               style={{ scrollSnapAlign: 'start' }}
             >
-              <JobCard job={job} variant="compact" />
+              <JobCard job={job} variant="default" className="compact-context" />
             </div>
           ))}
         </div>

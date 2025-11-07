@@ -309,99 +309,105 @@ export const JobCard: React.FC<JobCardProps> = ({
   }
 
   // Default variant - Clean, Industry-standard design
+  // Check if it's in a compact context (horizontal scroll)
+  const isCompactContext = className.includes('compact-context') || className.includes('horizontal-scroll');
+  const paddingClass = isCompactContext ? 'p-3' : 'p-4';
+  const titleSize = isCompactContext ? 'text-sm' : 'text-base';
+  const titleHeight = isCompactContext ? 'h-10' : 'h-12';
+  
   return (
     <div className={`${baseClasses} ${clickableClasses} ${hoverClasses} ${className} h-full flex flex-col`} onClick={!showActions ? handleJobClick : undefined}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-start justify-between gap-4 mb-2">
-          <div className="flex-1">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2 h-12 leading-6">
+      <div className={`${paddingClass} border-b border-gray-100 dark:border-gray-700`}>
+        <div className={`flex items-start justify-between ${isCompactContext ? 'gap-2' : 'gap-4'} mb-2`}>
+          <div className="flex-1 min-w-0">
+            <h3 className={`${titleSize} font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2 ${titleHeight} leading-5`}>
               {job.title}
             </h3>
-            <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-              <Building2 className="w-4 h-4" />
-              <span className="font-medium truncate max-w-[16rem] sm:max-w-[20rem]">{job.company}</span>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+              <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="font-medium truncate">{job.company}</span>
             </div>
           </div>
           {job.type && (
-            <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded capitalize">
+            <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded capitalize flex-shrink-0">
               {job.type}
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mt-2">
+        <div className={`flex flex-wrap items-center ${isCompactContext ? 'gap-2' : 'gap-3'} text-xs text-gray-500 dark:text-gray-400 mt-2`}>
           {job.experienceLevel && (
             <div className="flex items-center gap-1">
-              <Briefcase className="w-3.5 h-3.5" />
+              <Briefcase className="w-3 h-3" />
               <span className="capitalize">{job.experienceLevel}</span>
             </div>
           )}
           <div className="flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{job.location}</span>
+            <MapPin className="w-3 h-3" />
+            <span className="truncate">{job.location}</span>
             {job.isRemote && <span className="text-primary-600 dark:text-primary-400">(Remote)</span>}
           </div>
           {job.duration && (
             <div className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
+              <Clock className="w-3 h-3" />
               <span>{job.duration}</span>
             </div>
           )}
           <div className="flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5" />
+            <Calendar className="w-3 h-3" />
             <span>{formatDate(job.postedDate)}</span>
           </div>
         </div>
       </div>
 
       {/* Description */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 h-10">
+      <div className={`${isCompactContext ? 'px-3 py-2' : 'px-4 py-3'} border-b border-gray-100 dark:border-gray-700`}>
+        <p className={`text-xs text-gray-600 dark:text-gray-400 line-clamp-2 ${isCompactContext ? 'h-8' : 'h-10'}`}>
           {job.description}
         </p>
       </div>
 
       {/* Skills */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex flex-wrap gap-1.5 h-8 overflow-hidden">
-          {job.skills.slice(0, 6).map((skill, skillIndex) => (
+      <div className={`${isCompactContext ? 'px-3 py-2' : 'px-4 py-3'} border-b border-gray-100 dark:border-gray-700`}>
+        <div className={`flex flex-wrap gap-1 ${isCompactContext ? 'h-6' : 'h-8'} overflow-hidden`}>
+          {job.skills.slice(0, isCompactContext ? 4 : 6).map((skill, skillIndex) => (
             <span 
               key={skillIndex}
-              className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded"
+              className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded"
             >
               {skill}
             </span>
           ))}
-          {job.skills.length > 6 && (
-            <span className="px-2.5 py-1 text-gray-500 dark:text-gray-400 text-xs font-medium">
-              +{job.skills.length - 6}
+          {job.skills.length > (isCompactContext ? 4 : 6) && (
+            <span className="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 text-xs font-medium">
+              +{job.skills.length - (isCompactContext ? 4 : 6)}
             </span>
           )}
         </div>
       </div>
       
       {/* Footer */}
-      <div className="px-4 py-3 mt-auto">
+      <div className={`${isCompactContext ? 'px-3 py-2' : 'px-4 py-3'} mt-auto`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-success-600 dark:text-success-400" />
-              <span className="text-sm font-semibold text-success-600 dark:text-success-400">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <DollarSign className="w-3.5 h-3.5 text-success-600 dark:text-success-400" />
+              <span className="text-xs font-semibold text-success-600 dark:text-success-400">
                 {formatPayRate(job)}
               </span>
             </div>
-            {job.applicantCount !== undefined && job.applicantCount > 0 && (
+            {job.applicantCount !== undefined && job.applicantCount > 0 && !isCompactContext && (
               <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                <Users className="w-3.5 h-3.5" />
+                <Users className="w-3 h-3" />
                 <span>{job.applicantCount} applicant{job.applicantCount !== 1 ? 's' : ''}</span>
               </div>
             )}
           </div>
         </div>
         
-        {!isAuthenticated && !showActions && (
-          <div className="mt-3 p-2.5 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+        {!isAuthenticated && !showActions && !isCompactContext && (
+          <div className="mt-2 p-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
             <p className="text-xs text-primary-700 dark:text-primary-400 text-center font-medium">
               Sign in to apply and view full details
             </p>
