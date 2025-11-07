@@ -76,7 +76,7 @@ export const HorizontalJobScroll: React.FC<HorizontalJobScrollProps> = ({ jobs, 
           {jobs.map((job) => (
             <div 
               key={job._id || job.id}
-              className="scroll-snap-align-start h-full flex-shrink-0 w-[85%] sm:w-[45%] md:w-[32%] lg:w-[18%] xl:w-[calc((100%-4*1rem)/4.5)]"
+              className="scroll-snap-align-start h-full flex-shrink-0 w-[85%] sm:w-[45%] md:w-[32%] lg:w-[20%] xl:w-[calc((100%-4*1rem)/5)]"
               style={{ scrollSnapAlign: 'start' }}
             >
               <JobCard job={job} variant="default" className="compact-context" />
