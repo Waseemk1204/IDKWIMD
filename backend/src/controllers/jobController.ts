@@ -120,7 +120,10 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
     
     // Remote filter
     if (isRemote !== undefined) {
-      filter.isRemote = isRemote === 'true' || isRemote === true;
+      const isRemoteValue = typeof isRemote === 'string' 
+        ? (isRemote === 'true' || isRemote === '1')
+        : Boolean(isRemote);
+      filter.isRemote = isRemoteValue;
     }
     
     // Search filter (title, description, company)

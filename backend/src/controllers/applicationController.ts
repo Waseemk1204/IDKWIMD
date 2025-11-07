@@ -423,9 +423,9 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
                   ]
                 },
                 context: {
-                  module: 'contracts',
+                  module: 'jobs',
                   relatedEntity: {
-                    type: 'contract',
+                    type: 'application',
                     id: contractResult.contract._id as any,
                     title: job.title,
                     url: `/employee/contracts/${contractResult.contract._id}`

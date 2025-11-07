@@ -182,9 +182,9 @@ export const createContractFromApplication = async (
             ]
           },
           context: {
-            module: 'contracts',
+            module: 'jobs',
             relatedEntity: {
-              type: 'contract',
+              type: 'application',
               id: contract._id as any,
               title: job.title,
               url: `/employee/contracts/${contract._id}`

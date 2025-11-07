@@ -174,9 +174,9 @@ export const approveTimesheet = async (req: AuthRequest, res: Response): Promise
             ]
           },
           context: {
-            module: 'timesheets',
+            module: 'jobs',
             relatedEntity: {
-              type: 'timesheet',
+              type: 'transaction',
               id: timesheet._id as any,
               title: `Week ${timesheet.weekNumber} Timesheet`,
               url: `/employee/timesheet`
