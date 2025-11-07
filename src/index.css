@@ -1,0 +1,470 @@
+/* PLEASE NOTE: THESE TAILWIND IMPORTS SHOULD NEVER BE DELETED */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+/* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
+
+/* CSS Linter Configuration - Suppress Tailwind CSS warnings */
+/* stylelint-disable at-rule-no-unknown */
+/* stylelint-disable property-no-vendor-prefix */
+/* stylelint-disable declaration-block-no-redundant-longhand-properties */
+
+/* 
+ * This file uses Tailwind CSS @apply directives which are processed at build time.
+ * The CSS linter warnings about @apply are expected and can be safely ignored.
+ * All @apply directives are valid Tailwind CSS syntax.
+ */
+
+/* Import Inter font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* CSS Variables for Toast Notifications */
+:root {
+  --toast-bg: #ffffff;
+  --toast-text: #1f2937;
+  --toast-border: #e5e7eb;
+}
+
+:root.dark {
+  --toast-bg: #1f2937;
+  --toast-text: #f3f4f6;
+  --toast-border: #374151;
+}
+
+/* Base styles for better typography and user experience */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  }
+  
+  body {
+    @apply text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-950;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -ms-overflow-style: none; /* IE and Edge */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  }
+
+  /* Improved focus styles for accessibility */
+  *:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-950;
+  }
+
+  /* Hide scrollbar while maintaining scroll functionality */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+
+  /* Minimal professional animations only */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Animation Utility Classes */
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+
+  /* Prevent horizontal scroll */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+  
+  /* Ensure all containers respect viewport width */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Fix for images and media */
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Mobile scroll lock support (less aggressive) */
+  body.scroll-locked {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
+
+  html.scroll-locked {
+    overflow: hidden !important;
+    touch-action: none !important;
+  }
+
+  /* Utility class to hide scrollbars */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
+  /* Hide any scroll-to-top arrows that might be added by browser extensions */
+  [class*="scroll-to-top"],
+  [class*="back-to-top"],
+  [class*="scrolltop"],
+  [id*="scroll-to-top"],
+  [id*="back-to-top"],
+  [id*="scrolltop"] {
+    display: none !important;
+  }
+
+  /* Hide any floating arrows near the top of the page */
+  .fixed.top-16,
+  .fixed.top-20,
+  .absolute.top-16,
+  .absolute.top-20 {
+    display: none !important;
+  }
+
+  /* Hide scroll-to-top arrows that appear below navbar */
+  [style*="position: fixed"][style*="top: 64px"],
+  [style*="position: fixed"][style*="top: 80px"],
+  [style*="position: fixed"][style*="top: 96px"],
+  [style*="position: fixed"][style*="top: 112px"],
+  [style*="position: fixed"][style*="top: 128px"] {
+    display: none !important;
+  }
+
+  /* Hide any elements with arrow-like content positioned near top */
+  [class*="arrow"]:not([class*="navbar"]):not([class*="button"]):not([class*="icon"]) {
+    display: none !important;
+  }
+
+  /* Specifically hide any floating arrow elements that might appear below navbar */
+  [style*="position: fixed"][style*="top: 64px"][style*="right: 20px"],
+  [style*="position: fixed"][style*="top: 80px"][style*="right: 20px"],
+  [style*="position: fixed"][style*="top: 96px"][style*="right: 20px"] {
+    display: none !important;
+  }
+
+  /* More aggressive hiding for scroll-to-top elements */
+  div[style*="position: fixed"][style*="right: 20px"],
+  div[style*="position: fixed"][style*="right: 24px"],
+  div[style*="position: fixed"][style*="right: 16px"] {
+    display: none !important;
+  }
+
+  /* Hide any element that looks like a scroll-to-top arrow */
+  [data-scroll-to-top],
+  [data-back-to-top],
+  [aria-label*="scroll to top"],
+  [aria-label*="back to top"],
+  [title*="scroll to top"],
+  [title*="back to top"] {
+    display: none !important;
+  }
+
+  /* Hide any arrows that might appear during scroll events */
+  [class*="scroll-arrow"],
+  [id*="scroll-arrow"],
+  [class*="scroll-indicator"],
+  [id*="scroll-indicator"] {
+    display: none !important;
+  }
+
+  /* Hide any elements with arrow symbols or chevron icons */
+  [class*="chevron"],
+  [id*="chevron"],
+  [class*="arrow-up"],
+  [id*="arrow-up"],
+  [class*="arrow-down"],
+  [id*="arrow-down"] {
+    display: none !important;
+  }
+
+  /* Hide any floating elements that might be arrows */
+  .floating-arrow,
+  .scroll-arrow,
+  .back-to-top-arrow {
+    display: none !important;
+  }
+
+  /* Hide arrows in the top-right area of the page */
+  [style*="position: fixed"][style*="top: 0"],
+  [style*="position: fixed"][style*="top: 10px"],
+  [style*="position: fixed"][style*="top: 20px"],
+  [style*="position: fixed"][style*="top: 30px"],
+  [style*="position: fixed"][style*="top: 40px"],
+  [style*="position: fixed"][style*="top: 50px"],
+  [style*="position: fixed"][style*="top: 60px"],
+  [style*="position: fixed"][style*="top: 70px"],
+  [style*="position: fixed"][style*="top: 80px"],
+  [style*="position: fixed"][style*="top: 90px"],
+  [style*="position: fixed"][style*="top: 100px"] {
+    display: none !important;
+  }
+
+  /* Hide any elements positioned in the top-right corner */
+  [style*="position: absolute"][style*="top: 0"],
+  [style*="position: absolute"][style*="top: 10px"],
+  [style*="position: absolute"][style*="top: 20px"],
+  [style*="position: absolute"][style*="top: 30px"],
+  [style*="position: absolute"][style*="top: 40px"],
+  [style*="position: absolute"][style*="top: 50px"],
+  [style*="position: absolute"][style*="top: 60px"],
+  [style*="position: absolute"][style*="top: 70px"],
+  [style*="position: absolute"][style*="top: 80px"],
+  [style*="position: absolute"][style*="top: 90px"],
+  [style*="position: absolute"][style*="top: 100px"] {
+    display: none !important;
+  }
+
+  /* Hide any elements with arrow-like content in the top-right */
+  [style*="right: 0"],
+  [style*="right: 10px"],
+  [style*="right: 20px"],
+  [style*="right: 30px"],
+  [style*="right: 40px"],
+  [style*="right: 50px"] {
+    display: none !important;
+  }
+
+  /* Smooth transitions for interactive elements (excluding scroll containers) */
+  *:not(html):not(body) {
+    transition-property: color, background-color, border-color, opacity, box-shadow;
+    transition-timing-function: ease;
+    transition-duration: 150ms;
+  }
+
+  /* Remove ALL focus outlines - including browser defaults */
+  *:focus,
+  *:active,
+  *:focus-within {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Specifically target buttons and links */
+  button,
+  button:focus,
+  button:active,
+  button:focus-visible,
+  a,
+  a:focus,
+  a:active,
+  a:focus-visible,
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Remove the tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Only show focus for keyboard navigation on interactive elements */
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid theme('colors.primary.500') !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Ensure form inputs still show focus for usability - NO OUTLINES */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none !important;
+    border-color: theme('colors.primary.500') !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Component layer for reusable styles */
+@layer components {
+  /* Status badges - minimal and professional */
+  .badge-success {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400;
+  }
+
+  .badge-error {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400;
+  }
+
+  /* Professional card styles */
+  .card-professional {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700;
+  }
+
+  .card-elevated {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700;
+  }
+
+  /* Clean hero background */
+  .hero-background {
+    @apply bg-gray-50 dark:bg-gray-900;
+  }
+
+  /* Button base styles - flat, no gradients */
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors duration-150 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-gray-700 font-semibold px-6 py-2.5 rounded-lg border border-gray-300 transition-colors duration-150 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  /* Professional input styling - WCAG compliant with 44px min height */
+  .input-professional {
+    @apply w-full px-4 py-3 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-150;
+    min-height: 44px; /* WCAG 2.1 Level AAA touch target size */
+  }
+
+  /* Loading skeleton */
+  .loading-skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  }
+
+  /* Line clamp utilities - vendor prefixes required for cross-browser support */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1; /* stylelint-disable-line property-no-vendor-prefix */
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* stylelint-disable-line property-no-vendor-prefix */
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* stylelint-disable-line property-no-vendor-prefix */
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Utility layer for minimal professional effects */
+@layer utilities {
+  /* Simple hover effects for interactive elements */
+  .hover-card {
+    @apply transition-all duration-150 hover:shadow-md;
+  }
+
+  .hover-border {
+    @apply transition-colors duration-150 hover:border-gray-400 dark:hover:border-gray-500;
+  }
+
+  /* Animation delay utilities for staggered blob animations */
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
+
+/* Custom Toast Notification Styles */
+[data-sonner-toaster] {
+  --normal-bg: var(--toast-bg) !important;
+  --normal-border: var(--toast-border) !important;
+  --normal-text: var(--toast-text) !important;
+}
+
+/* Toast close button styling */
+[data-sonner-toast] [data-close-button] {
+  background: transparent !important;
+  border: none !important;
+  color: var(--toast-text) !important;
+  opacity: 0.6 !important;
+  transition: opacity 0.2s ease !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  border-radius: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+:root.dark [data-sonner-toast] [data-close-button]:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Remove swipe indicator if present */
+[data-sonner-toast] [data-swipe-indicator] {
+  display: none !important;
+}
+
+/* Toast content area */
+[data-sonner-toast] [data-content] {
+  padding-right: 8px !important;
+}
+
+/* Smooth toast animations */
+[data-sonner-toast] {
+  animation: slideInRight 0.2s ease-out !important;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
