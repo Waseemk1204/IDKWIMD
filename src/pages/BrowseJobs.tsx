@@ -46,42 +46,62 @@ export const BrowseJobs: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  // Debounced search to avoid too many API calls
-  const debouncedSearch = useCallback(
-    (() => {
-      let timeoutId: NodeJS.Timeout;
-      return (searchTerm: string) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          loadJobs(searchTerm);
-        }, 500);
-      };
-    })(),
-    []
-  );
+  // Map sortBy values to backend field names
+  const mapSortBy = (sortBy: string): { sortBy: string; sortOrder: string } => {
+    switch (sortBy) {
+      case 'newest':
+        return { sortBy: 'postedDate', sortOrder: 'desc' };
+      case 'salary-high':
+        return { sortBy: 'hourlyRate', sortOrder: 'desc' };
+      case 'salary-low':
+        return { sortBy: 'hourlyRate', sortOrder: 'asc' };
+      case 'relevance':
+        return { sortBy: 'postedDate', sortOrder: 'desc' };
+      default:
+        return { sortBy: 'postedDate', sortOrder: 'desc' };
+    }
+  };
 
-  const loadJobs = async (searchTerm?: string) => {
+  // Map experience level from frontend to backend values
+  const mapExperienceLevel = (level: string): string | undefined => {
+    if (!level) return undefined;
+    // Backend expects: 'entry', 'mid', 'senior'
+    // Frontend sends: 'fresher', '1-2', '3-5', '5+'
+    const mapping: Record<string, string> = {
+      'fresher': 'entry',
+      '1-2': 'entry',
+      '3-5': 'mid',
+      '5+': 'senior'
+    };
+    return mapping[level] || level;
+  };
+
+  const loadJobs = useCallback(async (page: number = currentPage, filterState: JobFilters = filters) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const searchQuery = searchTerm !== undefined ? searchTerm : filters.search;
+      // Map sortBy to backend format
+      const sortConfig = mapSortBy(filterState.sortBy);
+      const mappedExperienceLevel = mapExperienceLevel(filterState.experienceLevel);
+      
       const response = await apiService.getJobs({ 
         limit: 20,
-        page: currentPage,
-        search: searchQuery || undefined,
-        category: filters.category || undefined,
-        location: filters.location || undefined,
-        minSalary: filters.minSalary ? parseInt(filters.minSalary) : undefined,
-        maxSalary: filters.maxSalary ? parseInt(filters.maxSalary) : undefined,
-        jobType: filters.jobType || undefined,
-        experienceLevel: filters.experienceLevel || undefined,
-        isRemote: filters.isRemote || undefined,
-        sortBy: filters.sortBy || undefined
+        page: page,
+        search: filterState.search || undefined,
+        category: filterState.category || undefined,
+        location: filterState.location || undefined,
+        minSalary: filterState.minSalary ? parseInt(filterState.minSalary) : undefined,
+        maxSalary: filterState.maxSalary ? parseInt(filterState.maxSalary) : undefined,
+        jobType: filterState.jobType || undefined,
+        experienceLevel: mappedExperienceLevel,
+        isRemote: filterState.isRemote ? true : undefined,
+        sortBy: sortConfig.sortBy,
+        sortOrder: sortConfig.sortOrder
       });
       
       if (response.success && response.data?.jobs) {
-        if (currentPage === 1) {
+        if (page === 1) {
           setJobs(response.data.jobs);
         } else {
           setJobs(prev => [...prev, ...response.data.jobs]);
@@ -99,23 +119,69 @@ export const BrowseJobs: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    loadJobs();
-  }, [filters.category, filters.location, filters.minSalary, filters.maxSalary, filters.jobType, filters.experienceLevel, filters.isRemote, filters.sortBy, currentPage]);
+  // Track previous values to detect changes
+  const prevFiltersRef = React.useRef<JobFilters>(filters);
+  const prevPageRef = React.useRef(currentPage);
+  const isInitialMount = React.useRef(true);
 
+  // Combined effect for all filters and pagination
   useEffect(() => {
-    if (filters.search) {
-      debouncedSearch(filters.search);
-    } else {
-      loadJobs();
+    // Initial load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      loadJobs(1, filters);
+      prevFiltersRef.current = filters;
+      prevPageRef.current = 1;
+      return;
     }
-  }, [filters.search]);
+
+    let timeoutId: NodeJS.Timeout;
+    
+    // Check if filters changed (excluding search)
+    const filtersChanged = 
+      prevFiltersRef.current.category !== filters.category ||
+      prevFiltersRef.current.location !== filters.location ||
+      prevFiltersRef.current.minSalary !== filters.minSalary ||
+      prevFiltersRef.current.maxSalary !== filters.maxSalary ||
+      prevFiltersRef.current.jobType !== filters.jobType ||
+      prevFiltersRef.current.experienceLevel !== filters.experienceLevel ||
+      prevFiltersRef.current.isRemote !== filters.isRemote ||
+      prevFiltersRef.current.sortBy !== filters.sortBy;
+
+    // Check if only search changed
+    const searchChanged = prevFiltersRef.current.search !== filters.search;
+    const pageChanged = prevPageRef.current !== currentPage;
+
+    // Debounce search, immediate for other filters
+    if (searchChanged && !filtersChanged && !pageChanged) {
+      timeoutId = setTimeout(() => {
+        setCurrentPage(1);
+        loadJobs(1, filters);
+        prevFiltersRef.current = filters;
+        prevPageRef.current = 1;
+      }, 500);
+    } else if (filtersChanged) {
+      // Other filters changed - reset page and load immediately
+      setCurrentPage(1);
+      loadJobs(1, filters);
+      prevFiltersRef.current = filters;
+      prevPageRef.current = 1;
+    } else if (pageChanged && currentPage > 1) {
+      // Only page changed (pagination)
+      loadJobs(currentPage, filters);
+      prevFiltersRef.current = filters;
+      prevPageRef.current = currentPage;
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [filters, currentPage, loadJobs]);
 
   const handleFilterChange = (key: keyof JobFilters, value: string | boolean) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const clearFilters = () => {
