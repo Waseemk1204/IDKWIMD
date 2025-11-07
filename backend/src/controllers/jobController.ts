@@ -33,8 +33,12 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
     // Category filter
     if (category) filter.category = category;
     
-    // Location filter (case-insensitive regex)
-    if (location) filter.location = new RegExp(location as string, 'i');
+    // Location filter (case-insensitive partial match)
+    if (location) {
+      // Escape special regex characters and allow partial matches
+      const escapedLocation = (location as string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.location = new RegExp(escapedLocation, 'i');
+    }
     
     // Skills filter
     if (skills) {
@@ -43,41 +47,43 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
     }
     
     // Salary/Rate filter - handle both minSalary/maxSalary (from frontend) and minRate/maxRate
-    const minRateValue = minSalary ? Number(minSalary) : (minRate ? Number(minRate) : undefined);
-    const maxRateValue = maxSalary ? Number(maxSalary) : (maxRate ? Number(maxRate) : undefined);
+    const minRateValue = (minSalary !== undefined && minSalary !== '' && minSalary !== null) 
+      ? Number(minSalary) 
+      : ((minRate !== undefined && minRate !== '' && minRate !== null) ? Number(minRate) : undefined);
+    const maxRateValue = (maxSalary !== undefined && maxSalary !== '' && maxSalary !== null) 
+      ? Number(maxSalary) 
+      : ((maxRate !== undefined && maxRate !== '' && maxRate !== null) ? Number(maxRate) : undefined);
     
-    if (minRateValue || maxRateValue) {
+    if ((minRateValue !== undefined && !isNaN(minRateValue)) || (maxRateValue !== undefined && !isNaN(maxRateValue))) {
       const rateFilter: any = {};
-      if (minRateValue) rateFilter.$gte = minRateValue;
-      if (maxRateValue) rateFilter.$lte = maxRateValue;
+      if (minRateValue !== undefined && !isNaN(minRateValue)) rateFilter.$gte = minRateValue;
+      if (maxRateValue !== undefined && !isNaN(maxRateValue)) rateFilter.$lte = maxRateValue;
       
       // Build complex filter for hourly rate matching
-      const rateConditions: any[] = [
-        // Match jobs with fixed hourly rate
-        { hourlyRate: rateFilter }
-      ];
+      const rateConditions: any[] = [];
+      
+      // Match jobs with fixed hourly rate
+      if (Object.keys(rateFilter).length > 0) {
+        rateConditions.push({ hourlyRate: rateFilter });
+      }
       
       // Match jobs with pay range that overlaps with filter range
-      if (minRateValue && maxRateValue) {
+      if (minRateValue !== undefined && !isNaN(minRateValue) && maxRateValue !== undefined && !isNaN(maxRateValue)) {
+        // Both min and max specified
         rateConditions.push({
           $and: [
             { minHourlyRate: { $exists: true } },
             { maxHourlyRate: { $exists: true } },
             {
-              $or: [
-                // Range overlaps with filter range
-                {
-                  $and: [
-                    { minHourlyRate: { $lte: maxRateValue } },
-                    { maxHourlyRate: { $gte: minRateValue } }
-                  ]
-                }
+              $and: [
+                { minHourlyRate: { $lte: maxRateValue } },
+                { maxHourlyRate: { $gte: minRateValue } }
               ]
             }
           ]
         });
-      } else if (minRateValue) {
-        // Only min rate specified - match if maxHourlyRate >= minRateValue
+      } else if (minRateValue !== undefined && !isNaN(minRateValue)) {
+        // Only min rate specified - match if maxHourlyRate >= minRateValue OR hourlyRate >= minRateValue
         rateConditions.push({
           $and: [
             { minHourlyRate: { $exists: true } },
@@ -85,8 +91,8 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
             { maxHourlyRate: { $gte: minRateValue } }
           ]
         });
-      } else if (maxRateValue) {
-        // Only max rate specified - match if minHourlyRate <= maxRateValue
+      } else if (maxRateValue !== undefined && !isNaN(maxRateValue)) {
+        // Only max rate specified - match if minHourlyRate <= maxRateValue OR hourlyRate <= maxRateValue
         rateConditions.push({
           $and: [
             { minHourlyRate: { $exists: true } },
@@ -97,12 +103,17 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
       }
       
       // If we have existing $or conditions (from search), merge them
-      if (filter.$or) {
+      if (filter.$or && !Array.isArray(filter.$or[0])) {
+        // Existing $or is from search, combine with rate conditions
         filter.$and = [
           { $or: filter.$or },
           { $or: rateConditions }
         ];
         delete filter.$or;
+      } else if (filter.$or && Array.isArray(filter.$or[0])) {
+        // Already have $and structure, add rate conditions
+        filter.$and = filter.$and || [];
+        filter.$and.push({ $or: rateConditions });
       } else {
         filter.$or = rateConditions;
       }
