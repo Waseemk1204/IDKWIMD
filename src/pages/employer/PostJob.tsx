@@ -168,6 +168,26 @@ export const PostJob: React.FC = () => {
         clearFieldError('location');
         return true;
       
+      case 'duration':
+        if (!value || !value.trim()) {
+          setFieldError('duration', 'Job duration is required');
+          return false;
+        }
+        const trimmedDuration = value.trim().toLowerCase();
+        // Check if it's just a single digit
+        if (/^\d$/.test(trimmedDuration)) {
+          setFieldError('duration', 'Duration must include a unit (e.g., "3 months", "6 weeks", "1 year")');
+          return false;
+        }
+        // Check if it contains weeks, months, or years
+        const hasValidUnit = /\b(weeks?|months?|years?)\b/i.test(trimmedDuration);
+        if (!hasValidUnit) {
+          setFieldError('duration', 'Duration must include "weeks", "months", or "years" (e.g., "3 months", "6 weeks", "1 year")');
+          return false;
+        }
+        clearFieldError('duration');
+        return true;
+      
       case 'skills':
         const skillsArray = value ? value.split(',').map((skill: string) => skill.trim()).filter((skill: string) => skill) : [];
         if (skillsArray.length === 0) {
@@ -267,6 +287,7 @@ export const PostJob: React.FC = () => {
         { name: 'minHourlyRate', value: formData.minHourlyRate },
         { name: 'maxHourlyRate', value: formData.maxHourlyRate },
         { name: 'location', value: formData.location },
+        { name: 'duration', value: formData.duration },
         { name: 'skills', value: formData.skills }
       ];
 
@@ -608,9 +629,20 @@ export const PostJob: React.FC = () => {
                 value={formData.duration}
                 onChange={handleInputChange}
                 required 
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm" 
-                placeholder="e.g. 3-6 months" 
+                className={getFieldClassName('duration', "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm")}
+                placeholder="e.g. 3 months, 6 weeks, 1 year" 
+                onBlur={(e) => {
+                  const value = e.target.value.trim();
+                  // Auto-format if user enters just a number
+                  if (value && /^\d+$/.test(value)) {
+                    setFieldError('duration', 'Please include a unit: "weeks", "months", or "years"');
+                  }
+                }}
               />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Format: number followed by "weeks", "months", or "years" (e.g., "3 months", "6 weeks", "1 year")
+              </p>
+              <FieldError fieldName="duration" />
             </div>
           </div>
 

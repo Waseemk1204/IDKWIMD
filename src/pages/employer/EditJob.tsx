@@ -146,6 +146,21 @@ export const EditJob: React.FC = () => {
           setFieldError(fieldName, 'Category is required');
         }
         break;
+      case 'duration':
+        if (value && value.trim()) {
+          const trimmedDuration = value.trim().toLowerCase();
+          // Check if it's just a single digit or number
+          if (/^\d+$/.test(trimmedDuration)) {
+            setFieldError(fieldName, 'Duration must include a unit (e.g., "3 months", "6 weeks", "1 year")');
+          } else {
+            // Check if it contains weeks, months, or years
+            const hasValidUnit = /\b(weeks?|months?|years?)\b/i.test(trimmedDuration);
+            if (!hasValidUnit) {
+              setFieldError(fieldName, 'Duration must include "weeks", "months", or "years" (e.g., "3 months", "6 weeks", "1 year")');
+            }
+          }
+        }
+        break;
     }
   };
 
@@ -421,9 +436,27 @@ export const EditJob: React.FC = () => {
                 type="text"
                 value={formData.duration}
                 onChange={(e) => handleInputChange('duration', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                placeholder="e.g., 3 months, Ongoing"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white ${
+                  fieldErrors.duration ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="e.g., 3 months, 6 weeks, 1 year"
+                onBlur={(e) => {
+                  const value = e.target.value.trim();
+                  // Auto-validate if user enters just a number
+                  if (value && /^\d+$/.test(value)) {
+                    setFieldErrors(prev => ({
+                      ...prev,
+                      duration: 'Please include a unit: "weeks", "months", or "years"'
+                    }));
+                  }
+                }}
               />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Format: number followed by "weeks", "months", or "years" (e.g., "3 months", "6 weeks", "1 year")
+              </p>
+              {fieldErrors.duration && (
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">{fieldErrors.duration}</p>
+              )}
             </div>
 
             <div>
