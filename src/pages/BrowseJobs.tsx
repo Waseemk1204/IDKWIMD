@@ -15,7 +15,6 @@ interface JobFilters {
   location: string;
   minSalary: string;
   maxSalary: string;
-  jobType: string;
   experienceLevel: string;
   isRemote: boolean;
   sortBy: string;
@@ -32,7 +31,6 @@ export const BrowseJobs: React.FC = () => {
     location: searchParams.get('location') || '',
     minSalary: searchParams.get('minSalary') || '',
     maxSalary: searchParams.get('maxSalary') || '',
-    jobType: searchParams.get('jobType') || '',
     experienceLevel: searchParams.get('experience') || '',
     isRemote: searchParams.get('isRemote') === 'true',
     sortBy: searchParams.get('sortBy') || 'newest'
@@ -93,7 +91,6 @@ export const BrowseJobs: React.FC = () => {
         location: filterState.location || undefined,
         minSalary: filterState.minSalary ? parseInt(filterState.minSalary) : undefined,
         maxSalary: filterState.maxSalary ? parseInt(filterState.maxSalary) : undefined,
-        jobType: filterState.jobType || undefined,
         experienceLevel: mappedExperienceLevel,
         isRemote: filterState.isRemote ? true : undefined,
         sortBy: sortConfig.sortBy,
@@ -145,7 +142,6 @@ export const BrowseJobs: React.FC = () => {
       prevFiltersRef.current.location !== filters.location ||
       prevFiltersRef.current.minSalary !== filters.minSalary ||
       prevFiltersRef.current.maxSalary !== filters.maxSalary ||
-      prevFiltersRef.current.jobType !== filters.jobType ||
       prevFiltersRef.current.experienceLevel !== filters.experienceLevel ||
       prevFiltersRef.current.isRemote !== filters.isRemote ||
       prevFiltersRef.current.sortBy !== filters.sortBy;
@@ -191,7 +187,6 @@ export const BrowseJobs: React.FC = () => {
       location: '',
       minSalary: '',
       maxSalary: '',
-      jobType: '',
       experienceLevel: '',
       isRemote: false,
       sortBy: 'newest'
@@ -312,25 +307,6 @@ export const BrowseJobs: React.FC = () => {
                     <option value="1-2">1-2 years</option>
                     <option value="3-5">3-5 years</option>
                     <option value="5+">5+ years</option>
-                  </select>
-                </div>
-
-                {/* Job Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <Clock className="w-4 h-4 inline mr-1" />
-                    Job Type
-                  </label>
-                  <select
-                    value={filters.jobType}
-                    onChange={(e) => handleFilterChange('jobType', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-0 dark:bg-gray-700 dark:text-white text-sm"
-                  >
-                    <option value="">All Types</option>
-                    <option value="part-time">Part-time</option>
-                    <option value="contract">Contract</option>
-                    <option value="freelance">Freelance</option>
-                    <option value="internship">Internship</option>
                   </select>
                 </div>
 
