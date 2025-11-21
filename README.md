@@ -61,14 +61,17 @@ A comprehensive professional network platform that combines the best features of
 ```bash
 git clone <repository-url>
 cd IDKWIMD-main
+
+# One-command setup (installs dependencies for both frontend and backend)
+npm run setup
 ```
 
-### 2. Backend Setup
+### 2. Backend Setup (Manual)
 
 ```bash
 cd backend
 
-# Install dependencies
+# Install dependencies (if not using npm run setup)
 npm install
 
 # Create environment file
