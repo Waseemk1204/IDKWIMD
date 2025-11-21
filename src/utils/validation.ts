@@ -288,7 +288,7 @@ export const schemas = {
     },
     confirmPassword: {
       required: true,
-      custom: (value: string, formData: any) => 
+      custom: (value: string, formData: any) =>
         validators.confirmPassword(formData.password, value)
     },
     phone: {
@@ -296,7 +296,7 @@ export const schemas = {
     },
     role: {
       required: true,
-      custom: (value: string) => 
+      custom: (value: string) =>
         ['employee', 'employer'].includes(value) ? null : 'Invalid role'
     }
   },
@@ -325,7 +325,7 @@ export const schemas = {
     },
     skills: {
       required: true,
-      custom: (value: string[]) => 
+      custom: (value: string[]) =>
         Array.isArray(value) && value.length > 0 ? null : 'At least one skill is required'
     },
     experience: {
@@ -373,8 +373,8 @@ export const schemas = {
     },
     availability: {
       required: true,
-      custom: (value: string) => 
-        ['immediate', '1-week', '2-weeks', '1-month', 'flexible'].includes(value) 
+      custom: (value: string) =>
+        ['immediate', '1-week', '2-weeks', '1-month', 'flexible'].includes(value)
           ? null : 'Invalid availability option'
     }
   }
@@ -405,7 +405,7 @@ export const useValidation = (schema: Record<string, ValidationRule>) => {
 
   const validateAll = useCallback((formData: Record<string, any>) => {
     const newErrors: Record<string, string> = {};
-    
+
     Object.keys(schema).forEach(fieldName => {
       const error = validateField(fieldName, formData[fieldName], formData);
       if (error) {
@@ -419,7 +419,7 @@ export const useValidation = (schema: Record<string, ValidationRule>) => {
 
   const handleFieldChange = useCallback((fieldName: string, value: any, formData?: any) => {
     const error = validateField(fieldName, value, formData);
-    
+
     setErrors(prev => ({
       ...prev,
       [fieldName]: error || ''

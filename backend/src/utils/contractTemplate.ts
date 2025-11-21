@@ -4,54 +4,52 @@
  */
 
 export interface ContractTemplateData {
-  jobTitle: string;
-  companyName: string;
-  employeeName: string;
-  hourlyRate: number;
-  hoursPerWeek: number;
-  duration: string;
-  startDate: Date;
-  endDate: Date;
-  location?: string;
-  isRemote?: boolean;
-  jobDescription?: string;
-  responsibilities?: string[];
-  requirements?: string[];
+   jobTitle: string;
+   companyName: string;
+   employeeName: string;
+   hourlyRate: number;
+   hoursPerWeek: number;
+   duration: string;
+   startDate: Date;
+   endDate: Date;
+   location?: string;
+   isRemote?: boolean;
+   jobDescription?: string;
+   responsibilities?: string[];
 }
 
 export const generateContractTemplate = (data: ContractTemplateData): string => {
-  const {
-    jobTitle,
-    companyName,
-    employeeName,
-    hourlyRate,
-    hoursPerWeek,
-    duration,
-    startDate,
-    endDate,
-    location,
-    isRemote,
-    jobDescription,
-    responsibilities,
-    requirements
-  } = data;
+   const {
+      jobTitle,
+      companyName,
+      employeeName,
+      hourlyRate,
+      hoursPerWeek,
+      duration,
+      startDate,
+      endDate,
+      location,
+      isRemote,
+      jobDescription,
+      responsibilities
+   } = data;
 
-  const formattedStartDate = startDate.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-  const formattedEndDate = endDate.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+   const formattedStartDate = startDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+   });
+   const formattedEndDate = endDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+   });
 
-  const workLocation = isRemote ? 'Remote' : (location || 'To be determined');
-  const weeklyPayment = hourlyRate * hoursPerWeek;
-  const totalEstimatedPayment = weeklyPayment * Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+   const workLocation = isRemote ? 'Remote' : (location || 'To be determined');
+   const weeklyPayment = hourlyRate * hoursPerWeek;
+   const totalEstimatedPayment = weeklyPayment * Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
 
-  return `
+   return `
 PART-TIME EMPLOYMENT CONTRACT
 
 This Employment Contract ("Contract") is entered into on ${formattedStartDate} between:

@@ -56,21 +56,21 @@ export class EnhancedNotificationService {
     try {
       // Get user preferences
       const preferences = await this.getUserPreferences(data.recipient);
-      
+
       // Calculate relevance score
       const relevanceScore = await this.calculateRelevanceScore(data);
-      
+
       // Determine priority
       const priority = data.priority || this.determinePriority(data.type, relevanceScore);
-      
+
       // Get delivery channels based on preferences
       const channels = data.channels || this.getPreferredChannels(data.type, preferences);
-      
+
       // Generate rich content
       const richContent = await this.generateRichContent(data);
-      
+
       // Create notification
-      const notification = new EnhancedNotification({
+      const notification = await EnhancedNotification.create({
         recipient: data.recipient,
         sender: data.sender,
         type: data.type,
@@ -134,9 +134,9 @@ export class EnhancedNotificationService {
         }
       } catch (error) {
         console.error(`Failed to deliver ${channel} notification:`, error);
-        result.channels[channel] = { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        result.channels[channel] = {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
         };
         result.success = false;
       }
@@ -172,7 +172,7 @@ export class EnhancedNotificationService {
   private async deliverPush(notification: IEnhancedNotification): Promise<void> {
     // Get user's push subscription
     const user = await User.findById(notification.recipient).select('pushSubscriptions');
-    
+
     if (!user?.pushSubscriptions?.length) {
       console.warn(`Push notification skipped: No push subscriptions found for user ${notification.recipient}`);
       return; // Gracefully skip push if no subscriptions
@@ -191,11 +191,11 @@ export class EnhancedNotificationService {
   /**
    * Send push notification to specific device
    */
-  private async sendPushToDevice(subscription: any, notification: IEnhancedNotification): Promise<void> {
+  private async sendPushToDevice(subscription: any, _notification: IEnhancedNotification): Promise<void> {
     // This would integrate with Firebase Cloud Messaging or similar service
     // For now, we'll simulate the push notification
     console.log(`Sending push notification to device: ${subscription.endpoint}`);
-    
+
     // In a real implementation, you would:
     // 1. Use web-push library or Firebase Admin SDK
     // 2. Send the notification payload
@@ -207,7 +207,7 @@ export class EnhancedNotificationService {
    */
   private async deliverEmail(notification: IEnhancedNotification): Promise<void> {
     const user = await User.findById(notification.recipient).select('email fullName');
-    
+
     if (!user?.email) {
       console.warn(`Email notification skipped: No email found for user ${notification.recipient}`);
       return; // Gracefully skip email if no email address
@@ -215,10 +215,10 @@ export class EnhancedNotificationService {
 
     // Generate email content
     const emailContent = this.generateEmailContent(notification, user);
-    
+
     // Send email (integrate with your email service)
     console.log(`Sending email to ${user.email}: ${notification.title}`);
-    
+
     // In a real implementation, you would:
     // 1. Use nodemailer, SendGrid, or similar
     // 2. Send HTML email with rich content
@@ -230,10 +230,10 @@ export class EnhancedNotificationService {
    */
   private async deliverSMS(notification: IEnhancedNotification): Promise<void> {
     const user = await User.findById(notification.recipient).select('phoneNumber phone');
-    
+
     // Try both phoneNumber and phone fields
     const phoneNumber = user?.phoneNumber || user?.phone;
-    
+
     if (!phoneNumber) {
       console.warn(`SMS notification skipped: No phone number found for user ${notification.recipient}`);
       return; // Gracefully skip SMS if no phone number
@@ -241,7 +241,7 @@ export class EnhancedNotificationService {
 
     // Send SMS (integrate with Twilio, AWS SNS, or similar)
     console.log(`Sending SMS to ${phoneNumber}: ${notification.message}`);
-    
+
     // In a real implementation, you would:
     // 1. Use Twilio, AWS SNS, or similar service
     // 2. Send SMS with notification content
@@ -253,13 +253,13 @@ export class EnhancedNotificationService {
    */
   private async getUserPreferences(userId: mongoose.Types.ObjectId): Promise<any> {
     let preferences = await NotificationPreferences.findOne({ userId });
-    
+
     if (!preferences) {
       // Create default preferences
       preferences = new NotificationPreferences({ userId });
       await preferences.save();
     }
-    
+
     return preferences;
   }
 
@@ -355,7 +355,7 @@ export class EnhancedNotificationService {
     // Add context-specific content
     if (data.context?.relatedEntity) {
       const { type, id } = data.context.relatedEntity;
-      
+
       switch (type) {
         case 'job':
           const job = await Job.findById(id).select('title company');
@@ -383,7 +383,7 @@ export class EnhancedNotificationService {
   /**
    * Generate action buttons for notification
    */
-  private generateActionButtons(type: string, context?: any): Array<{label: string; action: string; url?: string; style?: 'primary' | 'secondary' | 'danger'}> {
+  private generateActionButtons(type: string, context?: any): Array<{ label: string; action: string; url?: string; style?: 'primary' | 'secondary' | 'danger' }> {
     const buttons = [];
 
     switch (type) {
@@ -445,7 +445,7 @@ export class EnhancedNotificationService {
     Object.entries(result.channels).forEach(([channel, channelResult]) => {
       if (channelResult) {
         updateData[`delivery.status.${channel}`] = channelResult.success ? 'delivered' : 'failed';
-        
+
         if (!channelResult.success) {
           updateData['delivery.failedAt'] = new Date();
           updateData['delivery.failureReason'] = channelResult.error;
@@ -465,9 +465,9 @@ export class EnhancedNotificationService {
         <body>
           <h2>${notification.title}</h2>
           <p>${notification.message}</p>
-          ${notification.richContent?.actionButtons?.map(button => 
-            `<a href="${button.url || '#'}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 5px;">${button.label}</a>`
-          ).join('') || ''}
+          ${notification.richContent?.actionButtons?.map(button =>
+      `<a href="${button.url || '#'}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 5px;">${button.label}</a>`
+    ).join('') || ''}
         </body>
       </html>
     `;
@@ -479,7 +479,7 @@ export class EnhancedNotificationService {
   async markAsRead(notificationId: string, userId: mongoose.Types.ObjectId): Promise<void> {
     await EnhancedNotification.findOneAndUpdate(
       { _id: notificationId, recipient: userId },
-      { 
+      {
         'interaction.isRead': true,
         'interaction.readAt': new Date()
       }
@@ -492,7 +492,7 @@ export class EnhancedNotificationService {
   async trackInteraction(notificationId: string, userId: mongoose.Types.ObjectId, action: string): Promise<void> {
     await EnhancedNotification.findOneAndUpdate(
       { _id: notificationId, recipient: userId },
-      { 
+      {
         'interaction.clickedAt': new Date(),
         'interaction.actionTaken': action
       }
@@ -522,17 +522,17 @@ export class EnhancedNotificationService {
     unreadCount: number;
   }> {
     const { page = 1, limit = 20, unreadOnly = false, type, priority } = options;
-    
+
     const query: any = { recipient: userId };
-    
+
     if (unreadOnly) {
       query['interaction.isRead'] = false;
     }
-    
+
     if (type) {
       query.type = type;
     }
-    
+
     if (priority) {
       query['smart.priority'] = priority;
     }
@@ -566,15 +566,15 @@ export class EnhancedNotificationService {
    */
   async createDigestNotification(userId: mongoose.Types.ObjectId): Promise<void> {
     const preferences = await this.getUserPreferences(userId);
-    
+
     if (!preferences.timing.digest.enabled) {
       return;
     }
 
     // Get unread notifications from the last period
-    const period = preferences.timing.digest.frequency === 'daily' ? 24 : 
-                  preferences.timing.digest.frequency === 'weekly' ? 168 : 720; // hours
-    
+    const period = preferences.timing.digest.frequency === 'daily' ? 24 :
+      preferences.timing.digest.frequency === 'weekly' ? 168 : 720; // hours
+
     const unreadNotifications = await EnhancedNotification.find({
       recipient: userId,
       'interaction.isRead': false,
@@ -587,7 +587,7 @@ export class EnhancedNotificationService {
 
     // Create digest notification
     const digestId = `digest_${userId}_${Date.now()}`;
-    
+
     await this.createNotification({
       recipient: userId,
       type: 'unified_activity_summary',

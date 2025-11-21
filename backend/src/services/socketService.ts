@@ -4,7 +4,6 @@ import Message from '../models/Message';
 import Conversation from '../models/Conversation';
 import Channel from '../models/Channel';
 import CallHistory from '../models/CallHistory';
-import User from '../models/User';
 
 export const setupSocketHandlers = (io: SocketIOServer) => {
   io.on('connection', (socket: Socket) => {
@@ -38,12 +37,12 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
         // Mark messages as read
         await Message.updateMany(
-          { 
+          {
             conversation: conversationId,
             sender: { $ne: authSocket.user.userId },
             readBy: { $ne: authSocket.user.userId }
           },
-          { 
+          {
             $push: { readBy: authSocket.user.userId },
             $set: { isRead: true }
           }
@@ -86,12 +85,12 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
         // Mark messages as read
         await Message.updateMany(
-          { 
+          {
             channel: channelId,
             sender: { $ne: authSocket.user.userId },
             readBy: { $ne: authSocket.user.userId }
           },
-          { 
+          {
             $push: { readBy: authSocket.user.userId },
             $set: { isRead: true }
           }
@@ -198,7 +197,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       try {
         const { messageId, reactionType } = data;
         const message = await Message.findById(messageId);
-        
+
         if (!message) {
           authSocket.emit('error', { message: 'Message not found' });
           return;
@@ -206,7 +205,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
         // Find existing reaction or create new one
         const reaction = message.reactions?.find(r => r.reactionType === reactionType);
-        
+
         if (reaction) {
           // Toggle reaction
           const userIndex = reaction.users.findIndex(u => u.toString() === authSocket.user.userId);
@@ -230,10 +229,10 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
         await message.save();
 
         // Emit to room
-        const room = message.conversation ? 
-          `conversation:${message.conversation}` : 
+        const room = message.conversation ?
+          `conversation:${message.conversation}` :
           `channel:${message.channel}`;
-        
+
         io.to(room).emit('reaction_added', {
           messageId,
           reactionType,
@@ -293,7 +292,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     authSocket.on('call_answer', async (data: { callId: string; conversationId?: string; channelId?: string }) => {
       try {
         const { callId, conversationId, channelId } = data;
-        
+
         // Update call history
         await CallHistory.findOneAndUpdate(
           { callId },
@@ -309,10 +308,10 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
           }
         );
 
-        const room = conversationId ? 
-          `conversation:${conversationId}` : 
+        const room = conversationId ?
+          `conversation:${conversationId}` :
           `channel:${channelId}`;
-        
+
         io.to(room).emit('call_answered', {
           callId,
           userId: authSocket.user.userId
@@ -326,7 +325,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     authSocket.on('call_reject', async (data: { callId: string; conversationId?: string; channelId?: string }) => {
       try {
         const { callId, conversationId, channelId } = data;
-        
+
         // Update call history
         await CallHistory.findOneAndUpdate(
           { callId },
@@ -342,10 +341,10 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
           }
         );
 
-        const room = conversationId ? 
-          `conversation:${conversationId}` : 
+        const room = conversationId ?
+          `conversation:${conversationId}` :
           `channel:${channelId}`;
-        
+
         io.to(room).emit('call_rejected', {
           callId,
           userId: authSocket.user.userId
@@ -359,12 +358,12 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     authSocket.on('call_end', async (data: { callId: string; conversationId?: string; channelId?: string }) => {
       try {
         const { callId, conversationId, channelId } = data;
-        
+
         // Update call history
         await CallHistory.findOneAndUpdate(
           { callId },
           {
-            $set: { 
+            $set: {
               status: 'ended',
               endedAt: new Date()
             },
@@ -377,10 +376,10 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
           }
         );
 
-        const room = conversationId ? 
-          `conversation:${conversationId}` : 
+        const room = conversationId ?
+          `conversation:${conversationId}` :
           `channel:${channelId}`;
-        
+
         io.to(room).emit('call_ended', {
           callId,
           userId: authSocket.user.userId

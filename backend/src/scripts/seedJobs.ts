@@ -111,9 +111,8 @@ const generateRandomJob = (employerId: string) => {
   const company = companies[Math.floor(Math.random() * companies.length)];
   const location = cities[Math.floor(Math.random() * cities.length)];
   const experienceLevel = experienceLevels[Math.floor(Math.random() * experienceLevels.length)];
-  const jobType = jobTypes[Math.floor(Math.random() * jobTypes.length)];
   const isRemote = Math.random() > 0.6; // 40% remote jobs
-  
+
   // Generate salary based on experience
   let minSalary, maxSalary;
   switch (experienceLevel) {
@@ -130,7 +129,7 @@ const generateRandomJob = (employerId: string) => {
       minSalary = 300 + Math.floor(Math.random() * 150);
       maxSalary = minSalary + 150 + Math.floor(Math.random() * 200);
   }
-  
+
   // Select 3-5 relevant skills
   const categorySkills = skills[category];
   const numSkills = 3 + Math.floor(Math.random() * 3);
@@ -139,28 +138,28 @@ const generateRandomJob = (employerId: string) => {
   for (let i = 0; i < numSkills && i < shuffled.length; i++) {
     selectedSkills.push(shuffled[i]);
   }
-  
+
   const description = descriptions[Math.floor(Math.random() * descriptions.length)];
-  
+
   // Select 3-5 responsibilities
   const selectedResponsibilities = [];
   const shuffledResp = [...responsibilities].sort(() => 0.5 - Math.random());
   for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
     selectedResponsibilities.push(shuffledResp[i]);
   }
-  
+
   // Select 3-5 requirements
   const selectedRequirements = [];
   const shuffledReq = [...requirements].sort(() => 0.5 - Math.random());
   for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
     selectedRequirements.push(shuffledReq[i]);
   }
-  
+
   // Random posted date within last 30 days
   const daysAgo = Math.floor(Math.random() * 30);
   const postedDate = new Date();
   postedDate.setDate(postedDate.getDate() - daysAgo);
-  
+
   // Generate hours per week string (e.g., "10-20")
   const minHours = [5, 10, 15, 20][Math.floor(Math.random() * 4)];
   const maxHours = minHours + [5, 10, 15][Math.floor(Math.random() * 3)];
@@ -199,7 +198,7 @@ const seedJobs = async (count: number = 250) => {
 
     // Find an employer user (or use admin as employer)
     let employer = await User.findOne({ role: 'employer' });
-    
+
     if (!employer) {
       console.log('⚠️  No employer found. Creating a test employer...');
       employer = await User.create({
@@ -232,24 +231,24 @@ const seedJobs = async (count: number = 250) => {
 
     await Job.insertMany(jobs);
     console.log(`✅ Successfully seeded ${count} jobs`);
-    
+
     // Display summary
     const summary = await Job.aggregate([
       { $group: { _id: '$category', count: { $sum: 1 } } },
       { $sort: { _id: 1 } }
     ]);
-    
+
     console.log('\n📊 Summary by category:');
     summary.forEach(item => {
       console.log(`   ${item._id}: ${item.count} jobs`);
     });
-    
+
     console.log('\n🎉 Seeding completed successfully!');
     console.log(`\n🔐 Test Employer Credentials:`);
     console.log(`   Email: test.employer@parttimepay.com`);
     console.log(`   Password: Test@123456`);
     console.log(`   (You can use this account to manage the seeded jobs)\n`);
-    
+
   } catch (error) {
     console.error('❌ Error seeding jobs:', error);
   } finally {
