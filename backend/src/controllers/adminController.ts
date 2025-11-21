@@ -565,7 +565,7 @@ export const moderateCommunityContent = async (req: AuthRequest, res: Response):
     }
 
     // Removed: Community content moderation (MVP cleanup)
-    let content: any = null;
+    const content: any = null;
     
     if (contentType === 'post' || contentType === 'comment') {
       res.status(400).json({

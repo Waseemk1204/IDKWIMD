@@ -98,7 +98,7 @@ export const ContextualMessage: React.FC<ContextualMessageProps> = ({ context })
   const handleContextualMessage = async () => {
     setIsLoading(true);
     try {
-      let conversationData: any = {
+      const conversationData: any = {
         participants: [],
         conversationType: 'direct'
       };

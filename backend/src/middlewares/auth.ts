@@ -3,6 +3,13 @@ import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 import { config } from '../config';
 
+declare global {
+  namespace Express {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface User extends IUser { }
+  }
+}
+
 export interface AuthRequest extends Request {
   user: IUser;
 }
@@ -162,7 +169,7 @@ export const checkOwnership = (resourceUserIdField: string = 'user') => {
 
     // Check if user owns the resource
     const resourceUserId = req.params[resourceUserIdField] || req.body[resourceUserIdField];
-    
+
     if (resourceUserId && resourceUserId !== req.user._id.toString()) {
       res.status(403).json({
         success: false,

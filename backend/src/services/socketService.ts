@@ -205,7 +205,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
         }
 
         // Find existing reaction or create new one
-        let reaction = message.reactions?.find(r => r.reactionType === reactionType);
+        const reaction = message.reactions?.find(r => r.reactionType === reactionType);
         
         if (reaction) {
           // Toggle reaction

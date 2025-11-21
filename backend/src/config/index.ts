@@ -26,7 +26,7 @@ export const config = {
   FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET || '',
   LINKEDIN_CLIENT_ID: process.env.LINKEDIN_CLIENT_ID || '',
   LINKEDIN_CLIENT_SECRET: process.env.LINKEDIN_CLIENT_SECRET || '',
-  LINKEDIN_CALLBACK_URL: process.env.LINKEDIN_CALLBACK_URL || 'http://localhost:3001/api/v1/auth/linkedin/callback',
+  LINKEDIN_CALLBACK_URL: process.env.LINKEDIN_CALLBACK_URL || 'http://localhost:5000/api/v1/auth/linkedin/callback',
 
   // Session Configuration - No fallback for security
   SESSION_SECRET: process.env.SESSION_SECRET!,

@@ -123,7 +123,7 @@ export const updateIntegrationPreferences = async (req: AuthRequest, res: Respon
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    let context = await UnifiedUserContext.findOne({ userId });
+    const context = await UnifiedUserContext.findOne({ userId });
 
     if (!context) {
       return res.status(404).json({ success: false, message: 'User context not found' });

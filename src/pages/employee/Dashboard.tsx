@@ -48,7 +48,7 @@ export const EmployeeDashboard: React.FC = () => {
     if (!user) return 0;
     
     let completed = 0;
-    let total = 6;
+    const total = 6;
     
     if (user.fullName) completed++;
     if (user.email) completed++;
