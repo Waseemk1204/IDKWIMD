@@ -552,6 +552,7 @@ export const getJobApplications = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
+    // Check if user is the employer (convert ObjectIds to strings for comparison)
     if (job.employer.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       res.status(403).json({
         success: false,
