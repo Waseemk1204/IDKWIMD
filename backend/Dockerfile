@@ -4,11 +4,11 @@ FROM node:18-slim
 # Install Python and curl for resume parsing and healthcheck
 # Using Debian instead of Alpine because spaCy has pre-built wheels
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+  python3 \
+  python3-pip \
+  python3-venv \
+  curl \
+  && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -24,10 +24,10 @@ COPY . .
 
 # Set up Python virtual environment for resume parser
 RUN cd python-services && \
-    python3 -m venv venv && \
-    ./venv/bin/pip install --upgrade pip && \
-    ./venv/bin/pip install --no-cache-dir -r requirements.txt && \
-    ./venv/bin/pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
+  python3 -m venv venv && \
+  ./venv/bin/pip install --upgrade pip && \
+  ./venv/bin/pip install --no-cache-dir -r requirements.txt && \
+  ./venv/bin/pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
 
 # Build TypeScript
 RUN npm run build
@@ -35,12 +35,12 @@ RUN npm run build
 # Remove devDependencies to reduce image size
 RUN npm prune --production
 
-# Expose port
-EXPOSE 5000
+# Expose port (Railway will set PORT env var, default to 5001)
+EXPOSE ${PORT:-5001}
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5000/health || exit 1
+# Health check - use PORT env var if set, otherwise default to 5001
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-5001}/health || exit 1
 
 # Start the application
 CMD ["npm", "start"]
