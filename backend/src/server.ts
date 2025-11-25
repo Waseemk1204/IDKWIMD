@@ -265,8 +265,27 @@ class Server {
   }
 }
 
+// Global error handlers to catch crashes
+process.on('uncaughtException', (error: Error) => {
+  console.error('💥 UNCAUGHT EXCEPTION - Server crashed during startup!');
+  console.error('Error:', error.message);
+  console.error('Stack:', error.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  console.error('💥 UNHANDLED REJECTION - Async error during startup!');
+  console.error('Reason:', reason);
+  console.error('Promise:', promise);
+  process.exit(1);
+});
+
 // Start server
+console.log('🎬 Initializing application...');
 const server = new Server();
-server.start();
+server.start().catch((error) => {
+  console.error('💥 Server.start() failed:', error);
+  process.exit(1);
+});
 
 export default server;
