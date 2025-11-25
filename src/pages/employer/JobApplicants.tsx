@@ -21,7 +21,7 @@ interface Application {
   _id: string;
   applicant: {
     _id: string;
-    name: string;
+    fullName: string;
     email: string;
     phone?: string;
     location?: string;
@@ -298,19 +298,19 @@ export const JobApplicants: React.FC = () => {
                       {application.applicant.profileImage ? (
                         <img
                           src={application.applicant.profileImage}
-                          alt={application.applicant.name}
+                          alt={application.applicant.fullName}
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
                         <span className="text-white font-medium">
-                          {application.applicant.name.charAt(0).toUpperCase()}
+                          {application.applicant.fullName.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {application.applicant.name}
+                          {application.applicant.fullName}
                         </h3>
                         {application.applicant.rating && (
                           <div className="flex items-center">
@@ -403,18 +403,18 @@ export const JobApplicants: React.FC = () => {
                   {selectedApplication.applicant.profileImage ? (
                     <img
                       src={selectedApplication.applicant.profileImage}
-                      alt={selectedApplication.applicant.name}
+                      alt={selectedApplication.applicant.fullName}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (
                     <span className="text-white text-xl font-medium">
-                      {selectedApplication.applicant.name.charAt(0).toUpperCase()}
+                      {selectedApplication.applicant.fullName.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
-                    {selectedApplication.applicant.name}
+                    {selectedApplication.applicant.fullName}
                   </h2>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     Application for {job?.title}
