@@ -32,8 +32,8 @@ class SessionService {
       logger.debug('SessionService - Loading session from storage', { hasStored: !!stored });
       if (stored) {
         const sessionData = JSON.parse(stored);
-        logger.debug('SessionService - Parsed session data', { 
-          hasToken: !!sessionData.token, 
+        logger.debug('SessionService - Parsed session data', {
+          hasToken: !!sessionData.token,
           isExpired: sessionData.expiresAt <= Date.now()
         });
         // Check if session is still valid
@@ -70,7 +70,7 @@ class SessionService {
       hasRefreshToken: !!refreshToken,
       expiresIn
     });
-    
+
     const expiresAt = Date.now() + (expiresIn * 1000);
     this.sessionData = {
       token,
@@ -80,31 +80,19 @@ class SessionService {
 
     // Save to localStorage as fallback
     this.saveSessionToStorage(this.sessionData);
-    
+
     logger.info('SessionService - Session saved successfully');
   }
 
   // Get current token
+  // Note: Does not attempt to refresh - let API interceptor handle 401 errors
   public getToken(): string | null {
     logger.debug('SessionService - getToken called', { hasSession: !!this.sessionData });
     if (!this.sessionData) {
       return null;
     }
 
-    // Check if token is expired
-    if (this.sessionData.expiresAt <= Date.now()) {
-      logger.debug('SessionService - Token expired, attempting refresh');
-      // Try to refresh if we have a refresh token
-      if (this.sessionData.refreshToken) {
-        this.refreshToken();
-        return this.sessionData?.token || null;
-      } else {
-        logger.debug('SessionService - No refresh token, clearing session');
-        this.clearSession();
-        return null;
-      }
-    }
-
+    // Return token even if expired - API interceptor will catch 401 and refresh
     return this.sessionData.token;
   }
 
@@ -128,13 +116,17 @@ class SessionService {
 
   // Refresh token
   public async refreshToken(): Promise<string> {
+    logger.info('SessionService - Token refresh requested');
+
     if (!this.sessionData?.refreshToken) {
+      logger.warn('SessionService - No refresh token available, clearing session');
       this.clearSession();
       throw new Error('No refresh token available');
     }
 
-    // Prevent multiple simultaneous refresh attempts
+    // Prevent multiple simultaneous refresh attempts (debounce)
     if (this.refreshPromise) {
+      logger.debug('SessionService - Refresh already in progress, returning existing promise');
       return this.refreshPromise;
     }
 
@@ -143,9 +135,14 @@ class SessionService {
     try {
       const newToken = await this.refreshPromise;
       if (!newToken) {
-        throw new Error('Token refresh failed');
+        logger.error('SessionService - Token refresh returned no token');
+        throw new Error('Token refresh failed - no token returned');
       }
+      logger.info('SessionService - Token refresh successful');
       return newToken;
+    } catch (error) {
+      logger.error('SessionService - Token refresh failed', error);
+      throw error;
     } finally {
       this.refreshPromise = null;
     }

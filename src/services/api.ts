@@ -6,12 +6,12 @@ import logger from '../utils/logger';
 const getApiBaseUrl = () => {
   // Use VITE_API_URL from environment variables
   const apiUrl = import.meta.env.VITE_API_URL;
-  
+
   if (!apiUrl) {
     logger.error('CRITICAL: VITE_API_URL is not defined in environment variables');
     throw new Error('API URL configuration is missing. Please set VITE_API_URL in your .env file.');
   }
-  
+
   return apiUrl;
 };
 
@@ -26,7 +26,7 @@ interface ApiResponse<T = any> {
 
 class ApiService {
   private baseURL: string;
-  
+
   constructor(baseURL: string) {
     this.baseURL = baseURL;
   }
@@ -36,10 +36,10 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     // Get token from session service
     const token = sessionService.getToken();
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -52,10 +52,10 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
+
       let data;
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType && contentType.includes('application/json')) {
         try {
           data = await response.json();
@@ -71,6 +71,60 @@ class ApiService {
       }
 
       if (!response.ok) {
+        // Handle 401 Unauthorized - attempt token refresh and retry
+        if (response.status === 401 && sessionService.getRefreshToken()) {
+          logger.info('API - 401 error, attempting token refresh');
+
+          // Only retry once to prevent infinite loops
+          const isRetry = (config.headers as any)?.['X-Retry-Count'];
+          if (isRetry) {
+            logger.warn('API - Already retried after refresh, not retrying again');
+            toast.error('Session expired. Please log in again');
+            sessionService.clearSession();
+            window.location.href = '/login';
+            throw new Error('Authentication failed');
+          }
+
+          try {
+            // Refresh the token
+            const newToken = await sessionService.refreshToken();
+            logger.info('API - Token refreshed, retrying original request');
+
+            // Retry the original request with new token
+            const retryConfig = {
+              ...config,
+              headers: {
+                ...config.headers,
+                'Authorization': `Bearer ${newToken}`,
+                'X-Retry-Count': '1' // Prevent infinite retry loops
+              }
+            };
+
+            const retryResponse = await fetch(url, retryConfig);
+
+            // Parse retry response
+            let retryData;
+            const retryContentType = retryResponse.headers.get('content-type');
+            if (retryContentType?.includes('application/json')) {
+              retryData = await retryResponse.json();
+            }
+
+            if (!retryResponse.ok) {
+              throw new Error(retryData?.message || `Retry failed with status ${retryResponse.status}`);
+            }
+
+            logger.info('API - Retry successful after token refresh');
+            return retryData;
+
+          } catch (refreshError) {
+            logger.error('API - Token refresh or retry failed', refreshError);
+            toast.error('Session expired. Please log in again');
+            sessionService.clearSession();
+            window.location.href = '/login';
+            throw new Error('Authentication failed');
+          }
+        }
+
         // For validation errors, return the error response instead of throwing
         if (response.status === 400 && data.errors) {
           return {
@@ -79,7 +133,7 @@ class ApiService {
             errors: data.errors
           };
         }
-        
+
         // Show user-friendly error messages
         if (response.status === 401) {
           toast.error('Please log in again');
@@ -92,14 +146,14 @@ class ApiService {
         } else {
           toast.error(data.message || `Request failed with status ${response.status}`);
         }
-        
+
         throw new Error(data.message || `Request failed with status ${response.status}`);
       }
 
       return data;
     } catch (error) {
       logger.error('API request failed', { endpoint, error });
-      
+
       // Handle network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
         toast.error('Please check your internet connection and try again');
@@ -111,7 +165,7 @@ class ApiService {
       } else {
         toast.error('An unexpected error occurred. Please try again.');
       }
-      
+
       throw error;
     }
   }
@@ -252,11 +306,11 @@ class ApiService {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
-    
+
     if (response.success) {
       toast.success('Your profile has been updated successfully');
     }
-    
+
     return response;
   }
 
@@ -312,38 +366,38 @@ class ApiService {
     }
 
     const response = await this.request(`/jobs?${queryParams.toString()}`);
-    
+
     // Transform job data if successful
     if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'jobs' in response.data) {
       const data = response.data as { jobs: any[] };
       data.jobs = data.jobs.map((job: any) => this.transformJobData(job));
     }
-    
+
     return response;
   }
 
   async getJobById(id: string): Promise<ApiResponse> {
     const response = await this.request(`/jobs/${id}`);
-    
+
     // Transform job data if successful
     if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'job' in response.data) {
       const data = response.data as { job: any };
       data.job = this.transformJobData(data.job);
     }
-    
+
     return response;
   }
 
   async getFeaturedJobs(limit?: number): Promise<ApiResponse> {
     const params = limit ? `?limit=${limit}` : '';
     const response = await this.request(`/jobs/featured${params}`);
-    
+
     // Transform job data if successful
     if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'jobs' in response.data) {
       const data = response.data as { jobs: any[] };
       data.jobs = data.jobs.map((job: any) => this.transformJobData(job));
     }
-    
+
     return response;
   }
 
@@ -381,15 +435,15 @@ class ApiService {
         }
       });
     }
-    
+
     const response = await this.request(`${endpoint}?${queryParams.toString()}`);
-    
+
     // Transform job data if successful
     if (response.success && response.data && typeof response.data === 'object' && response.data !== null && 'jobs' in response.data) {
       const data = response.data as { jobs: any[] };
       data.jobs = data.jobs.map((job: any) => this.transformJobData(job));
     }
-    
+
     return response;
   }
 
@@ -416,11 +470,11 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(applicationData),
     });
-    
+
     if (response.success) {
       toast.success('Your job application has been submitted successfully');
     }
-    
+
     return response;
   }
 
@@ -551,7 +605,7 @@ class ApiService {
 
     const token = sessionService.getToken();
     const url = `${this.baseURL}/users/profile-photo`;
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -1702,11 +1756,11 @@ class ApiService {
     if (params?.type) queryParams.append('type', params.type);
     if (params?.priority) queryParams.append('priority', params.priority);
     if (params?.grouped) queryParams.append('grouped', params.grouped.toString());
-    
+
     // Use basic /notifications endpoint (no /v1 prefix as it's already in base URL)
     const url = `/notifications?${queryParams.toString()}`;
     logger.debug('Fetching notifications', { params });
-    
+
     return this.request(url);
   }
 
