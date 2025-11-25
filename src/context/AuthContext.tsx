@@ -80,13 +80,13 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => null,
-  signup: async () => {},
+  signup: async () => { },
   loginWithGoogle: async () => null,
   loginWithLinkedIn: async () => null,
   handleTokenFromUrl: async () => null,
-  logout: () => {},
-  completeOnboarding: async () => {},
-  updateProfile: async () => {}
+  logout: () => { },
+  completeOnboarding: async () => { },
+  updateProfile: async () => { }
 });
 
 export const AuthProvider: React.FC<{
@@ -99,13 +99,13 @@ export const AuthProvider: React.FC<{
     // Check for token in URL first (Google OAuth redirect)
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get('token');
-    
+
     logger.debug('AuthContext - URL check', {
       currentUrl: window.location.href,
       searchParams: window.location.search,
       hasToken: !!tokenFromUrl
     });
-    
+
     if (tokenFromUrl) {
       logger.info('AuthContext - Token found in URL, processing authentication');
       handleTokenFromUrl(tokenFromUrl)
@@ -122,13 +122,13 @@ export const AuthProvider: React.FC<{
         });
       return; // Don't proceed with normal auth check
     }
-    
+
     // Normal authentication check using sessionService
     const savedUser = localStorage.getItem('user');
     const hasValidSession = sessionService.isAuthenticated();
-    
+
     logger.debug('AuthContext - Checking authentication', { hasValidSession, hasSavedUser: !!savedUser });
-    
+
     // Only try to get current user if we have a valid session
     if (hasValidSession) {
       apiService.getCurrentUser()
@@ -187,6 +187,48 @@ export const AuthProvider: React.FC<{
     }
   }, []);
 
+  // Proactive token refresh - check every minute and refresh if expiring soon
+  useEffect(() => {
+    // Only run if user is authenticated
+    if (!user) {
+      return;
+    }
+
+    logger.debug('AuthContext - Setting up proactive token refresh monitor');
+
+    const checkAndRefreshToken = async () => {
+      try {
+        // Check if session is about to expire (within 5 minutes)
+        if (sessionService.isSessionExpiringSoon()) {
+          logger.info('AuthContext - Token expiring soon, proactively refreshing');
+
+          try {
+            const newToken = await sessionService.refreshToken();
+            logger.info('AuthContext - Proactive token refresh successful');
+          } catch (refreshError) {
+            logger.error('AuthContext - Proactive token refresh failed', refreshError);
+            // Don't logout immediately - let the 401 interceptor handle it
+            // This gives the user a chance to complete their current action
+          }
+        }
+      } catch (error) {
+        logger.error('AuthContext - Token expiry check failed', error);
+      }
+    };
+
+    // Check immediately on mount
+    checkAndRefreshToken();
+
+    // Then check every minute
+    const intervalId = setInterval(checkAndRefreshToken, 60000); // 60 seconds
+
+    // Cleanup interval on unmount or user logout
+    return () => {
+      logger.debug('AuthContext - Cleaning up proactive token refresh monitor');
+      clearInterval(intervalId);
+    };
+  }, [user]); // Re-run when user changes (login/logout)
+
   const clearAuth = () => {
     logger.debug('AuthContext - Clearing authentication');
     setUser(null);
@@ -199,20 +241,20 @@ export const AuthProvider: React.FC<{
     setIsLoading(true);
     try {
       const response = await apiService.login(email, password);
-      
+
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
-        
+
         logger.info('AuthContext - Login successful');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
-        
+
         setIsLoading(false);
         return userData;
       } else {
@@ -231,7 +273,7 @@ export const AuthProvider: React.FC<{
       const baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
       const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
       const uniqueUsername = `${baseUsername}_${randomSuffix}`;
-      
+
       const response = await apiService.register({
         fullName: email.split('@')[0], // Default name from email
         username: uniqueUsername, // Generate unique username with random suffix
@@ -239,17 +281,17 @@ export const AuthProvider: React.FC<{
         password,
         role: role || 'employee'
       });
-      
+
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
-        
+
         logger.info('AuthContext - Signup successful');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
       } else {
@@ -267,7 +309,7 @@ export const AuthProvider: React.FC<{
     setIsLoading(true);
     try {
       logger.debug('AuthContext - loginWithGoogle called', { email: googleUser.email });
-      
+
       const response = await apiService.loginWithGoogle({
         googleId: googleUser.id,
         email: googleUser.email,
@@ -276,23 +318,23 @@ export const AuthProvider: React.FC<{
         givenName: googleUser.given_name,
         familyName: googleUser.family_name
       });
-      
+
       logger.debug('AuthContext - Google API response', { success: response.success });
-      
+
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
-        
+
         logger.info('AuthContext - Google login successful');
-        
+
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
-        
+
         setIsLoading(false);
         return userData;
       } else {
@@ -309,7 +351,7 @@ export const AuthProvider: React.FC<{
     setIsLoading(true);
     try {
       logger.debug('AuthContext - loginWithLinkedIn called', { email: linkedinUser.email });
-      
+
       const response = await apiService.loginWithLinkedIn({
         linkedInId: linkedinUser.id,
         email: linkedinUser.email,
@@ -318,23 +360,23 @@ export const AuthProvider: React.FC<{
         headline: linkedinUser.headline,
         location: linkedinUser.location
       });
-      
+
       logger.debug('AuthContext - LinkedIn API response', { success: response.success });
-      
+
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         const token = response.data.token;
         const refreshToken = response.data.refreshToken;
         const expiresIn = response.data.expiresIn || 3600;
-        
+
         logger.info('AuthContext - LinkedIn login successful');
-        
+
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Use session service for proper token management
         sessionService.setSession(token, refreshToken, expiresIn);
-        
+
         setIsLoading(false);
         return userData;
       } else {
@@ -351,16 +393,16 @@ export const AuthProvider: React.FC<{
     setIsLoading(true);
     try {
       logger.debug('AuthContext - Processing token from URL');
-      
+
       // Use sessionService for proper token management
       // Set token with default 1 hour expiry (backend doesn't send refresh token in URL)
       sessionService.setSession(token, undefined, 3600);
-      
+
       // Get user data using the token
       const response = await apiService.getCurrentUser();
-      
+
       logger.debug('AuthContext - getCurrentUser response', { success: response.success });
-      
+
       if (response.success && response.data?.user) {
         const userData = response.data.user;
         setUser(userData);
@@ -395,11 +437,11 @@ export const AuthProvider: React.FC<{
 
   const completeOnboarding = async (userData: Partial<User>): Promise<void> => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
       const response = await apiService.updateProfile(userData);
-      
+
       if (response.success && response.data?.user) {
         const updatedUser = response.data.user;
         setUser(updatedUser);
@@ -418,23 +460,23 @@ export const AuthProvider: React.FC<{
     console.log('=== AuthContext.updateProfile CALLED ===');
     console.log('Current user:', user ? user.email : 'null');
     console.log('Update data:', userData);
-    
+
     if (!user) {
       console.error('=== ERROR: No user in AuthContext ===');
       throw new Error('No user logged in');
     }
-    
+
     setIsLoading(true);
     try {
       console.log('=== Calling apiService.updateProfile ===');
       const response = await apiService.updateProfile(userData);
       console.log('=== apiService.updateProfile response ===', response);
-      
+
       if (response.success && response.data?.user) {
         const updatedUser = response.data.user;
         console.log('=== Profile updated successfully ===');
         console.log('Updated user data:', updatedUser);
-        
+
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
         console.log('=== User state and localStorage updated ===');
