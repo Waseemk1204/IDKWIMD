@@ -146,30 +146,18 @@ export const validateCreateJob = [
     .withMessage('Requirements must be an array'),
   body('requirements.*')
     .optional()
-    .custom((value) => {
-      if (value && value.trim().length < 5) {
-        throw new Error('Each requirement must be at least 5 characters');
-      }
-      if (value && value.trim().length > 200) {
-        throw new Error('Each requirement cannot be more than 200 characters');
-      }
-      return true;
-    }),
+    .trim()
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Each requirement must be between 1 and 200 characters'),
   body('responsibilities')
     .optional()
     .isArray()
     .withMessage('Responsibilities must be an array'),
   body('responsibilities.*')
     .optional()
-    .custom((value) => {
-      if (value && value.trim().length < 5) {
-        throw new Error('Each responsibility must be at least 5 characters');
-      }
-      if (value && value.trim().length > 200) {
-        throw new Error('Each responsibility cannot be more than 200 characters');
-      }
-      return true;
-    }),
+    .trim()
+    .isLength({ min: 1, max: 200 })
+    .withMessage('Each responsibility must be between 1 and 200 characters'),
   body('category')
     .trim()
     .notEmpty()
