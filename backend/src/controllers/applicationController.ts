@@ -552,14 +552,26 @@ export const getJobApplications = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
+    // Debug logging to diagnose authorization issue
+    console.log('=== GET JOB APPLICATIONS DEBUG ===');
+    console.log('Job ID:', jobId);
+    console.log('Job employer ID:', job.employer.toString());
+    console.log('Current user ID:', req.user._id.toString());
+    console.log('User role:', req.user.role);
+    console.log('IDs match:', job.employer.toString() === req.user._id.toString());
+    console.log('=====================================');
+
     // Check if user is the employer (convert ObjectIds to strings for comparison)
     if (job.employer.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      console.log('❌ AUTHORIZATION FAILED - User does not own this job');
       res.status(403).json({
         success: false,
         message: 'Access denied. You can only view applications for your own jobs.'
       });
       return;
     }
+
+    console.log('✅ AUTHORIZATION PASSED - User owns this job');
 
     const filter: any = { job: jobId };
     if (status) filter.status = status;
