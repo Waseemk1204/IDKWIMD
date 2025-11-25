@@ -81,13 +81,14 @@ export const JobApplicants: React.FC = () => {
           console.log('Job employer._id:', jobData.employer._id);
           console.log('Job employer._id (string):', jobData.employer._id?.toString());
           console.log('Current user object:', user);
-          console.log('Current user._id:', user?._id);
-          console.log('Current user._id (string):', user?._id?.toString());
-          console.log('IDs match:', jobData.employer._id?.toString() === user?._id?.toString());
+          console.log('Current user.id:', user?.id);
+          console.log('Current user.id (string):', user?.id?.toString());
+          console.log('IDs match:', jobData.employer._id?.toString() === user?.id?.toString());
           console.log('=========================================');
 
-          // Check if user owns this job (compare string IDs, not object references)
-          if (jobData.employer._id?.toString() !== user?._id?.toString()) {
+          // Check if user owns this job
+          // Note: user object uses 'id' property, not '_id'
+          if (jobData.employer._id?.toString() !== user?.id?.toString()) {
             console.log('❌ AUTHORIZATION FAILED - IDs do not match');
             setError('You can only view applicants for your own jobs');
             setIsLoading(false);
