@@ -479,6 +479,34 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+/**
+ * Clean up corrupted user data fields
+ * Best practice: Centralized data validation/cleanup before save operations
+ * Handles legacy data corruption issues (empty strings, invalid types)
+ */
+const cleanupUserData = (user: any): void => {
+  // Fix array fields that might be strings or have invalid elements
+  const arrayFields = ['skills', 'experiences', 'education'];
+  arrayFields.forEach(field => {
+    if (!Array.isArray(user[field]) || typeof user[field] === 'string') {
+      user[field] = [];
+    } else {
+      // Filter out invalid elements (empty strings, null, undefined)
+      user[field] = user[field].filter((item: any) =>
+        item && typeof item === 'object' && Object.keys(item).length > 0
+      );
+    }
+  });
+
+  // Fix object fields that might be strings or null
+  const objectFields = ['jobPreferences', 'companyInfo', 'socialLinks'];
+  objectFields.forEach(field => {
+    if (typeof user[field] !== 'object' || user[field] === null || typeof user[field] === 'string') {
+      user[field] = undefined;
+    }
+  });
+};
+
 // Google OAuth login
 export const loginWithGoogle = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -578,30 +606,12 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         return;
       }
 
-      if (user) {
-        // Link Google account to existing user
+      if (user) {        // Link Google account to existing user
         user.googleId = userData.googleId;
         user.profilePhoto = userData.profilePhoto || user.profilePhoto;
 
-        // Clean corrupted data before saving (fix empty strings in array/object fields)
-        if (!Array.isArray(user.skills) || typeof user.skills === 'string') {
-          user.skills = [];
-        }
-        if (!Array.isArray(user.experiences) || typeof user.experiences === 'string') {
-          user.experiences = [];
-        }
-        if (!Array.isArray(user.education) || typeof user.education === 'string') {
-          user.education = [];
-        }
-        if (typeof user.jobPreferences !== 'object' || user.jobPreferences === null || typeof (user.jobPreferences as any) === 'string') {
-          user.jobPreferences = undefined;
-        }
-        if (typeof user.companyInfo !== 'object' || user.companyInfo === null || typeof (user.companyInfo as any) === 'string') {
-          user.companyInfo = undefined;
-        }
-        if (typeof user.socialLinks !== 'object' || user.socialLinks === null || typeof (user.socialLinks as any) === 'string') {
-          user.socialLinks = undefined;
-        }
+        // Best practice: Clean corrupted data before saving
+        cleanupUserData(user);
 
         try {
           console.log('💾 Saving existing user with Google ID linked');
