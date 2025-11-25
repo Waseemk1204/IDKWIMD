@@ -35,12 +35,5 @@ RUN npm run build
 # Remove devDependencies to reduce image size
 RUN npm prune --production
 
-# Expose port (Railway will set PORT env var, default to 5001)
-EXPOSE ${PORT:-5001}
-
-# Health check - use PORT env var if set, otherwise default to 5001
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-5001}/health || exit 1
-
 # Start the application
 CMD ["npm", "start"]

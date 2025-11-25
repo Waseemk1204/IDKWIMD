@@ -207,6 +207,12 @@ class Server {
 
   public async start(): Promise<void> {
     try {
+      console.log('🔧 Starting server initialization...');
+      console.log(`📍 Environment: ${config.NODE_ENV}`);
+      console.log(`📍 PORT: ${config.PORT}`);
+      console.log(`📍 HOST: ${config.HOST}`);
+      console.log(`📍 Frontend URL: ${config.FRONTEND_URL}`);
+
       // Start server BEFORE database connection
       // This allows healthchecks to pass while DB is connecting
       this.server.listen(config.PORT, config.HOST, () => {
@@ -215,7 +221,16 @@ class Server {
         console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
       });
 
+      // Add error handler for server
+      this.server.on('error', (error: any) => {
+        console.error('❌ Server error:', error);
+        if (error.code === 'EADDRINUSE') {
+          console.error(`❌ Port ${config.PORT} is already in use`);
+        }
+      });
+
       // Connect to database after server is listening
+      console.log('🔌 Connecting to database...');
       await connectDB();
       console.log('✅ Database connected');
 
@@ -223,10 +238,13 @@ class Server {
       process.on('SIGTERM', this.shutdown.bind(this));
       process.on('SIGINT', this.shutdown.bind(this));
     } catch (error) {
-      console.error('Failed to start server:', error);
+      console.error('❌ Failed to start server:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
       // Don't exit immediately in production to allow healthchecks to pass
       if (config.NODE_ENV !== 'production') {
         process.exit(1);
+      } else {
+        console.error('⚠️  Server failed to start but staying alive for healthchecks');
       }
     }
   }
