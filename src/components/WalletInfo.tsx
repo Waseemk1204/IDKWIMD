@@ -1,4 +1,3 @@
-```typescript
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -38,10 +37,10 @@ const WalletInfo: React.FC<WalletInfoProps> = ({
             await axios.post(
                 '/api/v1/wallet/test-add-funds',
                 { amount: testAmount },
-                { headers: { Authorization: `Bearer ${ token } ` } }
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            toast.success(`Added ₹${ testAmount } to wallet!`);
+            toast.success(`Added ₹${testAmount} to wallet!`);
             onBalanceUpdated();
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to add funds');
