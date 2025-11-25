@@ -75,12 +75,26 @@ export const JobApplicants: React.FC = () => {
           const jobData = jobResponse.data.job;
           setJob(jobData);
 
+          // Debug logging
+          console.log('=== JOB APPLICANTS AUTHORIZATION DEBUG ===');
+          console.log('Job employer object:', jobData.employer);
+          console.log('Job employer._id:', jobData.employer._id);
+          console.log('Job employer._id (string):', jobData.employer._id?.toString());
+          console.log('Current user object:', user);
+          console.log('Current user._id:', user?._id);
+          console.log('Current user._id (string):', user?._id?.toString());
+          console.log('IDs match:', jobData.employer._id?.toString() === user?._id?.toString());
+          console.log('=========================================');
+
           // Check if user owns this job (compare string IDs, not object references)
           if (jobData.employer._id?.toString() !== user?._id?.toString()) {
+            console.log('❌ AUTHORIZATION FAILED - IDs do not match');
             setError('You can only view applicants for your own jobs');
             setIsLoading(false);
             return;
           }
+
+          console.log('✅ AUTHORIZATION PASSED - User owns this job');
         } else {
           setError('Job not found');
           setIsLoading(false);
