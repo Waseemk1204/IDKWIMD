@@ -1,6 +1,8 @@
+```typescript
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import sessionService from '../services/sessionService';
 
 interface WalletInfoProps {
     balance: number;
@@ -26,13 +28,20 @@ const WalletInfo: React.FC<WalletInfoProps> = ({
 
         setLoading(true);
         try {
+            // Use sessionService to get token (consistent with rest of app)
+            const token = sessionService.getToken();
+            if (!token) {
+                toast.error('Please log in to add funds');
+                return;
+            }
+
             await axios.post(
                 '/api/v1/wallet/test-add-funds',
                 { amount: testAmount },
-                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                { headers: { Authorization: `Bearer ${ token } ` } }
             );
 
-            toast.success(`Added ₹${testAmount} to wallet!`);
+            toast.success(`Added ₹${ testAmount } to wallet!`);
             onBalanceUpdated();
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to add funds');
