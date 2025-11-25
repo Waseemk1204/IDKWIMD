@@ -32,41 +32,41 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
 
     // Category filter
     if (category) filter.category = category;
-    
+
     // Location filter (case-insensitive partial match)
     if (location) {
       // Escape special regex characters and allow partial matches
       const escapedLocation = (location as string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.location = new RegExp(escapedLocation, 'i');
     }
-    
+
     // Skills filter
     if (skills) {
       const skillsArray = Array.isArray(skills) ? skills : [skills];
       filter.skills = { $in: skillsArray };
     }
-    
+
     // Salary/Rate filter - handle both minSalary/maxSalary (from frontend) and minRate/maxRate
-    const minRateValue = (minSalary !== undefined && minSalary !== '' && minSalary !== null) 
-      ? Number(minSalary) 
+    const minRateValue = (minSalary !== undefined && minSalary !== '' && minSalary !== null)
+      ? Number(minSalary)
       : ((minRate !== undefined && minRate !== '' && minRate !== null) ? Number(minRate) : undefined);
-    const maxRateValue = (maxSalary !== undefined && maxSalary !== '' && maxSalary !== null) 
-      ? Number(maxSalary) 
+    const maxRateValue = (maxSalary !== undefined && maxSalary !== '' && maxSalary !== null)
+      ? Number(maxSalary)
       : ((maxRate !== undefined && maxRate !== '' && maxRate !== null) ? Number(maxRate) : undefined);
-    
+
     if ((minRateValue !== undefined && !isNaN(minRateValue)) || (maxRateValue !== undefined && !isNaN(maxRateValue))) {
       const rateFilter: any = {};
       if (minRateValue !== undefined && !isNaN(minRateValue)) rateFilter.$gte = minRateValue;
       if (maxRateValue !== undefined && !isNaN(maxRateValue)) rateFilter.$lte = maxRateValue;
-      
+
       // Build complex filter for hourly rate matching
       const rateConditions: any[] = [];
-      
+
       // Match jobs with fixed hourly rate
       if (Object.keys(rateFilter).length > 0) {
         rateConditions.push({ hourlyRate: rateFilter });
       }
-      
+
       // Match jobs with pay range that overlaps with filter range
       if (minRateValue !== undefined && !isNaN(minRateValue) && maxRateValue !== undefined && !isNaN(maxRateValue)) {
         // Both min and max specified
@@ -101,7 +101,7 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
           ]
         });
       }
-      
+
       // If we have existing $or conditions (from search), merge them
       if (filter.$or && !Array.isArray(filter.$or[0])) {
         // Existing $or is from search, combine with rate conditions
@@ -118,25 +118,25 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
         filter.$or = rateConditions;
       }
     }
-    
+
     // Job Type filter
     if (jobType) {
       // Normalize job type (handle variations like "part-time", "part_time", "parttime")
       const normalizedJobType = (jobType as string).toLowerCase().replace(/[-_]/g, '');
       filter.type = new RegExp(normalizedJobType, 'i');
     }
-    
+
     // Experience Level filter
     if (experienceLevel) filter.experienceLevel = experienceLevel;
-    
+
     // Remote filter
     if (isRemote !== undefined) {
-      const isRemoteValue = typeof isRemote === 'string' 
+      const isRemoteValue = typeof isRemote === 'string'
         ? (isRemote === 'true' || isRemote === '1')
         : Boolean(isRemote);
       filter.isRemote = isRemoteValue;
     }
-    
+
     // Search filter (title, description, company)
     if (search) {
       const searchRegex = new RegExp(search as string, 'i');
@@ -145,7 +145,7 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
         { description: searchRegex },
         { company: searchRegex }
       ];
-      
+
       // If we have existing $or conditions (from rate filter), use $and to combine
       if (filter.$or && !filter.$and) {
         filter.$and = [
@@ -245,42 +245,6 @@ export const createJob = async (req: AuthRequest, res: Response): Promise<void> 
         success: false,
         message: 'Validation failed',
         errors: errors.array()
-      });
-      return;
-    }
-
-    // Import Wallet model
-    const { Wallet } = await import('../models/Wallet');
-
-    // Get or create employer wallet
-    let employerWallet = await Wallet.findOne({ userId: req.user._id, isActive: true });
-    if (!employerWallet) {
-      employerWallet = new Wallet({
-        userId: req.user._id,
-        balance: 0,
-        currency: 'INR',
-        isActive: true
-      });
-      await employerWallet.save();
-    }
-
-    // Calculate minimum required funds (1 month runway)
-    // Formula: hourlyRate × hoursPerWeek × 4 weeks
-    const hourlyRate = req.body.hourlyRate || req.body.minHourlyRate || 0;
-    const hoursPerWeek = parseInt(req.body.hoursPerWeek) || 20;
-    const minimumRequiredFunds = hourlyRate * hoursPerWeek * 4; // 1 month = 4 weeks
-
-    // Check if wallet has sufficient balance
-    if (employerWallet.balance < minimumRequiredFunds) {
-      res.status(400).json({
-        success: false,
-        message: 'Insufficient wallet balance',
-        error: 'insufficient_funds',
-        data: {
-          currentBalance: employerWallet.balance,
-          requiredAmount: minimumRequiredFunds,
-          shortfall: minimumRequiredFunds - employerWallet.balance
-        }
       });
       return;
     }
@@ -491,7 +455,7 @@ export const getFeaturedJobs = async (req: Request, res: Response): Promise<void
     const { limit = 8 } = req.query;
 
     // Show all active jobs, prioritizing featured ones
-    const jobs = await Job.find({ 
+    const jobs = await Job.find({
       status: 'active'
     })
       .populate('employer', 'name email profileImage')
@@ -516,7 +480,7 @@ export const getFeaturedJobs = async (req: Request, res: Response): Promise<void
 export const getJobCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await Job.distinct('category', { status: 'active' });
-    
+
     res.json({
       success: true,
       data: { categories }
