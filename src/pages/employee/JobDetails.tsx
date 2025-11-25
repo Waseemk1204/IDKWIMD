@@ -7,11 +7,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Skeleton, SkeletonCard, SkeletonText, SkeletonButton } from '../../components/ui/Skeleton';
 import { SEO, pageSEO } from '../../utils/seo';
-import { 
-  MapPin, 
-  Clock, 
-  DollarSign, 
-  Users, 
+import {
+  MapPin,
+  Clock,
+  DollarSign,
+  Users,
   Calendar,
   Briefcase,
   CheckCircle,
@@ -29,7 +29,7 @@ export const JobDetails: React.FC = () => {
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
-  
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -48,7 +48,7 @@ export const JobDetails: React.FC = () => {
         const response = await apiService.getJobById(id);
         if (response.success && response.data?.job) {
           setJob(response.data.job);
-          
+
           // Check if user has already applied (only if authenticated)
           if (isAuthenticated && user) {
             try {
@@ -85,7 +85,7 @@ export const JobDetails: React.FC = () => {
       <div className="space-y-6">
         {/* Back Button Skeleton */}
         <SkeletonButton size="sm" className="w-32" />
-        
+
         {/* Header Skeleton */}
         <div className="space-y-4">
           <Skeleton height={36} width="70%" />
@@ -98,13 +98,13 @@ export const JobDetails: React.FC = () => {
 
         {/* Main Content Skeleton */}
         <SkeletonCard />
-        
+
         {/* Job Description Skeleton */}
         <div className="space-y-4">
           <Skeleton height={24} width="40%" />
           <SkeletonText lines={8} />
         </div>
-        
+
         {/* Requirements Skeleton */}
         <div className="space-y-4">
           <Skeleton height={24} width="35%" />
@@ -129,7 +129,7 @@ export const JobDetails: React.FC = () => {
             Back to Jobs
           </Button>
         </div>
-        
+
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Job Not Found
         </h1>
@@ -151,7 +151,7 @@ export const JobDetails: React.FC = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 24) {
       return `${diffInHours} hours ago`;
     } else {
@@ -179,17 +179,17 @@ export const JobDetails: React.FC = () => {
 
   const getApplicationStatusBadge = () => {
     if (!hasApplied) return null;
-    
+
     const statusConfig = {
       pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', text: 'Pending Review' },
       reviewed: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', text: 'Under Review' },
-      shortlisted: { color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: 'Shortlisted' },
+      shortlisted: { color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300', text: 'Shortlisted' },
       accepted: { color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: 'Accepted' },
       rejected: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: 'Not Selected' }
     };
 
     const config = statusConfig[applicationStatus as keyof typeof statusConfig] || statusConfig.pending;
-    
+
     return (
       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.color}`}>
         <CheckCircle className="w-4 h-4 mr-1" />
@@ -198,7 +198,7 @@ export const JobDetails: React.FC = () => {
     );
   };
   const seoData = job ? pageSEO.jobDetail(job) : pageSEO.jobs;
-  
+
   return (
     <div className="space-y-6">
       {job && (
@@ -351,8 +351,8 @@ export const JobDetails: React.FC = () => {
             </h3>
             <div className="flex flex-wrap gap-2">
               {job.skills.map((skill: string, index: number) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
                 >
                   {skill}
@@ -387,11 +387,10 @@ export const JobDetails: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-neutral-600 dark:text-neutral-400">Urgency:</span>
-                <span className={`font-medium ${
-                  job.urgency === 'high' ? 'text-red-600 dark:text-red-400' :
-                  job.urgency === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
-                  'text-green-600 dark:text-green-400'
-                }`}>
+                <span className={`font-medium ${job.urgency === 'high' ? 'text-red-600 dark:text-red-400' :
+                    job.urgency === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-green-600 dark:text-green-400'
+                  }`}>
                   {job.urgency || 'Medium'}
                 </span>
               </div>

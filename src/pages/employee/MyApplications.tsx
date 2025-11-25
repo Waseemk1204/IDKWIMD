@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
-import { 
+import {
   Briefcase,
   MapPin,
   DollarSign,
@@ -109,17 +109,17 @@ export const MyApplications: React.FC = () => {
     const shortlisted = apps.filter(app => app.status === 'shortlisted').length;
     const accepted = apps.filter(app => app.status === 'accepted').length;
     const rejected = apps.filter(app => app.status === 'rejected').length;
-    
+
     const successRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
-    
+
     // Calculate average response time (simplified)
     const respondedApps = apps.filter(app => app.reviewedDate);
-    const averageResponseTime = respondedApps.length > 0 
+    const averageResponseTime = respondedApps.length > 0
       ? respondedApps.reduce((sum, app) => {
-          const appliedDate = new Date(app.appliedDate);
-          const reviewedDate = new Date(app.reviewedDate!);
-          return sum + (reviewedDate.getTime() - appliedDate.getTime());
-        }, 0) / respondedApps.length / (1000 * 60 * 60 * 24) // Convert to days
+        const appliedDate = new Date(app.appliedDate);
+        const reviewedDate = new Date(app.reviewedDate!);
+        return sum + (reviewedDate.getTime() - appliedDate.getTime());
+      }, 0) / respondedApps.length / (1000 * 60 * 60 * 24) // Convert to days
       : 0;
 
     setStats({
@@ -145,36 +145,41 @@ export const MyApplications: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { 
-        color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', 
+      pending: {
+        color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
         text: 'Pending Review',
-        icon: Clock
+        icon: Clock,
+        description: 'Your application is waiting to be reviewed by the employer.'
       },
-      reviewed: { 
-        color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', 
+      reviewed: {
+        color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
         text: 'Under Review',
-        icon: Eye
+        icon: Eye,
+        description: 'The employer has viewed your application and is reviewing it.'
       },
-      shortlisted: { 
-        color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', 
+      shortlisted: {
+        color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
         text: 'Shortlisted',
-        icon: CheckCircle
+        icon: CheckCircle,
+        description: 'You made it to the shortlist! The employer is seriously considering you.'
       },
-      accepted: { 
-        color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', 
+      accepted: {
+        color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
         text: 'Accepted',
-        icon: Award
+        icon: Award,
+        description: 'Congratulations! The employer has accepted your application.'
       },
-      rejected: { 
-        color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', 
+      rejected: {
+        color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
         text: 'Not Selected',
-        icon: XCircle
+        icon: XCircle,
+        description: 'Unfortunately, you were not selected for this position. Keep applying!'
       }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     const IconComponent = config.icon;
-    
+
     return (
       <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.color}`}>
         <IconComponent className="w-4 h-4 mr-1" />
@@ -185,10 +190,10 @@ export const MyApplications: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
@@ -201,7 +206,7 @@ export const MyApplications: React.FC = () => {
 
   const filteredApplications = applications.filter(app => {
     const matchesStatus = selectedStatus === 'all' || app.status === selectedStatus;
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       app.job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.job.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -370,26 +375,23 @@ export const MyApplications: React.FC = () => {
         ].map(({ key, label, count }) => (
           <div
             key={key}
-            className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-              selectedStatus === key
+            className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedStatus === key
                 ? 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800'
                 : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
+              }`}
             onClick={() => setSelectedStatus(key)}
           >
             <div className="text-center">
-              <div className={`text-2xl font-bold ${
-                selectedStatus === key
+              <div className={`text-2xl font-bold ${selectedStatus === key
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-gray-900 dark:text-white'
-              }`}>
+                }`}>
                 {count}
               </div>
-              <div className={`text-sm ${
-                selectedStatus === key
+              <div className={`text-sm ${selectedStatus === key
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-gray-600 dark:text-gray-400'
-              }`}>
+                }`}>
                 {label}
               </div>
             </div>
@@ -406,8 +408,8 @@ export const MyApplications: React.FC = () => {
               {selectedStatus === 'all' ? 'No applications yet' : `No ${selectedStatus} applications`}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {selectedStatus === 'all' 
-                ? 'Start applying to jobs to see your applications here.' 
+              {selectedStatus === 'all'
+                ? 'Start applying to jobs to see your applications here.'
                 : `You don't have any ${selectedStatus} applications.`}
             </p>
             <Button
@@ -464,7 +466,7 @@ export const MyApplications: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-3">
                       {application.coverLetter}
                     </p>
