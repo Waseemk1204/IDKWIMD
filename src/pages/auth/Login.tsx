@@ -14,7 +14,7 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { login, loginWithGoogle, loginWithLinkedIn, handleTokenFromUrl, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,30 +40,30 @@ export const Login: React.FC = () => {
       const token = urlParams.get('token');
       const googleAuth = urlParams.get('google_auth');
       const error = urlParams.get('error');
-      
+
       // Handle token from backend redirect
       if (token && googleAuth === 'success') {
         console.log('Processing Google OAuth callback - token received from backend');
         setIsLoading(true);
         setError('');
-        
+
         try {
           // Use handleTokenFromUrl to process the token
           const user = await handleTokenFromUrl(token);
-          
+
           if (user) {
             console.log('Google login successful:', user);
-            
+
             // Clean up URL parameters
             window.history.replaceState({}, document.title, '/login');
-            
+
             // Check if user is NEW (just created via Google OAuth)
             // New users created within the last 60 seconds should go through onboarding
             const accountAge = user.createdAt ? Date.now() - new Date(user.createdAt).getTime() : Infinity;
             const isNewAccount = accountAge < 60000; // Less than 60 seconds old
-            
+
             console.log('Account age (ms):', accountAge, 'Is new?', isNewAccount);
-            
+
             // NEW users should go through onboarding
             if (isNewAccount) {
               console.log('🎉 New Google user - redirecting to onboarding');
@@ -71,10 +71,10 @@ export const Login: React.FC = () => {
               navigate(onboardingPath);
               return;
             }
-            
+
             // EXISTING users go to their dashboard
             const intendedJobId = localStorage.getItem('intendedJobId');
-            
+
             if (intendedJobId) {
               localStorage.removeItem('intendedJobId');
               navigate(`/employee/jobs/${intendedJobId}`);
@@ -101,12 +101,17 @@ export const Login: React.FC = () => {
           setIsLoading(false);
         }
       } else if (error) {
-        console.error('Google OAuth error:', error);
+        // Best practice: Differentiate error messages by OAuth provider
+        const errorType = error.toString();
+        const isLinkedInError = errorType.includes('linkedin') || urlParams.get('linkedin_auth') === 'failed';
+        const providerName = isLinkedInError ? 'LinkedIn' : 'Google';
+
+        console.log(`${providerName} OAuth error:`, error);
         const message = urlParams.get('message');
         if (message) {
-          setError(`Google authentication failed: ${message}`);
+          setError(`${providerName} authentication failed: ${message}`);
         } else {
-          setError('Google authentication failed. Please try again.');
+          setError(`${providerName} authentication failed. Please try again.`);
         }
         // Clean up URL parameters
         window.history.replaceState({}, document.title, '/login');
@@ -122,13 +127,13 @@ export const Login: React.FC = () => {
   const handleGoogleSuccess = async () => {
     setIsLoading(true);
     setError('');
-    
+
     try {
       console.log('Initiating Google OAuth login');
-      
+
       // Get the Google user data from the service with login mode
       const result = await googleAuthService.signIn('login');
-      
+
       if (result.success) {
         // In redirect mode, the user will be redirected to Google
         // The actual login will happen after Google redirects back
@@ -153,7 +158,7 @@ export const Login: React.FC = () => {
   const handleLinkedInSuccess = async () => {
     setIsLoading(true);
     setError('');
-    
+
     try {
       console.log('Initiating LinkedIn OAuth login');
       // LinkedIn auth redirect handled by linkedinAuthService
@@ -177,15 +182,15 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
       const user = await login(email, password);
       const params = new URLSearchParams(location.search);
       const intent = params.get('intent');
-      
+
       // Check for intended job ID from localStorage
       const intendedJobId = localStorage.getItem('intendedJobId');
-      
+
       if (intendedJobId) {
         // Clear the intended job ID and redirect to the specific job
         localStorage.removeItem('intendedJobId');
@@ -334,16 +339,16 @@ export const Login: React.FC = () => {
                   </span>
                 </div>
               </div>
-              
+
               <div className="mt-6 space-y-3">
-                <GoogleAuthButton 
+                <GoogleAuthButton
                   text="Continue with Google"
                   className="w-full"
                   mode="login"
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
                 />
-                <LinkedInAuthButton 
+                <LinkedInAuthButton
                   text="Continue with LinkedIn"
                   className="w-full"
                   mode="login"
@@ -356,8 +361,8 @@ export const Login: React.FC = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account?{' '}
-                <Link 
-                  to="/signup" 
+                <Link
+                  to="/signup"
                   className="font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                 >
                   Sign up for free

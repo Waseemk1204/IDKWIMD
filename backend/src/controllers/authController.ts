@@ -13,7 +13,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     console.log('=== REGISTRATION REQUEST ===');
     console.log('Body:', JSON.stringify(req.body, null, 2));
     console.log('Headers:', req.headers['content-type']);
-    
+
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -32,8 +32,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Check if user already exists
     let existingUser;
     try {
-      existingUser = await User.findOne({ 
-        $or: [{ email }, { username }] 
+      existingUser = await User.findOne({
+        $or: [{ email }, { username }]
       });
     } catch (dbError) {
       console.error('Database query error during user lookup:', dbError);
@@ -44,9 +44,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     if (existingUser) {
-      const errorMessage = existingUser.email === email 
+      const errorMessage = existingUser.email === email
         ? 'User already exists with this email'
         : 'Username is already taken';
       console.log('❌ User exists:', errorMessage, { email: existingUser.email, username: existingUser.username });
@@ -127,7 +127,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     console.log('=== LOGIN REQUEST ===');
     console.log('Body:', JSON.stringify(req.body, null, 2));
     console.log('Email provided:', req.body.email);
-    
+
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -145,7 +145,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Find user and include password for comparison
     const user = await User.findOne({ email }).select('+password');
     console.log('User lookup result:', user ? `Found user: ${user.email}` : 'User not found');
-    
+
     if (!user) {
       console.log('❌ No user found with email:', email);
       res.status(401).json({
@@ -169,7 +169,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     console.log('Comparing password...');
     const isPasswordValid = await user.comparePassword(password);
     console.log('Password validation result:', isPasswordValid);
-    
+
     if (!isPasswordValid) {
       console.log('❌ Invalid password for user:', email);
       res.status(401).json({
@@ -178,7 +178,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     console.log('✅ Login successful for user:', email);
 
     // Update last login without triggering full validation
@@ -317,13 +317,13 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
     }
 
     const allowedUpdates = [
-      'fullName', 'displayName', 'username', 'phone', 'location', 'about', 'headline', 'website', 'skills', 
+      'fullName', 'displayName', 'username', 'phone', 'location', 'about', 'headline', 'website', 'skills',
       'experiences', 'education', 'profilePhoto', 'socialLinks', 'companyInfo'
     ];
-    
+
     const updates = Object.keys(req.body).filter(key => allowedUpdates.includes(key));
     const updateData: any = {};
-    
+
     updates.forEach(update => {
       updateData[update] = req.body[update];
     });
@@ -448,7 +448,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
     // Verify refresh token
     const decoded = jwt.verify(refreshToken, config.JWT_REFRESH_SECRET) as { userId: string };
-    
+
     // Check if user exists
     const user = await User.findById(decoded.userId);
     if (!user || !user.isActive) {
@@ -493,7 +493,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         // Decode the JWT token
         const payload = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString());
         console.log('✅ Decoded Google JWT:', { sub: payload.sub, email: payload.email });
-        
+
         userData = {
           googleId: payload.sub,
           email: payload.email,
@@ -531,7 +531,8 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     let user;
     try {
       console.log('🔍 Searching for user by Google ID:', userData.googleId);
-      user = await User.findOne({ googleId: userData.googleId }).maxTimeMS(5000); // 5 second timeout
+      // Best practice: Let Mongoose use default timeout (~30s) with built-in retry logic
+      user = await User.findOne({ googleId: userData.googleId });
       console.log('✅ Google ID lookup complete:', user ? 'User found' : 'No user found');
     } catch (dbError: any) {
       console.error('❌ Database error during Google ID lookup:', {
@@ -551,12 +552,12 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       }
       return;
     }
-    
+
     if (!user) {
       // Check if user exists with this email
       try {
         console.log('🔍 Searching for user by email:', userData.email);
-        user = await User.findOne({ email: userData.email }).maxTimeMS(5000); // 5 second timeout
+        user = await User.findOne({ email: userData.email });
         console.log('✅ Email lookup complete:', user ? 'User found' : 'No user found');
       } catch (dbError: any) {
         console.error('❌ Database error during email lookup:', {
@@ -576,12 +577,12 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         }
         return;
       }
-      
+
       if (user) {
         // Link Google account to existing user
         user.googleId = userData.googleId;
         user.profilePhoto = userData.profilePhoto || user.profilePhoto;
-        
+
         // Clean corrupted data before saving (fix empty strings in array/object fields)
         if (!Array.isArray(user.skills) || typeof user.skills === 'string') {
           user.skills = [];
@@ -601,7 +602,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         if (typeof user.socialLinks !== 'object' || user.socialLinks === null || typeof (user.socialLinks as any) === 'string') {
           user.socialLinks = undefined;
         }
-        
+
         try {
           console.log('💾 Saving existing user with Google ID linked');
           await user.save();
@@ -623,7 +624,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
       } else {
         // Create new user with Google data
         const username = userData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
-        
+
         // Ensure username is unique
         let uniqueUsername = username;
         let counter = 1;
@@ -631,7 +632,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
         while (usernameExists) {
           try {
             console.log('🔍 Checking username availability:', uniqueUsername);
-            const existingUser = await User.findOne({ username: uniqueUsername }).maxTimeMS(5000);
+            const existingUser = await User.findOne({ username: uniqueUsername });
             usernameExists = !!existingUser;
             if (usernameExists) {
               uniqueUsername = `${username}${counter}`;
@@ -687,7 +688,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
 
     // Track if this is a new user
     const isNewUser = user.createdAt && (Date.now() - new Date(user.createdAt).getTime()) < 60000;
-    
+
     // Update last login
     await User.findByIdAndUpdate(user._id, { lastLogin: new Date() }, { runValidators: false });
 
@@ -706,7 +707,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     // If this is an OAuth callback (credential present), redirect to frontend
     if (credential) {
       console.log('✅ Google OAuth successful - redirecting to frontend');
-      
+
       // NEW users go to /signup with success animation, then onboarding
       // EXISTING users go to /login and then dashboard
       if (isNewUser) {
@@ -754,7 +755,7 @@ export const loginWithGoogle = async (req: Request, res: Response): Promise<void
     }
   } catch (error) {
     console.error('Google login error:', error);
-    
+
     // Check if this is an OAuth callback
     const { credential } = req.body;
     if (credential) {
@@ -783,11 +784,11 @@ export const loginWithLinkedIn = async (req: Request, res: Response): Promise<vo
 
     // Check if user already exists with this LinkedIn ID
     let user = await User.findOne({ linkedInId });
-    
+
     if (!user) {
       // Check if user exists with this email
       user = await User.findOne({ email });
-      
+
       if (user) {
         // Link LinkedIn account to existing user
         user.linkedInId = linkedInId;
@@ -798,7 +799,7 @@ export const loginWithLinkedIn = async (req: Request, res: Response): Promise<vo
       } else {
         // Create new user with LinkedIn data
         const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
-        
+
         // Ensure username is unique
         let uniqueUsername = username;
         let counter = 1;
