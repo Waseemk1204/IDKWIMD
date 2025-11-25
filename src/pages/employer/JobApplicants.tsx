@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
-import { 
+import {
   ArrowLeft,
   User,
   Mail,
@@ -74,9 +74,9 @@ export const JobApplicants: React.FC = () => {
         if (jobResponse.success && jobResponse.data?.job) {
           const jobData = jobResponse.data.job;
           setJob(jobData);
-          
-          // Check if user owns this job
-          if (jobData.employer._id !== user?._id) {
+
+          // Check if user owns this job (compare string IDs, not object references)
+          if (jobData.employer._id?.toString() !== user?._id?.toString()) {
             setError('You can only view applicants for your own jobs');
             setIsLoading(false);
             return;
@@ -109,12 +109,12 @@ export const JobApplicants: React.FC = () => {
       const response = await apiService.updateApplicationStatus(applicationId, { status: newStatus });
       if (response.success) {
         // Update local state
-        setApplications(prev => prev.map(app => 
-          app._id === applicationId 
+        setApplications(prev => prev.map(app =>
+          app._id === applicationId
             ? { ...app, status: newStatus as any, reviewedDate: new Date().toISOString() }
             : app
         ));
-        
+
         // Update selected application if it's the one being updated
         if (selectedApplication?._id === applicationId) {
           setSelectedApplication(prev => prev ? { ...prev, status: newStatus as any, reviewedDate: new Date().toISOString() } : null);
@@ -145,7 +145,7 @@ export const JobApplicants: React.FC = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         {config.text}
@@ -155,14 +155,14 @@ export const JobApplicants: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
-  const filteredApplications = applications.filter(app => 
+  const filteredApplications = applications.filter(app =>
     selectedStatus === 'all' || app.status === selectedStatus
   );
 
@@ -268,8 +268,8 @@ export const JobApplicants: React.FC = () => {
               No applications found
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              {selectedStatus === 'all' 
-                ? 'No one has applied for this job yet.' 
+              {selectedStatus === 'all'
+                ? 'No one has applied for this job yet.'
                 : `No applications with status "${selectedStatus}".`}
             </p>
           </div>
