@@ -116,10 +116,12 @@ export const validateCreateJob = [
     .isFloat({ min: 0 })
     .withMessage('Hourly rate must be a positive number'),
   body('minHourlyRate')
+    .optional()
     .isNumeric()
     .isFloat({ min: 0 })
     .withMessage('Minimum hourly rate must be a positive number'),
   body('maxHourlyRate')
+    .optional()
     .isNumeric()
     .isFloat({ min: 0 })
     .withMessage('Maximum hourly rate must be a positive number'),
@@ -184,12 +186,21 @@ export const validateCreateJob = [
     .optional()
     .isBoolean()
     .withMessage('isRemote must be a boolean value'),
-  // Custom validation to ensure pay range is valid
+  // Custom validation to ensure pay structure is valid
   body().custom((body) => {
+    // Must have either hourlyRate OR both min/max hourly rates  
+    const hasHourlyRate = body.hourlyRate !== undefined && body.hourlyRate !== null && body.hourlyRate !== '';
+    const hasMinMax = (body.minHourlyRate !== undefined && body.minHourlyRate !== null && body.minHourlyRate !== '') &&
+      (body.maxHourlyRate !== undefined && body.maxHourlyRate !== null && body.maxHourlyRate !== '');
+
+    if (!hasHourlyRate && !hasMinMax) {
+      throw new Error('Must provide either hourlyRate or both minHourlyRate and maxHourlyRate');
+    }
+
     if (body.minHourlyRate && body.maxHourlyRate && body.minHourlyRate > body.maxHourlyRate) {
       throw new Error('Minimum hourly rate cannot be higher than maximum hourly rate');
     }
-    
+
     return true;
   })
 ];
