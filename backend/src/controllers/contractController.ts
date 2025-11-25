@@ -57,12 +57,25 @@ export const createContractFromApplication = async (
       return { success: false, message: 'Contract already exists for this job and employee' };
     }
 
+    // Check if there's an accepted offer
+    if (application.offerStatus === 'pending') {
+      return { success: false, message: 'Cannot create contract while offer is pending' };
+    }
+
+    if (application.offerStatus === 'rejected') {
+      return { success: false, message: 'Cannot create contract for rejected offer' };
+    }
+
     // Parse hours per week
     const hoursPerWeek = parseInt(job.hoursPerWeek) || 20;
     const durationWeeks = parseDurationToWeeks(job.duration);
 
     // Calculate costs
-    const hourlyRate = job.hourlyRate;
+    // Use offer amount if available and accepted, otherwise use job hourly rate
+    const hourlyRate = (application.offerStatus === 'accepted' && application.offerAmount)
+      ? application.offerAmount
+      : job.hourlyRate;
+
     const weeklyPayment = hourlyRate * hoursPerWeek;
     const totalEstimatedCost = weeklyPayment * durationWeeks;
 
@@ -430,6 +443,145 @@ export const completeContract = async (req: AuthRequest, res: Response): Promise
       success: false,
       message: 'Failed to complete contract'
     });
+  }
+};
+
+// Terminate contract (Employer or Employee)
+export const terminateContract = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const userId = req.user._id;
+
+    const contract = await Contract.findById(id)
+      .populate('job', 'title company')
+      .populate('employer', 'fullName email')
+      .populate('employee', 'fullName email');
+
+    if (!contract) {
+      res.status(404).json({ success: false, message: 'Contract not found' });
+      return;
+    }
+
+    // Verify user is part of contract
+    if (
+      contract.employer._id.toString() !== userId.toString() &&
+      contract.employee._id.toString() !== userId.toString() &&
+      req.user.role !== 'admin'
+    ) {
+      res.status(403).json({ success: false, message: 'Access denied' });
+      return;
+    }
+
+    if (contract.status !== 'active') {
+      res.status(400).json({ success: false, message: 'Contract is not active' });
+      return;
+    }
+
+    // Unlock remaining funds to employer
+    const remainingAmount = contract.remainingAmount;
+    if (remainingAmount > 0) {
+      const employerWallet = await Wallet.findOne({ userId: contract.employer._id, isActive: true });
+      if (employerWallet) {
+        employerWallet.balance += remainingAmount;
+        await employerWallet.save();
+
+        // Create unlock transaction
+        const unlockTransaction = new Transaction({
+          userId: contract.employer._id,
+          walletId: employerWallet._id,
+          type: 'credit',
+          amount: remainingAmount,
+          currency: 'INR',
+          status: 'completed',
+          description: `Refund from terminated contract: ${(contract.job as any).title}`,
+          relatedJobId: contract.job._id,
+          metadata: {
+            transactionType: 'job_fund_unlock',
+            contractId: contract._id,
+            reason: 'contract_termination'
+          }
+        });
+        await unlockTransaction.save();
+      }
+    }
+
+    // Update contract status
+    contract.status = 'terminated';
+    contract.terminationReason = reason;
+    contract.terminatedBy = userId as any;
+    contract.terminationDate = new Date();
+    contract.actualEndDate = new Date();
+    contract.remainingAmount = 0; // Funds unlocked
+    await contract.save();
+
+    // Update employee experience
+    const employee: any = contract.employee;
+    if (employee && Array.isArray(employee.experiences)) {
+      const experienceIndex = employee.experiences.findIndex((exp: any) =>
+        exp.company === (contract.job as any).company &&
+        exp.title === (contract.job as any).title &&
+        exp.current === true
+      );
+
+      if (experienceIndex !== -1) {
+        employee.experiences[experienceIndex].current = false;
+        employee.experiences[experienceIndex].to = new Date();
+        await employee.save();
+      }
+    }
+
+    // Notify other party
+    const isEmployer = contract.employer._id.toString() === userId.toString();
+    const recipientId = isEmployer ? contract.employee._id : contract.employer._id;
+    const senderName = isEmployer ? (contract.employer as any).fullName : (contract.employee as any).fullName;
+
+    try {
+      const notificationService = EnhancedNotificationService.getInstance();
+      if (notificationService) {
+        await notificationService.createNotification({
+          recipient: recipientId as any,
+          sender: userId as any,
+          type: 'system',
+          title: 'Contract Terminated',
+          message: `The contract for "${(contract.job as any).title}" has been terminated by ${senderName}. Reason: ${reason || 'No reason provided'}`,
+          richContent: {
+            preview: `Contract terminated by ${senderName}`,
+            actionButtons: [
+              {
+                label: 'View Contract',
+                action: 'view_contract',
+                url: `/employee/contracts/${id}`,
+                style: 'primary'
+              }
+            ]
+          },
+          context: {
+            module: 'jobs',
+            relatedEntity: {
+              type: 'job', // Changed from 'contract' to 'job' to match allowed types
+              id: contract.job._id as any,
+              title: (contract.job as any).title,
+              url: `/employee/contracts/${id}`
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Notification error:', error);
+    }
+
+    res.json({
+      success: true,
+      message: 'Contract terminated successfully',
+      data: {
+        contract,
+        refundedAmount: remainingAmount
+      }
+    });
+  } catch (error) {
+    console.error('Terminate contract error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
 

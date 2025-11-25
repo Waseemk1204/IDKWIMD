@@ -19,6 +19,8 @@ export interface IApplication extends Document {
   linkedinProfile?: string;
   githubProfile?: string;
   otherLinks?: string[];
+  offerAmount?: number;
+  offerStatus?: 'pending' | 'accepted' | 'rejected' | 'none';
 }
 
 const applicationSchema = new Schema<IApplication>({
@@ -86,7 +88,16 @@ const applicationSchema = new Schema<IApplication>({
   },
   otherLinks: [{
     type: String
-  }]
+  }],
+  offerAmount: {
+    type: Number,
+    min: [0, 'Offer amount cannot be negative']
+  },
+  offerStatus: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected', 'none'],
+    default: 'none'
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -100,7 +111,7 @@ applicationSchema.index({ job: 1, status: 1 });
 applicationSchema.index({ status: 1, appliedDate: -1 });
 
 // Virtual for days since applied
-applicationSchema.virtual('daysSinceApplied').get(function() {
+applicationSchema.virtual('daysSinceApplied').get(function () {
   const now = new Date();
   const applied = new Date(this.appliedDate);
   const diffTime = Math.abs(now.getTime() - applied.getTime());
@@ -108,7 +119,7 @@ applicationSchema.virtual('daysSinceApplied').get(function() {
 });
 
 // Pre-save middleware to update reviewed date when status changes
-applicationSchema.pre('save', function(next) {
+applicationSchema.pre('save', function (next) {
   if (this.isModified('status') && this.status !== 'pending' && !this.reviewedDate) {
     this.reviewedDate = new Date();
   }

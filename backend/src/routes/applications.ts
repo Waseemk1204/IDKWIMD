@@ -6,7 +6,9 @@ import {
   getApplicationById,
   updateApplicationStatus,
   withdrawApplication,
-  getJobApplications
+  getJobApplications,
+  makeOffer,
+  respondToOffer
 } from '../controllers/applicationController';
 import {
   validateCreateApplication,
@@ -22,10 +24,12 @@ router.use(authenticate);
 router.get('/', validatePagination, getUserApplications as any);
 router.get('/:id', getApplicationById as any);
 router.delete('/:id', withdrawApplication as any);
+router.post('/:id/respond-offer', respondToOffer as any);
 
 // Job application routes
 router.post('/job/:jobId', validateCreateApplication, submitApplication as any);
 router.get('/job/:jobId', validatePagination, getJobApplications as any);
 router.put('/:id/status', updateApplicationStatus as any);
+router.post('/:id/offer', makeOffer as any);
 
 export default router;

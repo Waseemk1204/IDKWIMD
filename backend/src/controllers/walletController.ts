@@ -20,7 +20,7 @@ export const getWallet = async (req: AuthRequest, res: Response): Promise<void> 
     const userId = req.user._id;
 
     let wallet = await Wallet.findOne({ userId, isActive: true });
-    
+
     if (!wallet) {
       // Create wallet if it doesn't exist
       wallet = new Wallet({
@@ -601,5 +601,29 @@ export const getWalletStats = async (req: AuthRequest, res: Response): Promise<v
       success: false,
       message: 'Failed to get wallet statistics'
     });
+  }
+};
+
+// Process weekly payouts (Manual trigger for testing)
+export const processWeeklyPayouts = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // Only admin can trigger this manually
+    if (req.user.role !== 'admin') {
+      res.status(403).json({ success: false, message: 'Access denied' });
+      return;
+    }
+
+    const { SchedulerService } = require('../services/schedulerService');
+    const scheduler = SchedulerService.getInstance();
+    const result = await scheduler.processWeeklyPayouts();
+
+    res.json({
+      success: result.success,
+      message: result.message,
+      data: { processedCount: result.processedCount }
+    });
+  } catch (error) {
+    console.error('Process weekly payouts error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

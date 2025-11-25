@@ -134,10 +134,10 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
     // Send notification to employer about new job application
     try {
       const notificationService = EnhancedNotificationService.getInstance();
-      
+
       // Get applicant details for the notification
       const applicant = await User.findById(req.user._id).select('fullName email profilePhoto');
-      
+
       if (notificationService && job.employer && applicant) {
         await notificationService.createNotification({
           recipient: job.employer,
@@ -150,15 +150,15 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
             avatar: applicant.profilePhoto || undefined,
             preview: `${applicant.fullName} applied for "${job.title}" at ${job.company}`,
             actionButtons: [
-              { 
-                label: 'View Application', 
-                action: 'view_application', 
+              {
+                label: 'View Application',
+                action: 'view_application',
                 url: `/employer/applications/${application._id}`,
                 style: 'primary' as const
               },
-              { 
-                label: 'View All Applications', 
-                action: 'view_all_applications', 
+              {
+                label: 'View All Applications',
+                action: 'view_all_applications',
                 url: `/employer/jobs/${jobId}/applications`,
                 style: 'secondary' as const
               }
@@ -180,7 +180,7 @@ export const submitApplication = async (req: AuthRequest, res: Response): Promis
             }
           }
         });
-        
+
         console.log(`Job application notification sent to employer ${job.employer} for job ${jobId}`);
       }
     } catch (notificationError) {
@@ -234,11 +234,11 @@ export const getApplicationById = async (req: AuthRequest, res: Response): Promi
     }
 
     // Check if user can view this application
-    const employerId = typeof (application.job as any).employer === 'object' && (application.job as any).employer._id 
+    const employerId = typeof (application.job as any).employer === 'object' && (application.job as any).employer._id
       ? (application.job as any).employer._id.toString()
       : (application.job as any).employer.toString();
-    
-    const canView = 
+
+    const canView =
       application.applicant._id.toString() === req.user._id.toString() ||
       employerId === req.user._id.toString() ||
       req.user.role === 'admin';
@@ -289,10 +289,10 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
     }
 
     // Check if user is the employer or admin
-    const employerId = typeof (application.job as any).employer === 'object' && (application.job as any).employer._id 
+    const employerId = typeof (application.job as any).employer === 'object' && (application.job as any).employer._id
       ? (application.job as any).employer._id.toString()
       : (application.job as any).employer.toString();
-    
+
     if (employerId !== req.user._id.toString() && req.user.role !== 'admin') {
       res.status(403).json({
         success: false,
@@ -320,7 +320,7 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
       const notificationService = EnhancedNotificationService.getInstance();
       const job: any = application.job;
       const applicantId = application.applicant;
-      
+
       if (notificationService && applicantId) {
         if (status === 'accepted') {
           await notificationService.createNotification({
@@ -334,9 +334,9 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
               avatar: undefined,
               preview: `Your application for "${job.title}" has been accepted`,
               actionButtons: [
-                { 
-                  label: 'View Contract', 
-                  action: 'view_contract', 
+                {
+                  label: 'View Contract',
+                  action: 'view_contract',
                   url: `/employee/contracts`,
                   style: 'primary' as const
                 }
@@ -364,9 +364,9 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
               avatar: undefined,
               preview: `Application for "${job.title}" was not selected`,
               actionButtons: [
-                { 
-                  label: 'Browse More Jobs', 
-                  action: 'browse_jobs', 
+                {
+                  label: 'Browse More Jobs',
+                  action: 'browse_jobs',
                   url: `/browse-jobs`,
                   style: 'secondary' as const
                 }
@@ -395,13 +395,13 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
         const contractResult = await createContractFromApplication(id, employerId);
         if (contractResult.success) {
           console.log('✅ Contract created successfully for application:', id);
-          
+
           // Send notification about contract creation
           try {
             const notificationService = EnhancedNotificationService.getInstance();
             const job: any = application.job;
             const applicantId = application.applicant;
-            
+
             if (notificationService && applicantId) {
               await notificationService.createNotification({
                 recipient: applicantId as any,
@@ -414,9 +414,9 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
                   avatar: undefined,
                   preview: `Contract created for "${job.title}"`,
                   actionButtons: [
-                    { 
-                      label: 'View Contract', 
-                      action: 'view_contract', 
+                    {
+                      label: 'View Contract',
+                      action: 'view_contract',
                       url: `/employee/contracts`,
                       style: 'primary' as const
                     }
@@ -436,11 +436,11 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
           } catch (contractNotificationError) {
             console.error('Failed to send contract creation notification:', contractNotificationError);
           }
-          
+
           res.json({
             success: true,
             message: 'Application accepted and contract created successfully',
-            data: { 
+            data: {
               application: updatedApplication,
               contract: contractResult.contract
             }
@@ -593,5 +593,160 @@ export const getJobApplications = async (req: AuthRequest, res: Response): Promi
       success: false,
       message: 'Internal server error'
     });
+  }
+};
+// Make an offer (Employer only)
+export const makeOffer = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { offerAmount } = req.body;
+
+    if (!offerAmount || offerAmount < 0) {
+      res.status(400).json({
+        success: false,
+        message: 'Valid offer amount is required'
+      });
+      return;
+    }
+
+    const application = await Application.findById(id).populate('job');
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    const job: any = application.job;
+    if (job.employer.toString() !== req.user._id.toString()) {
+      res.status(403).json({ success: false, message: 'Access denied' });
+      return;
+    }
+
+    application.offerAmount = offerAmount;
+    application.offerStatus = 'pending';
+    await application.save();
+
+    // Notify applicant
+    try {
+      const notificationService = EnhancedNotificationService.getInstance();
+      if (notificationService) {
+        await notificationService.createNotification({
+          recipient: application.applicant as any,
+          sender: req.user._id as any,
+          type: 'system',
+          title: 'New Offer Received',
+          message: `You have received an offer of ₹${offerAmount}/hr for "${job.title}".`,
+          richContent: {
+            preview: `Offer: ₹${offerAmount}/hr for "${job.title}"`,
+            actionButtons: [
+              {
+                label: 'View Offer',
+                action: 'view_application',
+                url: `/employee/applications/${id}`,
+                style: 'primary'
+              }
+            ]
+          },
+          context: {
+            module: 'jobs',
+            relatedEntity: {
+              type: 'application',
+              id: id as any,
+              title: job.title,
+              url: `/employee/applications/${id}`
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Notification error:', error);
+    }
+
+    res.json({
+      success: true,
+      message: 'Offer sent successfully',
+      data: { application }
+    });
+  } catch (error) {
+    console.error('Make offer error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Respond to offer (Employee only)
+export const respondToOffer = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // 'accepted' or 'rejected'
+
+    if (!['accepted', 'rejected'].includes(status)) {
+      res.status(400).json({ success: false, message: 'Invalid status' });
+      return;
+    }
+
+    const application = await Application.findById(id).populate('job');
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    if (application.applicant.toString() !== req.user._id.toString()) {
+      res.status(403).json({ success: false, message: 'Access denied' });
+      return;
+    }
+
+    if (application.offerStatus !== 'pending') {
+      res.status(400).json({ success: false, message: 'No pending offer to respond to' });
+      return;
+    }
+
+    application.offerStatus = status;
+    await application.save();
+
+    const job: any = application.job;
+
+    // Notify employer
+    try {
+      const notificationService = EnhancedNotificationService.getInstance();
+      if (notificationService) {
+        await notificationService.createNotification({
+          recipient: job.employer,
+          sender: req.user._id as any,
+          type: 'system',
+          title: `Offer ${status === 'accepted' ? 'Accepted' : 'Rejected'}`,
+          message: `Your offer for "${job.title}" has been ${status}.`,
+          richContent: {
+            preview: `Offer ${status} by applicant`,
+            actionButtons: [
+              {
+                label: 'View Application',
+                action: 'view_application',
+                url: `/employer/applications/${id}`,
+                style: 'primary'
+              }
+            ]
+          },
+          context: {
+            module: 'jobs',
+            relatedEntity: {
+              type: 'application',
+              id: id as any,
+              title: job.title,
+              url: `/employer/applications/${id}`
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Notification error:', error);
+    }
+
+    res.json({
+      success: true,
+      message: `Offer ${status} successfully`,
+      data: { application }
+    });
+  } catch (error) {
+    console.error('Respond to offer error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

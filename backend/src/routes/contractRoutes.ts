@@ -3,7 +3,8 @@ import { authenticate } from '../middlewares/auth';
 import {
   getUserContracts,
   getContractById,
-  completeContract
+  completeContract,
+  terminateContract
 } from '../controllers/contractController';
 
 const router = Router();
@@ -19,6 +20,9 @@ router.get('/:id', getContractById as any);
 
 // Complete contract (employer only)
 router.post('/:id/complete', completeContract as any);
+
+// Terminate contract (Employer or Employee)
+router.post('/:id/terminate', terminateContract as any);
 
 export default router;
 

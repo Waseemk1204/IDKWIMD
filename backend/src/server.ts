@@ -36,7 +36,10 @@ import channelRoutes from './routes/channels';
 import callRoutes from './routes/calls';
 import onboardingRoutes from './routes/onboarding';
 import linkedinRoutes from './routes/linkedin';
-// import integrationRoutes from './routes/integration';
+import reviewRoutes from './routes/reviewRoutes';
+import timesheetRoutes from './routes/timesheetRoutes';
+import cronRoutes from './routes/cron';
+// import integrationRoutes from './routes/integration</';
 // import unifiedMessagingRoutes from './routes/unifiedMessaging';
 // import unifiedNotificationRoutes from './routes/unifiedNotifications';
 // import unifiedUserContextRoutes from './routes/unifiedUserContext';
@@ -52,10 +55,10 @@ class Server {
 
   constructor() {
     this.app = express();
-    
+
     // Trust Railway proxy for accurate client IPs
     this.app.set('trust proxy', true);
-    
+
     this.server = createServer(this.app);
     this.io = configureSocket(this.server);
 
@@ -106,7 +109,7 @@ class Server {
     // Initialize Passport
     this.app.use(passport.initialize());
     this.app.use(passport.session());
-    
+
     // Passport serialization
     passport.serializeUser((user: any, done) => {
       done(null, user);
@@ -114,7 +117,7 @@ class Server {
     passport.deserializeUser((user: any, done) => {
       done(null, user);
     });
-    
+
     // Configure OAuth strategies
     configureLinkedInStrategy();
 
@@ -173,6 +176,9 @@ class Server {
     this.app.use('/api/v1/channels', channelRoutes);
     this.app.use('/api/v1/calls', callRoutes);
     this.app.use('/api/v1/onboarding', onboardingRoutes);
+    this.app.use('/api/v1/reviews', reviewRoutes);
+    this.app.use('/api/v1/timesheets', timesheetRoutes);
+    this.app.use('/api/v1/cron', cronRoutes);
     // this.app.use('/api/v1/integration', integrationRoutes);
     // this.app.use('/api/v1/unified-messaging', unifiedMessagingRoutes);
     // this.app.use('/api/v1/unified-notifications', unifiedNotificationRoutes);
@@ -194,7 +200,7 @@ class Server {
   private initializeSocket(): void {
     // Initialize notification service with Socket.IO instance
     getNotificationService(this.io);
-    
+
     // Setup socket handlers
     setupSocketHandlers(this.io);
   }
@@ -222,7 +228,7 @@ class Server {
 
   private shutdown(): void {
     console.log('🛑 Shutting down server...');
-    
+
     this.server.close(() => {
       console.log('✅ Server closed');
       process.exit(0);

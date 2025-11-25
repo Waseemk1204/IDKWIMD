@@ -6,11 +6,11 @@ dotenv.config();
 export const config = {
   // Server Configuration
   NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: parseInt(process.env.PORT || '5000', 10),
+  PORT: parseInt(process.env.PORT || '5001', 10),
   HOST: process.env.NODE_ENV === 'production' ? '0.0.0.0' : (process.env.HOST || 'localhost'),
 
   // Database Configuration
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/parttimepay',
+  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://admin:password123@localhost:27017/parttimepay?authSource=admin',
   MONGODB_TEST_URI: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/parttimepay_test',
 
   // JWT Configuration - No fallbacks for security
@@ -45,6 +45,9 @@ export const config = {
 
   // Frontend URL
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
+
+  // Cron Job Security
+  CRON_SECRET: process.env.CRON_SECRET || 'default-cron-secret-change-in-production',
 
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),

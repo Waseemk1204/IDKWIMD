@@ -70,7 +70,7 @@ const jobSchema = new Schema<IJob>({
     type: Number,
     min: [0, 'Maximum hourly rate cannot be negative'],
     validate: {
-      validator: function(this: IJob, value: number) {
+      validator: function (this: IJob, value: number) {
         return !this.minHourlyRate || !value || value >= this.minHourlyRate;
       },
       message: 'Maximum hourly rate must be greater than or equal to minimum hourly rate'
@@ -182,13 +182,13 @@ jobSchema.index({ skills: 1 });
 jobSchema.index({ isFeatured: 1, postedDate: -1 });
 jobSchema.index({ title: 'text', description: 'text', company: 'text' });
 
-// Virtual for application count
-jobSchema.virtual('applicationCount').get(function() {
-  return this.applications.length;
+// Virtual property for total applications count
+jobSchema.virtual('totalApplications').get(function () {
+  return this.applications?.length || 0;
 });
 
 // Virtual for days since posted
-jobSchema.virtual('daysSincePosted').get(function() {
+jobSchema.virtual('daysSincePosted').get(function () {
   const now = new Date();
   const posted = new Date(this.postedDate);
   const diffTime = Math.abs(now.getTime() - posted.getTime());
@@ -196,7 +196,7 @@ jobSchema.virtual('daysSincePosted').get(function() {
 });
 
 // Pre-save middleware to update tags based on skills and category
-jobSchema.pre('save', function(next) {
+jobSchema.pre('save', function (next) {
   if (this.isModified('skills') || this.isModified('category')) {
     this.tags = [...new Set([...this.skills, this.category])];
   }

@@ -8,7 +8,8 @@ import {
   withdrawFunds,
   transferFunds,
   getWalletStats,
-  testAddFunds
+  testAddFunds,
+  processWeeklyPayouts
 } from '../controllers/walletController';
 import {
   validatePagination,
@@ -31,6 +32,7 @@ router.get('/stats', getWalletStats as any);
 router.post('/topup', validateWalletTopUp, createTopUpOrder as any);
 router.post('/verify-payment', verifyPayment as any);
 router.post('/test-add-funds', testAddFunds as any); // For testing without Razorpay
+router.post('/process-weekly-payouts', processWeeklyPayouts as any); // Admin only
 
 // Transfer routes
 router.post('/withdraw', validateWithdrawal, withdrawFunds as any);

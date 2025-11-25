@@ -1,5 +1,11 @@
 {
   "version": 2,
+  "crons": [
+    {
+      "path": "/api/v1/cron/weekly-payouts",
+      "schedule": "59 23 * * 0"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
@@ -7,32 +13,44 @@
     },
     {
       "src": "/login",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "dest": "/api/index.js"
     },
     {
       "src": "/login",
-      "methods": ["GET"],
+      "methods": [
+        "GET"
+      ],
       "dest": "/index.html"
     },
     {
       "src": "/signup",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "dest": "/api/index.js"
     },
     {
       "src": "/signup",
-      "methods": ["GET"],
+      "methods": [
+        "GET"
+      ],
       "dest": "/index.html"
     },
     {
       "src": "/signup/employee",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "dest": "/api/index.js"
     },
     {
       "src": "/signup/employer",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "dest": "/api/index.js"
     },
     {
