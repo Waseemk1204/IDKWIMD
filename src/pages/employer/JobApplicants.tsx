@@ -154,7 +154,7 @@ export const JobApplicants: React.FC = () => {
     const statusConfig = {
       pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300', text: 'Pending' },
       reviewed: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300', text: 'Reviewed' },
-      shortlisted: { color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: 'Shortlisted' },
+      shortlisted: { color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300', text: 'Shortlisted' },
       accepted: { color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300', text: 'Accepted' },
       rejected: { color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300', text: 'Rejected' }
     };
@@ -370,6 +370,30 @@ export const JobApplicants: React.FC = () => {
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
                             Shortlist
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleStatusUpdate(application._id, 'rejected')}
+                            disabled={isUpdatingStatus}
+                            className="flex items-center text-red-600 hover:text-red-700"
+                          >
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                      {application.status === 'shortlisted' && (
+                        <>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleStatusUpdate(application._id, 'accepted')}
+                            disabled={isUpdatingStatus}
+                            className="flex items-center bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Accept
                           </Button>
                           <Button
                             variant="secondary"
