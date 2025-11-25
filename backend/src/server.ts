@@ -207,22 +207,27 @@ class Server {
 
   public async start(): Promise<void> {
     try {
-      // Connect to database
-      await connectDB();
-
-      // Start server
+      // Start server BEFORE database connection
+      // This allows healthchecks to pass while DB is connecting
       this.server.listen(config.PORT, config.HOST, () => {
         console.log(`🚀 Server running on ${config.HOST}:${config.PORT}`);
         console.log(`📱 Environment: ${config.NODE_ENV}`);
         console.log(`🌐 Frontend URL: ${config.FRONTEND_URL}`);
       });
 
+      // Connect to database after server is listening
+      await connectDB();
+      console.log('✅ Database connected');
+
       // Graceful shutdown
       process.on('SIGTERM', this.shutdown.bind(this));
       process.on('SIGINT', this.shutdown.bind(this));
     } catch (error) {
       console.error('Failed to start server:', error);
-      process.exit(1);
+      // Don't exit immediately in production to allow healthchecks to pass
+      if (config.NODE_ENV !== 'production') {
+        process.exit(1);
+      }
     }
   }
 
