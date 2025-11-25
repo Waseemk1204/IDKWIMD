@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
+import sessionService from '../../services/sessionService';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
-import { 
-  Wallet as WalletIcon, 
-  Plus, 
-  Minus, 
-  TrendingUp, 
+import {
+  Wallet as WalletIcon,
+  Plus,
+  Minus,
+  TrendingUp,
   TrendingDown,
   CreditCard,
   Banknote,
@@ -143,17 +144,25 @@ export const Wallet: React.FC = () => {
 
     setProcessing(true);
     try {
+      // Use sessionService to get token (consistent with rest of app)
+      const token = sessionService.getToken();
+      if (!token) {
+        toast.error('Please log in to add funds');
+        setProcessing(false);
+        return;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/wallet/test-add-funds`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ amount: parseFloat(topUpAmount) })
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         toast.success(`Successfully added ₹${topUpAmount} to wallet (Test Mode)`);
         setShowTopUpModal(false);
@@ -180,10 +189,10 @@ export const Wallet: React.FC = () => {
     setProcessing(true);
     try {
       const response = await apiService.createTopUpOrder(parseFloat(topUpAmount));
-      
+
       if (response.success) {
         const { order } = response.data;
-        
+
         // Initialize Razorpay
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_key',
