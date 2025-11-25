@@ -579,7 +579,7 @@ export const getJobApplications = async (req: AuthRequest, res: Response): Promi
     const skip = (Number(page) - 1) * Number(limit);
 
     const applications = await Application.find(filter)
-      .populate('applicant', 'name email profileImage phone location skills experience')
+      .populate('applicant', 'fullName email profileImage phone location skills experience')
       .sort({ appliedDate: -1 })
       .skip(skip)
       .limit(Number(limit))
